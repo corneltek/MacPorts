@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.7 2004/02/05 02:03:04 toby Exp $
+# $Id$
 
 PortSystem 1.0
 name             rman
 version          3.2
 categories       textproc
-maintainers      lomion@mac.com
+license          Artistic-1
+maintainers      mac.com:lomion
 description      Man page format converter
 long_description \
     PolyglotMan takes formatted man pages from most of the popular \
@@ -18,7 +19,6 @@ checksums        md5 6d1d67641c6d042595a96a62340d3cc6
 patchfiles       patch-Makefile
 
 configure {
-    cd ${worksrcpath}
-    reinplace "s|__PREFIX|${prefix}|g" Makefile
-    reinplace "s|__DSTROOT|${destroot}${prefix}|g" Makefile
+    reinplace "s|__PREFIX|${prefix}|g" ${worksrcpath}/Makefile
+    reinplace "s|__DSTROOT|${destroot}${prefix}|g" ${worksrcpath}/Makefile
 }

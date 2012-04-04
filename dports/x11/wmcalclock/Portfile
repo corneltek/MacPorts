@@ -1,22 +1,25 @@
-# $Id: Portfile,v 1.3 2004/01/14 21:57:13 toby Exp $
+# $Id$
 
 PortSystem       1.0
 name             wmcalclock
-version          1.25
-distname         wmCalClock-${version}
+version          1.26
+revision         1
 categories       x11
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      WindowMaker clock docklet
 long_description \
     Clock docklet for WindowMaker that displays the time and date.
-homepage         http://nis-www.lanl.gov/~mgh/WindowMaker/DockApps.shtml
+homepage         http://jmpacquet.free.fr/wmcalclock/
 platforms        darwin
-master_sites     http://nis-www.lanl.gov/~mgh/WindowMaker/
-depends_lib      lib:libX11.6:XFree86
-checksums        md5 a401ded0e1fee4bcc4623076159bca41
+distname         wmCalClock-${version}
+master_sites     http://jmpacquet.free.fr/wmcalclock/
+depends_lib      port:xorg-libXext port:xpm
+checksums        md5 ea8df8a238cce22721eafbe2ea2b1ae7
 worksrcdir       ${distname}/Src
 patch {
     reinplace s|man/man1|share/man/man1| ${worksrcpath}/Makefile
 }
 use_configure    no
 destroot.destdir DESTDIR=${destroot}${prefix}
+
+build.args INCDIR="-I${prefix}/include" LIBDIR="-L${prefix}/lib"

@@ -1,8 +1,9 @@
-# $Id: Portfile,v 1.1 2004/02/26 19:24:27 pguyot Exp $
+# $Id$
 
-PortSystem			1.0
+PortSystem 1.0
+
 name				sdf2-bundle
-version				1.6
+version				2.4
 
 description			Package related to the SDF2 syntax defintion formalism.
 long_description	The sdf2-bundle is an easy to install collection of \
@@ -12,10 +13,12 @@ long_description	The sdf2-bundle is an easy to install collection of \
 					sglr, a parser.
 platforms			darwin
 categories			devel
-maintainers			pguyot@kallisys.net
-homepage			http://www.stratego-language.org/Stratego/Sdf2Bundle
-master_sites		ftp://ftp.stratego-language.org/pub/stratego/sdf2/
-checksums			md5 283be0b4c7c9575c1b5cc735316e6192
+maintainers			nomaintainer
+homepage			http://www.program-transformation.org/Sdf/SdfBundle
+master_sites		http://releases.strategoxt.org/strategoxt-0.17/sdf2-bundle/sdf2-bundle-2.4pre212034-37nm9z7p/
+checksums			md5 8aa110d790c4a8bf7bc8b884590d7bee \
+					sha1 b9be75d56503e7f06fcc9cc543303bae123c0845 \
+					rmd160 3b69d684b3a10504aaf197e6a19e16e36ff50f98
 build.type			gnu
-depends_lib			lib:libATerm:libaterm
+depends_lib			port:libaterm
 configure.args		--with-aterm=${prefix} --mandir=${prefix}/share/man

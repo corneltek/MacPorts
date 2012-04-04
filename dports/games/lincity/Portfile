@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.1 2004/01/16 03:57:39 toby Exp $
+# $Id$
 
 PortSystem       1.0
 name             lincity
-version          1.12.0
+version          1.13.0
+revision         2
 categories       games
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      city simulation game
 long_description \
     Lincity is a city simulation game. You are required to build and \
@@ -15,7 +16,15 @@ long_description \
     starved planet, it's up to you.
 homepage         http://lincity.sourceforge.net/
 platforms        darwin
-master_sites     sunsite:games/strategy sourceforge
-checksums        md5 98daeef749d3ec17208193b6a1dc6b03
-depends_lib      lib:libSM:XFree86 lib:libICE:XFree86
-configure.args   --disable-nls
+master_sites     sourceforge
+checksums        md5 007159a2e6cce680c629a73f97fe96f2
+
+depends_lib \
+	port:xorg-libsm \
+	port:xorg-libXext \
+	port:libpng \
+	port:gettext
+
+patchfiles       patch-readpng.c
+
+configure.args   --mandir=${prefix}/share/man

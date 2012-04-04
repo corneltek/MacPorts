@@ -1,25 +1,40 @@
-# $Id: Portfile,v 1.2 2004/01/24 21:47:09 jkh Exp $
+# $Id$
 
-PortSystem 1.0
+PortSystem      1.0
 
-name		libsdl_ttf
-version		2.0.6
-categories	devel graphics
-maintainers	mww@opendarwin.org
-platforms	darwin
-description	add on library for libSDL for rendering TrueType fonts
-long_description	This library is a wrapper around the excellent \
-			FreeType 2.0 library allowing to render TrueType fonts \
-			in SDL applications.
-	
-homepage	http://www.libsdl.org/projects/SDL_ttf
-master_sites	${homepage}/release/
-distname	SDL_ttf-${version}
-checksums	md5 880ca22ac3e8beb5cca2326cc8069733
+name            libsdl_ttf
+set my_name	    SDL_ttf
+version         2.0.11
+categories      devel graphics
+platforms       darwin
+license         zlib
+maintainers     jmr openmaintainer
+description     add on library for libSDL for rendering TrueType fonts
 
-depends_lib	lib:libSDL:libsdl \
-		lib:libfreetype.6:freetype
-configure.args	--disable-sdltest
-set worksrcpath	${workpath}/SDL_ttf-${version}
+long_description \
+    This library is a wrapper around FreeType and \
+    allows rendering TrueType fonts in SDL applications.
 
-build.dir	${worksrcpath}
+homepage        http://www.libsdl.org/projects/${my_name}/
+master_sites    ${homepage}release/
+distname        ${my_name}-${version}
+
+checksums       rmd160 95a06230f5e82ba7b06a39987ed1828985c70dae \
+                sha256 724cd895ecf4da319a3ef164892b72078bd92632a5d812111261cde248ebcdb7
+
+depends_build   port:pkgconfig
+depends_lib     port:libsdl \
+                port:freetype
+
+configure.args  --disable-sdltest
+
+post-destroot {
+    set docdir ${prefix}/share/doc/${name}
+    xinstall -d ${destroot}${docdir}
+    xinstall -m 0644 -W ${worksrcpath} CHANGES COPYING README \
+        ${destroot}${docdir}
+}
+
+livecheck.type  regex
+livecheck.url   ${homepage}
+livecheck.regex ${my_name}-(\\d+(?:\\.\\d+)*)

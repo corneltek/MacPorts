@@ -1,0 +1,39 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem          1.0
+PortGroup           python 1.0
+
+name                py-colander
+version             0.9.7
+revision            0
+categories-append   devel
+license             BSD
+platforms           darwin
+supported_archs     noarch
+
+maintainers         stromnov openmaintainer
+
+description         System for validating and deserializing data.
+long_description    ${description}
+
+homepage            http://docs.repoze.org/colander
+master_sites        http://pypi.python.org/packages/source/c/colander/
+
+distname            colander-${version}
+
+checksums           rmd160  25409caec91b1c8d853e5e3c2f06d12c74288996 \
+                    sha256  0c696341a84476d59f554505afcc1ec3b9c428fcb78ef07ca9996588f57610f0
+
+python.default_version  27
+python.versions     26 27
+
+if {$subport != $name} {
+    depends_build-append    port:py${python.version}-distribute
+    depends_lib-append      port:py${python.version}-iso8601 \
+                            port:py${python.version}-translationstring
+}
+
+livecheck.type      regex
+livecheck.url       ${master_sites}
+livecheck.regex     "colander-(\\d+(?:\\.\\d+)*)${extract.suffix}"

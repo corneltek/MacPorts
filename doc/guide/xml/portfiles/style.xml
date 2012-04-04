@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-		"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+		"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="portstyle">
 	<title>Style guide</title> 
 	<sect1>
@@ -29,9 +29,9 @@
 		<title>Specifics</title> 
 		
 		<sect2>
-			<title>CVS ID tags</title> 
-			<para>On the first line of the Portfile you should put a cvs 
-			ID tag. This tag will be expanded by cvs when the Portfile is 
+			<title>Subversion ID tags</title> 
+			<para>On the first line of the Portfile you should put a svn 
+			ID tag. This tag will be expanded by svn when the Portfile is 
 			committed and allows people to see at a glance details like 
 			who was the last person to commit to a port and when the last 
 			commit was performed.</para>

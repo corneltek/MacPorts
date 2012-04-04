@@ -1,16 +1,50 @@
-# $Id: Portfile,v 1.8 2004/02/23 13:59:07 olegb Exp $
-PortSystem 1.0
-name		libgnomeui
-version		2.4.0.1
-description	Libraries for the GNOME GUI, a GNU desktop environment.
-long_description        Libraries for the GNOME GUI, a GNU desktop environment.
-maintainers	gnome-darwinports@opendarwin.org
-categories	gnome
-platforms	darwin 
-homepage	http://www.gnome.org/
-master_sites    gnome:sources/libgnomeui/2.4/
-checksums	md5 196f4a3f1f4a531ff57acaa879e98dd2
-depends_lib	lib:gnome-icon-theme:gnome-icon-theme
-use_bzip2 	yes
-configure.env   CPPFLAGS="-L${prefix}/lib -I${prefix}/include" \
-                CFLAGS="-no-cpp-precomp -flat_namespace -undefined suppress"
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem      1.0
+
+name            libgnomeui
+version         2.24.5
+revision        2
+set branch      [join [lrange [split ${version} .] 0 1] .]
+maintainers     nomaintainer
+categories      gnome
+license         LGPL
+platforms       darwin
+description     Libraries for the GNOME GUI, a GNU desktop environment.
+
+long_description \
+    ${description}
+
+homepage        http://www.gnome.org/
+master_sites    gnome:sources/${name}/${branch}/
+use_bzip2       yes
+
+checksums       md5     d4bb506b1916015323928faab5aa708b \
+                sha1    a89d88416403b20a958bd19257522cf7a75ea344 \
+                rmd160  447e0968221ba28844dbba5cc4ef260e637e9b9d
+
+depends_build   port:pkgconfig \
+                port:intltool \
+                port:gtk-doc
+
+depends_lib     port:audiofile \
+                port:gconf \
+                port:libbonoboui \
+                port:libgnome-keyring \
+                port:xorg-libsm
+
+configure.args  --x-includes=${prefix}/include \
+                --x-libraries=${prefix}/lib
+
+variant no_x11 {
+	patchfiles-append       patch-configure.diff
+        depends_lib-delete      port:xorg-libsm
+        configure.args-delete   --x-includes=${prefix}/include \
+                                --x-libraries=${prefix}/lib
+        configure.args-append   --without-x
+}
+
+livecheck.type  regex
+livecheck.url   http://ftp.gnome.org/pub/gnome/sources/${name}/${branch}/
+livecheck.regex {LATEST-IS-(\d+(?:\.\d+)*)}

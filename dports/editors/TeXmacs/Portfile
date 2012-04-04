@@ -1,11 +1,12 @@
-# $Id: Portfile,v 1.11 2004/01/24 03:45:40 gwright Exp $
+# $Id$
 
 PortSystem 1.0
+
 name		TeXmacs
-version		1.0.3
+version		1.0.7.10
 distname	${distname}-src
 categories	editors
-maintainers	gwright@comcast.com
+maintainers	gwright
 platforms	darwin
 
 description	GNU TeXmacs: A Scientific Text Editor
@@ -24,43 +25,59 @@ long_description	\
 		suitable as an interface for computer algebra systems.	\
 		TeXmacs also supports the Guile/Scheme extension	\
 		language, so that you may customize the interface and	\
-		write your own extensions to the editor. 
+		write your own extensions to the editor.
 
 #user_notes	If texmacs can't find guile's modules, you will have to \
 #		set GUILE_LOAD_PATH explicitly (usually			\
-#		/opt/local/share/guile/1.6).				\
+#		${prefix}/share/guile/1.8).				\
 #									\
-#		Also, don't forget to set DISPLAY to localhost:0.0 if	\
+#		Also, you may need to set DISPLAY to localhost:0.0 if	\
 #		launching TeXmacs from a non-X11 terminal.
 
 #bugs		Some of the computer algebra system sessions (e.g.,	\
 #		maxima) will hang if you try to use the online help	\
-#		function. A known issue that is being worked on.
+#		function.
 
 homepage	http://www.texmacs.org/
-master_sites	ftp://ftp.texmacs.org/pub/TeXmacs/targz/
+master_sites	ftp://ftp.texmacs.org/pub/${name}/targz/:source	\
+		ftp://ftp.texmacs.org/pub/${name}/fonts/:fonts
 
-distfiles	${name}-${version}-src${extract.suffix} \
-		${name}-600dpi-fonts${extract.suffix}
+distfiles	${name}-${version}-src${extract.suffix}:source \
+		${name}-extra-fonts-1.0-noarch${extract.suffix}:fonts
 
-checksums	${name}-${version}-src.tar.gz md5 833928d728a4f720971284fc8afbc6f4 \
-		${name}-600dpi-fonts.tar.gz   md5 945dfd3f76b20082aeea8131d87a260f
+checksums       ${name}-${version}-src.tar.gz \
+		md5     ad1ba010be2d7149f25be43178728bbf \
+		sha1    12491496e68b62aa07369748770771a8c2378129 \
+		rmd160  972d225bc2ce8836de02d7312b822ed6d248e91a \
+		${name}-extra-fonts-1.0-noarch.tar.gz \
+		md5     4666d29252da18bbc3fa7e162bb00b17 \
+		sha1    c7a1af56b1af4c18c0792cec69330bd6daea002b \
+		rmd160  ae539c873f16463a3c19fcaf69fd338a1eadd7ce
 
-depends_build	bin:guile-config:guile bin:latex:teTeX
-depends_lib	lib:libX11.6:XFree86 lib:libiconv.2:libiconv
-depends_run	bin:gs:gnughostscript
+patchfiles	patch-Makefile.9.diff
+
+depends_lib	port:guile		\
+		port:libiconv		\
+		port:texlive		\
+		port:xorg-libXext	\
+		port:freetype
+depends_run	bin:gs:ghostscript
 
 extract.only	${name}-${version}-src${extract.suffix}
 
-configure.env	LDFLAGS="-L${prefix}/lib" CFLAGS="-no-cpp-precomp"
+post-extract	{ system "${extract.cmd} ${extract.pre_args} ${distpath}/${name}-extra-fonts-1.0-noarch${extract.suffix} ${extract.post_args} -C ${worksrcpath}/${name}"
+		}
+
+configure.cflags-append	"-no-cpp-precomp"
+configure.args	--mandir=${prefix}/share/man
 
 # TeXmacs is ignorant of "make all", so we just "make" with no target:
-build.target
+build.target	{ }
 
-post-destroot	{ file mkdir ${destroot}/${prefix}/share/${name}
-                  cd ${destroot}/${prefix}/share/${name}
-                  system "${extract.cmd} ${extract.pre_args} ${distpath}/${name}-600dpi-fonts${extract.suffix} ${extract.post_args}"
-                  cd ${destroot}/${prefix}/share/
-                  system "chown -R root.admin ${name}"
+post-destroot	{ file mkdir ${destroot}${prefix}/share/${name}
+                  system "chown -R root:admin ${destroot}${prefix}/share/${name}"
+
+		  file rename ${destroot}${prefix}/share/${name}/plugins/cadabra \
+			      ${destroot}${prefix}/share/${name}/plugins/cadabra.texmacs
                 }
 

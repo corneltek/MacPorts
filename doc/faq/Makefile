@@ -1,6 +1,6 @@
-# $Id: Makefile,v 1.1 2004/02/05 05:36:36 wbb4 Exp $
+# $Id$
 
-# To build DarwinPorts FAQ files from the source docbook xml.
+# To build MacPorts FAQ files from the source docbook xml.
 # michaelm@opendarwin.org, wbb4@opendarwin.org
 
 ## Targets
@@ -24,7 +24,7 @@
 # the catalogs are in ${prefix}/etc/xml, if yours are elswhere you should alter
 # the $XML_CATALOG_FILES variable. 
 
-# set XML_DEBUG_CATALOG= to see catalog debugging info
+# Set XML_DEBUG_CATALOG= to see catalog debugging info.
 
 SOURCEDIR?=		xml
 DOCBOOK_XSL?=	        ${prefix}/share/xsl/docbook-xsl/
@@ -54,7 +54,7 @@ check:
 html:
 	mkdir -p ${HTMLDIR}
 	xsltproc --xinclude -o "${HTMLDIR}/" "${STYLESHEET}" "${SOURCEDIR}/faq.xml"
-	
+
 xhtml: 
 	mkdir -p ${XHTMLDIR}
 	cp ${RESOURCES}${CSS_STYLESHEET} ${XHTMLDIR}
@@ -72,5 +72,5 @@ tidy:
 
 clean:
 	rm -fr ${HTMLDIR} ${XHTMLDIR}
-	
-include ../../base/Mk/dports.autoconf.mk
+
+include ../../base/Mk/macports.autoconf.mk

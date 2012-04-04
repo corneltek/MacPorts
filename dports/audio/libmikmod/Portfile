@@ -1,36 +1,44 @@
-# $Id: Portfile,v 1.12 2004/01/18 03:44:37 toby Exp $
+# $Id$
 
 PortSystem 1.0
-name		libmikmod
-version		3.1.10
-categories	audio
-maintainers	mij@opendarwin.org
-description	portable sound library
-platforms	darwin
+PortGroup  muniversal 1.0
 
-long_description libmikmod is a portable sound library for Unix systems. \
-		 It can play IT, XM, S3M, MTM, 669, STM, ULT, FAR, MED, \
-		 AMF, DSM, IMF, GDM, STX, OKT, and MOD module formats.
+name                libmikmod
+version             3.2.0-beta2
+revision            2
+categories          audio
+license             LGPL-2+
+maintainers         nomaintainer
+description         portable sound library
+platforms           darwin
 
-homepage	http://www.mikmod.org/
+long_description    libmikmod is a portable sound library for Unix systems. \
+                    It can play IT, XM, S3M, MTM, 669, STM, ULT, FAR, MED, \
+                    AMF, DSM, IMF, GDM, STX, OKT, and MOD module formats.
 
-master_sites	sunsite:apps/sound/libs/ \
-		opendarwin::lt
+homepage            http://mikmod.raphnet.net/
+master_sites        ${homepage}files/
+use_bzip2           yes
 
-distfiles-append ltconfig13:lt ltmain13:lt
-extract.only	${distname}${extract.suffix}
+checksums           md5 5b05f3b1167eba7855b8e38bde2b8070 \
+                    sha1 f16fc09ee643af295a8642f578bda97a81aaf744 \
+                    rmd160 587d1c1ea24f3d52bf76407ee327b8fa8143b277
 
-checksums	libmikmod-3.1.10.tar.gz md5 14bf3f18cf0187f5dab46e42a3ddda84 \
-		ltconfig13 md5 ea53f42a550c9f9e653758a8ed91574e \
-		ltmain13 md5 e094ae92724c4015dbab97de151c2525
+merger_arch_compiler yes
 
-depends_lib	lib:libesd.0:esound
+patchfiles          patch-libmikmod.m4 \
+                    patch-64bit-fix \
+                    patch-CVE-2009-0179 \
+                    patch-exitcrash \
+                    patch-md_sngchn \
+                    patch-ngvolume
 
-patchfiles	patch-config.guess patch-config.sub
+configure.optflags  -Os
+configure.args      --mandir=${prefix}/share/man --infodir=${prefix}/share/info
 
-post-extract {
-		file copy -force ${distpath}/ltconfig13 ${worksrcpath}/ltconfig
-		file copy -force ${distpath}/ltmain13 ${worksrcpath}/ltmain.sh
+variant esound description {Enable esound support} {
+    depends_lib-append  port:esound
 }
 
-configure.env	CFLAGS="-no-cpp-precomp -Os"
+livecheck.type      regex
+livecheck.regex     libmikmod-(\\d+(?:\\.\\d+)*(?:-(?:alpha|beta)\\d)?)\\.tar\\.gz

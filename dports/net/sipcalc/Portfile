@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.2 2003/11/17 21:20:02 jkh Exp $
+# $Id$
 
 PortSystem 1.0
+
 name		sipcalc
-version		1.1.2
+version		1.1.4
 categories	net
-maintainers	ocheron@noos.fr
+maintainers	noos.fr:ocheron
 description	An advanced IP subnet calculator
 long_description	\
 	sipcalc displays various information from an IP address and an \
@@ -12,6 +13,7 @@ long_description	\
 	wildcard, hosts/range, network range, etc. It supports both IPv4 \
 	and IPv6.
 platforms	darwin
-homepage	http://www.routemeister.net/projects/sipcalc
-master_sites	http://www.routemeister.net/projects/sipcalc/files/
-checksums	${distname}${extract.suffix} md5 6be9c77d8c9ba4fff8291389a33c2de1
+homepage	http://www.routemeister.net/projects/sipcalc/
+master_sites	${homepage}files/
+checksums	md5 13b64d56ef669fc519df410609c5ff38
+configure.args	--mandir=${prefix}/share/man

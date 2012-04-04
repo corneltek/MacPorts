@@ -1,181 +1,70 @@
-# $Id: Portfile,v 1.17 2004/01/18 03:36:17 toby Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
-name		fortune
-version		4.6.2-RELEASE
-revision	1
-categories	games
-maintainers	eric@opendarwin.org
-description	Infamous electronic fortune-cookie generator
-platforms	darwin
-use_bzip2	yes
+PortSystem          1.0
 
-# these sites should be listed in the actual variants, unfortunately the tags
-# do not work in the added master_sites - so just define them all right here
-# for the time being
-master_sites    opendarwin \
-		http://www.splitbrain.org/Fortunes/starwars/:starwars \
-		http://dune.s31.pl/:dune \
-		http://www.splitbrain.org/Fortunes/hitchhiker/:hitchhiker \
-		http://www.splitbrain.org/Fortunes/fgump/:fgump \
-		http://eol.init1.nl/img/:southpark \
-		http://www.splitbrain.org/Fortunes/xfiles/:xfiles \
-		http://www.netmeister.org/apps/:netmeister \
-		http://www.cs.indiana.edu/~crcarter/homer/:homer \
-		http://www.splitbrain.org/Fortunes/simpsons/:chalkboard
+name                fortune
+version             6.2.0-RELEASE
+categories          games
+platforms           darwin freebsd
+maintainers         nomaintainer
+license             BSD
+installs_libs       no
 
-checksums	md5 99166e1c47d4b60c865a31d59d359b16
-extract.only 	${portname}-${version}.tar.bz2
-depends_lib	lib:libcompat.1:libcompat
-worksrcdir	${portname}
-build.type	bsd
-build.args	LDADD+=-L${prefix}/lib
+description         Infamous electronic fortune-cookie generator
 
-configure	{ cd ${worksrcpath}
-		  reinplace "s|/usr|${prefix}|" fortune/pathnames.h
-		  reinplace "s|/usr/share|${prefix}/share|" fortune/fortune.6
-		  reinplace "s|/usr/games/fortune|${prefix}/bin/fortune|" \
-		    fortune/fortune.6
-		  reinplace "s|XXPREFIX|${prefix}|" fortune/Makefile }
+long_description    ${description}
 
-patchfiles	patch-fortune-Makefile patch-strfile-Makefile \
-		patch-unstr-Makefile patch-datfiles-Makefile \
-		patch-fortune.c patch-strfile.c
+homepage            http://www.freebsd.org/
+master_sites        macports
+use_bzip2           yes
 
-set datfiles	"fortunes fortunes.dat fortunes-o fortunes-o.dat fortunes2 \
-		fortunes2.dat fortunes2-o fortunes2-o.dat limerick \
-		limerick.dat murphy murphy.dat murphy-o murphy-o.dat \
-		startrek startrek.dat zippy zippy.dat"
+checksums           md5     6185fe31e512e8b23ac5cc58ede27919
 
-# ugly hack to extract variant datfiles properly - default these variables to
-# zero, then set them in each variant, and then check them all in post-extract
-set plusstarwars 0
-set plusdune 0
-set plushitchhiker 0
-set plusfgump 0
-set plussouthpark 0
-set plusxfiles 0
-set plusfuturama 0
-set pluscalvin 0
-set plussimpsons 0
+worksrcdir          ${name}
 
-variant starwars { distfiles-append fortune-starwars.tgz:starwars
-		  set datfiles "${datfiles} starwars starwars.dat"
-		  set plusstarwars 1 }
+patchfiles          patch-fortune-Makefile \
+                    patch-strfile-Makefile \
+                    patch-unstr-Makefile \
+                    patch-datfiles-Makefile \
+                    patch-strfile.h
 
-variant dune	{ distfiles-append fortune-mod-dune-quotes.2.0.1.tar.gz:dune
-		  set datfiles "${datfiles} chapterhouse-dune \
-		  chapterhouse-dune.dat children-of-dune children-of-dune.dat \
-		  dune dune.dat dune-messiah dune-messiah.dat god-emperor \
-		  god-emperor.dat heretics-of-dune heretics-of-dune.dat \
-		  house-atreides house-atreides.dat house-harkonnen \
-		  house-harkonnen.dat"
-		  set plusdune 1 }
+post-patch {
+    reinplace "s|/usr|${prefix}|" ${worksrcpath}/fortune/pathnames.h
+    reinplace "s|/usr/share|${prefix}/share|" ${worksrcpath}/fortune/fortune.6
+    reinplace "s|/usr/games/fortune|${prefix}/bin/fortune|" ${worksrcpath}/fortune/fortune.6
+    reinplace "s|XXPREFIX|${prefix}|" ${worksrcpath}/fortune/Makefile
+}
 
-variant hitchhiker { distfiles-append fortune-hitchhiker.tgz:hitchhiker
-		  set datfiles "${datfiles} hitchhiker hitchhiker.dat"
-		  set plushitchhiker 1 }
+use_configure       no
 
-variant fgump	{ distfiles-append fortune-fgump.tgz:fgump
-		  set datfiles "${datfiles} fgump fgump.dat"
-		  set plusfgump 1 }
+variant universal {}
 
-variant southpark { distfiles-append SP-0.1.tar.gz:southpark
-		  set datfiles "${datfiles} southpark southpark.dat"
-		  set plussouthpark 1 }
+build.type          bsd
 
-variant xfiles	{ distfiles-append fortune-xfiles.tgz:xfiles
-		  set datfiles "${datfiles} xfiles xfiles.dat"
-		  set plusxfiles 1 }
+build.env-append    CFLAGS="[get_canonical_archflags]" \
+                    CC=${configure.cc}
 
-variant futurama { distfiles-append fortune-mod-futurama-0.2.tar.gz:netmeister
-		  set datfiles "${datfiles} futurama futurama.dat"
-		  set plusfuturama 1 }
+destroot {
+    xinstall -m 755 -W ${worksrcpath} fortune/fortune strfile/strfile \
+        unstr/unstr ${destroot}${prefix}/bin
+    
+    xinstall -m 644 ${worksrcpath}/fortune/fortune.6.gz \
+        ${destroot}${prefix}/share/man/man6
+    xinstall -m 644 ${worksrcpath}/strfile/strfile.8.gz \
+        ${destroot}${prefix}/share/man/man8
+    xinstall -m 644 ${worksrcpath}/strfile/strfile.8.gz \
+        ${destroot}${prefix}/share/man/man8/unstr.8.gz
+    
+    xinstall -m 755 -d ${destroot}${prefix}/share/games/fortune
+    xinstall -m 644 -W ${worksrcpath}/datfiles \
+        fortunes fortunes.dat fortunes-o fortunes-o.dat \
+        fortunes2-o fortunes2-o.dat limerick limerick.dat \
+        murphy murphy.dat murphy-o murphy-o.dat \
+        startrek startrek.dat zippy zippy.dat \
+        ${destroot}${prefix}/share/games/fortune
+}
 
-variant calvin	{ distfiles-append fortune-mod-calvin-0.1.1.tar.gz:netmeister
-		  set datfiles "${datfiles} calvin calvin.dat"
-		  set pluscalvin 1 }
-
-variant simpsons { distfiles-append homer-quotes.tar.gz:homer \
-		  ralph-quotes.tar.gz cbg-quotes.tar.gz \
-		  fortune-simpsons-chalkboard.tgz:chalkboard
-		  set datfiles "${datfiles} cbg cbg.dat homer homer.dat \
-		  ralph ralph.dat chalkboard chalkboard.dat"
-		  set plussimpsons 1 }
-
-post-extract	{ cd ${worksrcpath}
-		  if { ${plusstarwars} } {
-			system "cp ${distpath}/fortune-starwars.tgz ."
-			system "tar xfz fortune-starwars.tgz"
-			system "cp fortune-starwars/* datfiles"
-		  }
-		  if { ${plushitchhiker} } {
-			system "cp ${distpath}/fortune-hitchhiker.tgz ."
-			system "tar xfz fortune-hitchhiker.tgz"
-			system "cp fortune-hitchhiker/* datfiles"
-		  }
-		  if { ${plusfgump} } {
-			system "cp ${distpath}/fortune-fgump.tgz ."
-			system "tar xfz fortune-fgump.tgz"
-			system "cp fortune-fgump/* datfiles"
-		  }
-		  if { ${plusdune} } {
-			system "cp ${distpath}/fortune-mod-dune-quotes.2.0.1.tar.gz ."
-			system "tar xfz fortune-mod-dune-quotes.2.0.1.tar.gz"
-			system "cp fortune-mod-dune-quotes.2.0.1/* datfiles"
-		  }
-		  if { ${plussouthpark} } {
-			system "cp ${distpath}/SP-0.1.tar.gz ."
-			system "tar xfz SP-0.1.tar.gz"
-			system "cp SP/SP datfiles/southpark"
-			system "cp SP/SP.dat datfiles/southpark.dat"
-		  }
-		  if { ${plusxfiles} } {
-			system "cp ${distpath}/fortune-xfiles.tgz ."
-			system "tar xfz fortune-xfiles.tgz"
-			system "cp fortune-xfiles/* datfiles"
-		  }
-		  if { ${plusfuturama} } {
-			system "cp ${distpath}/fortune-mod-futurama-0.2.tar.gz ."
-			system "tar xfz fortune-mod-futurama-0.2.tar.gz"
-			system "cp fortune-mod-futurama-0.2/* datfiles"
-		  }
-		  if { ${pluscalvin} } {
-			system "cp ${distpath}/fortune-mod-calvin-0.1.1.tar.gz ."
-			system "tar xfz fortune-mod-calvin-0.1.1.tar.gz"
-			system "cp fortune-mod-calvin-0.1.1/calvin datfiles"
-			system "cp fortune-mod-calvin-0.1.1/calvin.dat datfiles"
-		  }
-		  if { ${plussimpsons} } {
-			system "cp ${distpath}/homer-quotes.tar.gz ."
-			system "tar xfz homer-quotes.tar.gz"
-			system "cp fortune-homer/* datfiles"
-			system "cp ${distpath}/ralph-quotes.tar.gz ."
-			system "tar xfz ralph-quotes.tar.gz"
-			system "cp ralph ralph.dat datfiles"
-			system "cp ${distpath}/cbg-quotes.tar.gz ."
-			system "tar xfz cbg-quotes.tar.gz"
-			system "cp cbg cbg.dat datfiles"
-			system "cp ${distpath}/fortune-simpsons-chalkboard.tgz ."
-			system "tar xfz fortune-simpsons-chalkboard.tgz"
-			system "cp fortune-simpsons-chalkboard/* datfiles"
-		  } }
-
-destroot	{
-	file mkdir ${destroot}${prefix}/share/games/fortune
-	file copy ${worksrcpath}/fortune/fortune ${destroot}${prefix}/bin
-	file copy ${worksrcpath}/strfile/strfile ${destroot}${prefix}/bin
-	file copy ${worksrcpath}/unstr/unstr ${destroot}${prefix}/bin
-	file copy ${worksrcpath}/fortune/fortune.6.gz \
-		${destroot}${prefix}/share/man/man6
-	file copy ${worksrcpath}/strfile/strfile.8.gz \
-		${destroot}${prefix}/share/man/man8
-	file copy ${worksrcpath}/strfile/strfile.8.gz \
-		${destroot}${prefix}/share/man/man8/unstr.8.gz
-	
-	cd datfiles
-	foreach datfile $datfiles {
-		file copy ${worksrcpath}/datfiles/${datfile} \
-			${destroot}/${prefix}/share/games/fortune
-	}
+platform darwin {
+    patchfiles-append patch-fortune.c patch-strfile.c patch-unstr.c
 }

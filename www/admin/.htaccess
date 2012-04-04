@@ -1,4 +1,0 @@
-AuthName "DP Site Administration"
-AuthType Basic
-AuthUserFile /Users/mij/.htpasswd
-require valid-user

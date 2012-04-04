@@ -1,20 +1,45 @@
-# $Id: Portfile,v 1.3 2004/01/18 04:54:48 toby Exp $
+# $Id$
 
-PortSystem 1.0
-name		gnuregex
-version		0.12
-categories	sysutils
-maintainers	mij@opendarwin.org
-description	GNU regex library
-homepage	http://www.gnu.org/directory/regex.html
-platforms	darwin
+PortSystem      1.0
 
-long_description $description
+name            gnuregex
+set my_name     regex
+version         0.12
+revision        2
+categories      sysutils
+license         GPL-2+
+maintainers     nomaintainer
+platforms       darwin
+description     GNU regex library
 
-master_sites	gnu:regex
+long_description \
+    ${description}
 
-distname	regex-${portversion}
-checksums	md5  6c25ca10e71adeede101e7646e796ebd
+homepage        http://www.gnu.org/directory/regex.html
+distname        ${my_name}-${version}
 
-destroot	{ system "install -m 755 -d ${destroot}${prefix}/include"
-		  system "install -m 644 ${worksrcpath}/regex.h ${destroot}${prefix}/include/gnuregex.h" }
+master_sites    http://ftp.gnu.org/old-gnu/${my_name}/ \
+                ftp://ftp.gnu.org/old-gnu/${my_name}/
+
+checksums       md5 6c25ca10e71adeede101e7646e796ebd
+
+build.args      subdirs=test
+
+post-build {
+    set command "libtool -lSystem -dynamic -install_name ${prefix}/lib/libgnuregex.dylib -o libgnuregex.dylib regex.o"
+    ui_debug "$command"
+    system "cd ${worksrcpath} && ${command}"
+}
+
+test.run        yes
+test.args       ${build.args}
+test.target     check
+
+destroot {
+    xinstall -m 0644 ${worksrcpath}/regex.h ${destroot}${prefix}/include/gnuregex.h
+    xinstall ${worksrcpath}/libgnuregex.dylib ${destroot}${prefix}/lib
+}
+
+# Newer versions of GNU regex are available in the GNU libc tarball
+# in the files posix/regex.c and posix/regex.h.
+livecheck.type  none

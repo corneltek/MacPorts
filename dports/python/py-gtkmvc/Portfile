@@ -1,10 +1,12 @@
-# $Id: Portfile,v 1.1 2004/01/26 09:40:12 blb Exp $
+# $Id$
 
 PortSystem			1.0
+PortGroup			python24 1.0
 name				py-gtkmvc
-version				0.9.0
-categories			python x11
-maintainers			blb@pobox.com
+version				0.9.2
+categories-append	x11
+platforms			darwin
+maintainers			nomaintainer
 description			Model-View-Controller for PyGTK2
 long_description \
 	This is an implementation of the Model-View-Controller and Observer \
@@ -15,20 +17,13 @@ long_description \
 	embedded here. This pattern allows making separated parts independent, \
 	but still connected each other. 
 
-homepage			http://sra.itc.it/people/cavada/mvc/
-master_sites		${homepage}/dload/
-distname			gtkmvc-${version}
-checksums			md5 1332ff1341c9bf8bb0811642a9cd0c21
+homepage			http://pygtkmvc.sourceforge.net/
+master_sites		sourceforge:pygtkmvc
+distname			pygtkmvc-${version}
+checksums			md5 ececf3cb85450b4c77cf9b1528bea0a7 \
+					sha1 e1b557d28763d0faadd8b4fb8564df23661c77e8
 
-depends_lib			bin:python:python lib:XXX:py-gtk2
-
-use_configure		no
-
-build.cmd			python setup.py
-build.target		build
-
-destroot.cmd		python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
+depends_lib-append	port:py-gtk2
 
 post-destroot {
 	file mkdir ${destroot}${prefix}/share/doc/${name}

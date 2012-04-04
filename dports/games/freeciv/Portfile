@@ -1,30 +1,74 @@
-# $Id: Portfile,v 1.5 2004/01/10 10:45:06 jkh Exp $
+# -*- Mode: Tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
+PortSystem          1.0
 
-name            freeciv
-version         1.14.0
-categories      games
-maintainers	michaelm@opendarwin.org
-description     A civilisation clone
-homepage        http://www.freeciv.org/
-platforms	darwin
+name                freeciv
+version             2.3.1
+set branch          [join [lrange [split ${version} .] 0 1] .]
+categories          games
+maintainers         nomaintainer
+description         An empire-building strategy game
+long_description \
+   Freeciv is a Free and Open Source empire-building strategy game inspired \
+   by the history of human civilization. The game commences in prehistory \
+   and your mission is to lead your tribe from the stone age to the space \
+   age...
 
-master_sites    ftp://ftp.freeciv.org/freeciv/stable/
-checksums       md5 c506ec29b94ea516aaa02a107129cf10
+homepage            http://www.freeciv.org/
+master_sites        sourceforge:project/${name}/Freeciv%20${branch}/${version}/ \
+                    ftp://ftp.freeciv.org/freeciv/stable/
+use_bzip2           yes
 
-use_bzip2	yes
+checksums           rmd160  84bb3f0381284b003a34c5a659f013c4fc75a3c4 \
+                    sha256  236686fc7f9cf387aba26b6919a87a791fb23e8aabb19181823349983c986ad8
 
-depends_lib	lib:libintl.1:gettext lib:libSDL:libsdl lib:libesd.0:esound \
-		lib:libreadline.4:readline lib:libImlib:imlib
+depends_lib         port:libiconv \
+                    port:libsdl_mixer \
+                    port:readline \
+                    port:zlib
 
-configure.env	LDFLAGS="-L${prefix}/lib" CFLAGS="-I${prefix}/include" \
-		CPPFLAGS="-I${prefix}/include"
+patchfiles          patch-client-options.c.diff
 
-default_variants +gtk1
+configure.args      --with-readline \
+                    --enable-nls --with-libiconv-prefix=${prefix} \
+                    --mandir=${prefix}/share/man --with-sdl-prefix=${prefix} \
+                    --disable-sdltest
 
-variant gtk1	{ depends_lib-append lib:libgtk.1:gtk1
-		  configure.args --enable-client=gtk }
+subport freeciv {
+    conflicts               freeciv-x11
+    
+    platforms               macosx
+    
+    depends_lib-append      port:freetype \
+                            port:libpng \
+                            port:libsdl \
+                            port:libsdl_image
+    
+    configure.args-append   --enable-client=sdl
+    
+    PortGroup               app 1.0
+    app.executable          freeciv-sdl
+    app.icon                data/icons/128x128/freeciv-client.png
+}
 
-variant gtk2	{ depends_lib-append lib:libgtk.2:gtk2
-		  configure.args --enable-client=gtk2 }
+subport freeciv-x11 {
+    conflicts               freeciv
+    
+    platforms               darwin
+    
+    depends_build-append    port:pkgconfig
+    
+    depends_lib-append      port:gettext \
+                            port:gtk2
+    
+    configure.args-append   --enable-client=gtk2 \
+                            --disable-gtktest
+}
+
+if {${name} == ${subport}} {
+    livecheck.type          regex
+    livecheck.regex         ${name}-(\[0-9.\]+)${extract.suffix}
+} else {
+    livecheck.type          none
+}

@@ -1,23 +1,41 @@
-# $Id: Portfile,v 1.2 2004/01/10 10:45:05 jkh Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
-name		gnet
-version		1.1.8
-categories	devel
-maintainers	mij@opendarwin.org
-description	Simple network library
-homepage	http://www.gnetlibrary.org/
-platforms	darwin
+PortSystem              1.0
 
-long_description GNet is a simple network library written in C.  It is \
-		 object-oriented, and built upon GLib.
+name                    gnet
+version                 1.1.9
+categories              devel
+platforms               darwin
+maintainers             nomaintainer
 
-master_sites	http://www.gnetlibrary.org/src/
+description             Simple network library
 
-checksums	md5 da2b5de278e96a5b907c2e2304bf6542
+long_description        GNet is a simple network library written in C.  It is \
+                        object-oriented, and built upon GLib.
 
-default_variants +glib2
+homepage                http://live.gnome.org/GNetLibrary
+master_sites            freebsd
 
-variant glib1	{ depends_lib lib:libglib.1:glib1 }
-variant glib2	{ depends_lib lib:libglib.2:glib2
-		  configure.args --enable-glib2 }
+checksums               sha1    ba11b517af06e84f710527d29a047f8a2603d4b3 \
+                        rmd160  485cf7b3f03dbe274e0c39b5d6257c99e94e8dfb
+
+patchfiles              patch-gnet.m4
+
+depends_build           port:pkgconfig
+
+use_autoreconf          yes
+
+if {![variant_isset glib1]} {
+    default_variants +glib2
+}
+
+variant glib1 conflicts glib2 description {Use glib1} {
+    depends_lib-append      port:glib1
+}
+variant glib2 conflicts glib1 description {Use glib2} {
+    depends_lib-append      path:lib/pkgconfig/glib-2.0.pc:glib2
+    # still needs macros from glib1 because of autoreconf
+    depends_build-append    port:glib1
+    configure.args-append   --enable-glib2
+}

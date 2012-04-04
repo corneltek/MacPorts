@@ -22,12 +22,12 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd March 11, 2003
+.Dd August 31, 2005
 .Dt PORTSTYLE 7
-.Os Darwin
+.Os
 .Sh NAME
 .Nm portstyle
-.Nd style guide for ports their associated files
+.Nd style guide for ports
 .Sh DESCRIPTION
 A port consists of a directory and its contents, within a category subdirectory
 of the root of the ports tree.
@@ -82,7 +82,7 @@ Indent additional lines to this same column.
 If a single statement needs to span multiple lines, use a 2 space indentation
 from the first line for all additional lines.
 .Pp
-Variants are line any other part of the port file.
+Variants are like any other part of the port file.
 Space, indent, and format them the same way other sections are formatted.
 The actual variant statement,
 .Dq Li variant
@@ -119,10 +119,12 @@ No set of rules can adequately cover all cases, and in some cases the best
 solution is to break the rules.
 .Sh SEE ALSO
 .Xr port 1 ,
+.Xr macports.conf 5 ,
 .Xr portfile 7 ,
+.Xr portgroup 7 ,
 .Xr porthier 7
 .Sh HISTORY
 This guide was initially written as a late addition to first release of
-darwinports.
+MacPorts.
 .Sh AUTHORS
 .An Eric Melville Aq eric@opendarwin.org

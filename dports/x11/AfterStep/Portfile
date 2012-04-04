@@ -1,9 +1,11 @@
-# $Id: Portfile,v 1.1 2004/03/06 06:43:07 waqar Exp $
+# $Id$
 
 PortSystem 1.0
+
 name		AfterStep
-version		1.8.11
-maintainers	waqar@opendarwin.org
+version		2.2.9
+categories	x11
+maintainers	waqar openmaintainer
 description	Window Manager based on NeXTStep interface.
 long_description	\
 	AfterStep is a window manager for the Unix X Window System. 	\
@@ -11,27 +13,36 @@ long_description	\
 	it provides end users with a consistent, clean, and elegant 	\
 	desktop. The goal of AfterStep development is to provide for 	\
 	flexibility of desktop configuration, improving aestetics, 	\
-	and efficient use of system resources. 
-categories	x11-wm x11
-platforms	darwin
+	and efficient use of system resources.
 homepage	http://www.afterstep.org
-master_sites    ftp://ftp.afterstep.org/stable/
+platforms	darwin
+master_sites    afterstep:stable
 use_bzip2	yes
-checksums	md5 6d8b41b7a642105b4cafc4d3d5f12a46
 
-depends_lib	lib:libX11.6:XFree86 lib:libXext.6:XFree86 \
-		lib:libjpeg.62:jpeg lib:libpng.3:libpng
+checksums	sha1    dfd7dd912866316e93c3be7a8460d34b95cd54a2	\
+		rmd160  b332078efa50abde522438c825fca91f31c4d554
 
-configure.args	--mandir=${prefix}/share/man \
-		--with-jpeg-includes=${prefix}/include \
-  		--with-jpeg-library=${prefix}/lib \
-  		--with-png-includes=${prefix}/include \
-  		--with-png-library=${prefix}/lib
+depends_build	port:pkgconfig
 
-variant darwin	{
-  pre-configure	  {
-    reinplace "s|LIB_MATH=-lm|LIB_MATH=|g" "${worksrcpath}/configure"
-    reinplace "s|#include <malloc.h>||g" \
-		"${worksrcpath}/src/Script/types.h"
-  }
+depends_lib \
+        path:include/gif_lib.h:giflib \
+        port:gtk2 \
+        port:librsvg
+
+configure.args	--mandir=${prefix}/share/man 		\
+		--infodir=${prefix}/share/info		\
+		--enable-i18n --with-x 	\
+		--with-svg				
+
+platform darwin	{
+	configure.ldflags-append	"-bind_at_load"
+	patchfiles	patch-parser.c
+	pre-configure	{
+		reinplace "s|-rdynamic|-dynamic|g" 	    \
+		  ${worksrcpath}/configure		    \
+		  ${worksrcpath}/libAfterBase/configure     \
+		  ${worksrcpath}/libAfterBase/configure.in  \
+		  ${worksrcpath}/libAfterImage/configure    \
+		  ${worksrcpath}/libAfterImage/configure.in
+	}
 }

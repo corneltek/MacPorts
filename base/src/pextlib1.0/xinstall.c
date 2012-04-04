@@ -1,4 +1,6 @@
 /*
+ * xinstall.c
+ * $Id$
  * Copyright (c) 1987, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,9 +33,13 @@
  * 2003/12/29:
  *
  * Substantially revamped from original BSD source to become a Tcl builtin
- * procedure for the Opendarwin Project.
+ * procedure for the MacPorts Project.
  * Author: Jordan K. Hubbard
  */
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #if HAVE_SYS_CDEFS_H
 #include <sys/cdefs.h>
@@ -68,9 +70,7 @@
 
 #include <tcl.h>
 
-#ifndef __unused
-#define __unused    /* no attribute */
-#endif
+#include "Pextlib.h"
 
 #if HAVE_PATHS_H
 #include <paths.h>
@@ -79,6 +79,8 @@
 #ifndef _PATH_DEVNULL
 #define _PATH_DEVNULL	"/dev/null"
 #endif
+
+#include "xinstall.h"
 
 #ifndef MAXBSIZE
 #define MAXBSIZE 65536
@@ -92,13 +94,18 @@
 #endif
 #endif
 
+/* copyfile is available on Tiger and later */
+#if HAVE_COPYFILE
+extern int copyfile(const char *from, const char *to, void *state,
+                    uint32_t flags) __attribute((weak_import));
+#endif
+
 #ifndef ALLPERMS
 #define ALLPERMS (S_ISUID|S_ISGID|S_ISTXT|S_IRWXU|S_IRWXG|S_IRWXO)
 #endif
 
 #if !HAVE_SETMODE
-void * setmode(const char *mode_str); 
-mode_t getmode(const void *set, mode_t mode);
+#include "setmode.h"
 #endif
 
 /* Bootstrap aid - this doesn't exist in most older releases */
@@ -131,16 +138,14 @@ static int	install_dir(Tcl_Interp *interp, char *);
 static u_long	numeric_id(Tcl_Interp *interp, const char *, const char *, int *rval);
 static void	strip(const char *);
 static int	trymmap(int);
-static void	usage(Tcl_Interp *interp, int lineno);
-
-extern int	ui_info(Tcl_Interp *interp, char *mesg);
+static void	usage(Tcl_Interp *interp);
 
 int
-xinstall(Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
+InstallCmd(ClientData clientData UNUSED, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 {
 	struct stat from_sb, to_sb;
 	mode_t *set;
-	u_long fset;
+	u_long fset = 0;
 	int no_target, rval;
 	u_int iflags;
 	char *flags, *curdir;
@@ -265,24 +270,24 @@ xinstall(Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 			break;
 		case '?':
 		default:
-			usage(interp, __LINE__);
+			usage(interp);
 			return TCL_ERROR;
 		}
 	}
 
 	/* some options make no sense when creating directories */
 	if (dostrip && dodir) {
-		usage(interp, __LINE__);
+		usage(interp);
 		return TCL_ERROR;
 	}
 
 	/* must have at least two arguments, except when creating directories */
 	if (objc < 2 && !dodir) {
-		usage(interp, __LINE__);
+		usage(interp);
 		return TCL_ERROR;
 	}
 	else if (dodir && !objc) {
-		usage(interp, __LINE__);
+		usage(interp);
 		return TCL_ERROR;
 	}
 	/* need to make a temp copy so we can compare stripped version */
@@ -354,7 +359,7 @@ xinstall(Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 
 	/* can't do file1 file2 directory/file */
 	if (objc != 2) {
-		usage(interp, __LINE__);
+		usage(interp);
 		return TCL_ERROR;
 	}
 
@@ -430,7 +435,9 @@ install(Tcl_Interp *interp, const char *from_name, const char *to_name, u_long f
 	int devnull, files_match, from_fd = 0, serrno, target;
 	int tempcopy, temp_fd, to_fd = 0;
 	char backup[MAXPATHLEN], *p, pathbuf[MAXPATHLEN], tempfile[MAXPATHLEN];
-	char msg[256];
+
+        /* message contains function name, two paths and a little bit extra formatting */
+        char msg[MAXPATHLEN * 2 + 32];
 
 	files_match = 0;
 
@@ -536,10 +543,15 @@ install(Tcl_Interp *interp, const char *from_name, const char *to_name, u_long f
 			snprintf(msg, sizeof msg, "%s: %s -> %s\n", funcname, from_name, to_name);
 			ui_info(interp, msg);
 		}
-		if (!devnull)
+		if (!devnull) {
 			if (copy(interp, from_fd, from_name, to_fd,
 			     tempcopy ? tempfile : to_name, from_sb.st_size) != TCL_OK)
 				return TCL_ERROR;
+#if HAVE_COPYFILE
+			if (copyfile)
+				copyfile(from_name, tempcopy ? tempfile : to_name, 0, 0x5);
+#endif
+		}
 	}
 
 	if (dostrip) {
@@ -740,7 +752,7 @@ install(Tcl_Interp *interp, const char *from_name, const char *to_name, u_long f
 	 * flags, except for the dump flag.
 	 * NFS does not support flags.  Ignore EOPNOTSUPP flags if we're just
 	 * trying to turn off UF_NODUMP.  If we're trying to set real flags,
-	 * then warn if the the fs doesn't support it, otherwise fail.
+	 * then warn if the fs doesn't support it, otherwise fail.
 	 */
 #if defined(UF_NODUMP)
 	if (!devnull && (flags & SETFLAGS ||
@@ -773,8 +785,8 @@ install(Tcl_Interp *interp, const char *from_name, const char *to_name, u_long f
  *	compare two files; non-zero means files differ
  */
 static int
-compare(int from_fd, const char *from_name __unused, size_t from_len,
-	int to_fd, const char *to_name __unused, size_t to_len)
+compare(int from_fd, const char *from_name UNUSED, size_t from_len,
+	int to_fd, const char *to_name UNUSED, size_t to_len)
 {
 	char *p, *q;
 	int rv;
@@ -901,7 +913,7 @@ create_newfile(Tcl_Interp *interp, const char *path, int target, struct stat *sb
 				saved_errno = errno;
 	}
 
-	newfd = open(path, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR, mode);
+	newfd = open(path, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (newfd < 0 && saved_errno != 0)
 		errno = saved_errno;
 	return newfd;
@@ -1013,6 +1025,7 @@ strip(const char *to_name)
 		if (wait(&status) == -1 || status) {
 			serrno = errno;
 			(void)unlink(to_name);
+			errno = serrno;
 			return;
 		}
 	}
@@ -1046,7 +1059,6 @@ install_dir(Tcl_Interp *interp, char *path)
 				else {
 					char msg[255];
 
-					*p = ch;
 					snprintf(msg, sizeof msg, "%s: mkdir %s\n", funcname, path);
 					ui_info(interp, msg);
 				}
@@ -1063,9 +1075,9 @@ install_dir(Tcl_Interp *interp, char *path)
  		}
 
 	if ((gid != (gid_t)-1 || uid != (uid_t)-1) && chown(path, uid, gid))
-		/* Don't bother to warn */;
+		{ /* Don't bother to warn */ };
 	if (chmod(path, mode))
-		/* Don't bother to warn */;
+		{ /* Don't bother to warn */ };
 	return TCL_OK;
 }
 
@@ -1074,14 +1086,14 @@ install_dir(Tcl_Interp *interp, char *path)
  *	copy usage message to Tcl result.
  */
 static void
-usage(Tcl_Interp *interp, int lineno)
+usage(Tcl_Interp *interp)
 {
 	char errmsg[500];
 
 	snprintf(errmsg, sizeof errmsg, 
-"%s usage: %s [-bCcpSsv] [-B suffix] [-f flags] [-g group] [-m mode]\n"
+"%s usage: %s [-bCcpSsv] [-B suffix] [-W dir] [-f flags] [-g group] [-m mode]\n"
 "               [-o owner] file1 file2\n"
-"       %s [-bCcpSsv] [-B suffix] [-f flags] [-g group] [-m mode]\n"
+"       %s [-bCcpSsv] [-B suffix] [-W dir] [-f flags] [-g group] [-m mode]\n"
 "               [-o owner] file1 ... fileN directory\n"
 "       %s -d [-v] [-g group] [-m mode] [-o owner] directory ...",
 		funcname, funcname, funcname, funcname);

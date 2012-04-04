@@ -1,24 +1,34 @@
-# $Id: Portfile,v 1.6 2004/01/18 04:54:48 toby Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
 PortSystem 1.0
-name		aspell-dict-de
-version		0.50
-categories	textproc
-maintainers	mij@opendarwin.org
-description	German dictionary for aspell
-platforms	darwin
 
-long_description Aspell with German dictionary.
+set langcode        de
+name		        aspell-dict-${langcode}
+version		        20030222-1
+categories	        textproc
+maintainers	        nomaintainer
+description	        German dictionary for aspell (current spelling rules)
+platforms	        darwin
+universal_variant   no
 
-master_sites	gnu:aspell/dict/de
+long_description    German dictionary for Aspell, using the current German \
+                    spelling rules.  For a dictionary with the old German \
+                    spelling rules,  install the aspell-dict-de-alt port.
 
-distname	aspell-de-${portversion}-2
-checksums	md5 204a9737ff0110fb8c7d284bd7200f7d
+homepage            http://aspell.net
+master_sites	    gnu:aspell/dict/${langcode}
 
-use_bzip2	yes
+distname	        aspell6-${langcode}-${version}
+checksums	        md5 5950c5c8a36fc93d4d7616591bace6a6
 
-depends_build	bin:aspell:aspell
+use_bzip2	        yes
 
-configure	{ system "cd ${worksrcpath} && ./configure \
-		    --vars ASPELL=${prefix}/bin/aspell \
-		    WORD_LIST_COMPRESS=${prefix}/bin/word-list-compress" }
+depends_build	    port:aspell
+
+configure.pre_args  {}
+configure.args      --vars \
+                    ASPELL=${prefix}/bin/aspell \
+                    WORD_LIST_COMPRESS=${prefix}/bin/word-list-compress
+
+livecheck.regex     >aspell(?:5|6)?-${langcode}-(.*?)\\.tar\\.

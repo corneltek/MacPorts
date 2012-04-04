@@ -1,42 +1,86 @@
-# $Id: Portfile,v 1.5 2003/08/05 09:29:31 jkh Exp $
+# $Id$
 
 PortSystem 1.0
+
 name			dpkg
-version			1.9.21
-platforms		darwin
+version			1.14.29
+revision		4
+platforms		darwin freebsd
 categories		sysutils archivers
-maintainers		landonf@opendarwin.org
+maintainers		landonf openmaintainer
 description		Debian package maintenance system
+long_description ${description}
+homepage		http://wiki.debian.org/Teams/Dpkg
 
-master_sites		http://ftp.debian.org/debian/pool/main/d/dpkg/
-checksums		md5 fbd279854e724103fec3358c76d47c69
-distname		${portname}_${portversion}
-worksrcdir		${portname}-${portversion}
+master_sites	debian:d/dpkg/
+checksums		md5 4326172a959b5b6484b4bc126e9f628d \
+			sha1 15a35dd96dac6a99f24844b2eff85f8fad37ab06
 
-configure.args		--with-included-gettext --without-sgml-doc
+# Use MacPorts versions explicitly
+depends_lib		port:gettext \
+			port:libiconv \
+			port:perl5 \
+			port:coreutils \
+			port:bzip2 \
+			port:zlib
+
+depends_run		bin:gnutar:gnutar \
+			bin:lzma:lzmautils
+
+
+distname		${name}_${version}
+worksrcdir		${name}-${version}
+
+patchfiles		patch-lib_tarfn.c \
+			patch-main_remove.c \
+			patch-main_archives.c \
+			patch-scripts-Makefile \
+			patch-lib_dpkg.h \
+			ncurses.diff
+
+configure.env		PERL=${prefix}/bin/perl5
+configure.args		--without-sgml-doc --with-libintl-prefix=${prefix} \
+			--with-libiconv-prefix=${prefix} --with-admindir=${prefix}/var/db/dpkg \
+			--mandir=${prefix}/share/man \
+			--with-zlib --with-bz2 \
+			--disable-linker-optimisations
+
+build.type		gnu
+
+set vardpkg ${destroot}${prefix}/var/db/dpkg
+destroot.keepdirs ${vardpkg} ${vardpkg}/updates ${vardpkg}/info
 
 post-patch {
-	system "ln -s ${worksrcpath}/intl/libgnuintl.h ${worksrcpath}/intl/libintl.h"
-	# dpkg-shlibs
-	reinplace s|/etc/dpkg/|${prefix}/etc/dpkg/| ${worksrcpath}/scripts/dpkg-shlibdeps.pl
-	# dpkg-source
-	reinplace s|/etc/dpkg/|${prefix}/etc/dpkg/| ${worksrcpath}/scripts/dpkg-source.1
+	set scripts ${worksrcpath}/scripts
+	reinplace s|/etc/dpkg/|${prefix}/etc/dpkg/| \
+			${scripts}/dpkg-shlibdeps.pl \
+			${scripts}/dpkg-source.pl
 
-	# update-alternatives
-	reinplace s|/etc/alternatives|${prefix}/etc/alternatives|g ${worksrcpath}/scripts/update-alternatives.pl
-	reinplace s|/etc|${prefix}/etc|g ${worksrcpath}/scripts/update-alternatives.8
-
-	# update-rc.d
-	reinplace s|/etc/|${prefix}/etc/|g ${worksrcpath}/scripts/update-rc.d.pl
-	reinplace s|/etc/|${prefix}/etc/|g ${worksrcpath}/scripts/update-rc.d.8
+	reinplace s|/etc/alternatives|${prefix}/etc/alternatives|g \
+			${scripts}/update-alternatives.pl
 }
 
-pre-destroot { file mkdir ${destroot}${prefix}/share/doc/dpkg }
-
-variant darwin {
-	patchfiles-append patch-dpkg-deb_Makefile.in patch-optlib_Makefile.in \
-			  patch-split_Makefile.in patch-utils_Makefile.in \
-			  patch-utils_start-stop-daemon.c patch-configure \
-			  patch-main_Makefile.in patch-dselect_Makefile.in
+pre-destroot {
+	file mkdir ${destroot}${prefix}/share/doc/dpkg
 }
 
+post-destroot {
+	file mkdir ${vardpkg}
+	file mkdir ${vardpkg}/updates
+	file mkdir ${vardpkg}/info
+	system "touch ${vardpkg}/available ${vardpkg}/status"
+}
+
+platform darwin {
+	depends_build-append	bin:gnumake:gmake
+	patchfiles-append patch-utils_start-stop-daemon.c bsd/patch-main_help.c
+}
+
+platform freebsd {
+	depends_build-append	bin:gmake:gmake
+	patchfiles-append patch-utils_start-stop-daemon.c bsd/patch-main_help.c
+}
+
+livecheck.type		regex
+livecheck.url		http://ftp.debian.org/debian/pool/main/d/dpkg/
+livecheck.regex		"${name}_(\\d+\\.\\d+(\\.\\d+)*)"

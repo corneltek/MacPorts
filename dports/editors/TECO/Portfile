@@ -1,11 +1,11 @@
-# $Id: Portfile,v 1.4 2004/01/18 05:46:19 toby Exp $
+# $Id$
 
 PortSystem       1.0
 name             TECO
 version          1.0
 distname         teco
 categories       editors
-maintainers      jkh@opendarwin.org
+maintainers      nomaintainer
 description      An implementation of TECO in portable C
 long_description \
        te(1)  is  an  implementation of TECO in portable C.  It implements DEC \
@@ -17,16 +17,15 @@ platforms        darwin
 master_sites     sunsite:apps/editors/tty
 checksums        md5 b996a43a133f0d636ef3331da2374e6e
 patchfiles       patch-te_subs.c
-configure        {}
+use_configure    no
 worksrcdir       .
 build.target
 
 destroot {
-    cd ${worksrcpath}
-    xinstall -m 555 te ${destroot}${prefix}/bin
-    xinstall -m 444 te.1 ${destroot}${prefix}/share/man/man1
+    xinstall -m 555 -W ${worksrcpath} te ${destroot}${prefix}/bin
+    xinstall -m 444 -W ${worksrcpath} te.1 ${destroot}${prefix}/share/man/man1
     xinstall -d ${destroot}${prefix}/share/doc/teco
-    xinstall -m 444 teco.doc teco_data.doc sample.tecorc sample.tecorc2 \
+    xinstall -m 444 -W ${worksrcpath} teco.doc teco_data.doc sample.tecorc sample.tecorc2 \
         ${destroot}${prefix}/share/doc/teco
 }
 

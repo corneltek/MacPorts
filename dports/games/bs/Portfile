@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.1 2004/01/15 12:39:59 toby Exp $
+# $Id$
 
 PortSystem       1.0
 name             bs
 version          2.7
 categories       games
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      ncurses version of Battleship
 long_description \
     The classic game of Battleships against the computer. Uses \
@@ -19,3 +19,6 @@ patch {
 }
 use_configure    no
 build.target     ${name}
+
+livecheck.type   regex
+livecheck.regex  ${name}-(\[0-9.\]+)\\.tar

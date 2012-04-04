@@ -1,18 +1,18 @@
-# $Id: Portfile,v 1.2 2004/03/06 00:51:50 toby Exp $
+# $Id$
 
 PortSystem 1.0
 name             links1
-version          1.00pre4
+version          1.00pre14
 distname         links-${version}
 categories       www
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      text WWW browser with tables
 long_description \
     Links is a text-based browser with support for HTML tables and frames.
 homepage         http://artax.karlin.mff.cuni.cz/~mikulas/links/
 platforms        darwin
 master_sites     ${homepage}download/
-checksums        md5 13b72dced09d866fab19861adab6b4ab
+checksums        md5 87713eaab818c73503807fc13340fe5f
 configure.args   --without-ssl
 
 destroot.destdir-append mandir=${prefix}/share/man

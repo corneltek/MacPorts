@@ -1,11 +1,11 @@
-# $Id: Portfile,v 1.4 2004/01/02 21:06:01 fkr Exp $
+# $Id$
 
 PortSystem 1.0
 name		slicker
 version		0.0
 categories	x11
 revision	1
-maintainers	ranger@befunk.com
+maintainers	nomaintainer
 description	an experimental new desktop metaphor for KDE
 homepage	http://slicker.sf.net/
 long_description Slicker plans on replacing KDE's taskbar with a new "card" metaphor \
@@ -30,8 +30,8 @@ post-patch      {
 		system "cp '${portpath}/${filesdir}/detect-autoconf.sh' '${worksrcpath}/admin/'"
 		system "cd '${worksrcpath}' && make -f Makefile.cvs"
 }
-configure.env   CPPFLAGS='-I${prefix}/include -I${prefix}/include/qt3 -no-cpp-precomp -fno-common' \
-		LIBS='-L${prefix}/lib' DYLD_LIBRARY_PATH='${prefix}/lib'
+configure.cppflags-append	-I${prefix}/include/qt3 -fno-common
+configure.env	LIBS='-L${prefix}/lib' DYLD_LIBRARY_PATH='${prefix}/lib'
 configure.args  --prefix='${prefix}' --includedir='${prefix}/include' --libdir='${prefix}/lib' \
 		--with-extra-includes='${prefix}/include' --with-extra-libs='${prefix}/lib' \
 		--with-qt-dir='${prefix}' --with-qt-includes='${prefix}/include/qt3' \

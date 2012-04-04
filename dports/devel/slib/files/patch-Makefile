@@ -1,58 +1,46 @@
---- Makefile.orig	Sat Jun 21 23:15:48 2003
-+++ Makefile	Sun Jul 13 18:57:23 2003
-@@ -24,7 +24,7 @@
+--- Makefile.orig	2008-09-25 00:14:04.000000000 -0400
++++ Makefile	2008-09-25 00:46:01.000000000 -0400
+@@ -17,12 +17,15 @@
+ rpm_prefix=$(HOME)/rpmbuild/
+ prefix = /usr/local/
  exec_prefix = $(prefix)
++realprefix = $(prefix)
  # directory where `make install' will put executable.
- bindir = $(exec_prefix)/bin
--libdir = $(exec_prefix)/lib
-+libdir = $(exec_prefix)/lib/slib
- infodir = $(exec_prefix)/info
+ bindir = $(exec_prefix)bin/
+ libdir = $(exec_prefix)lib/
++reallibdir = $(realprefix)lib/
+ libslibdir = $(libdir)slib/
++reallibslibdir = $(reallibdir)slib/
+ # directory where `make install' will put manual page.
+-man1dir = $(prefix)man/man1/
++man1dir = $(prefix)share/man/man1/
+ infodir = $(prefix)info/
  
  PREVDOCS = prevdocs/
-@@ -172,8 +172,7 @@
- 	daylight.txi colornam.txi color.txi subarray.txi matfile.txi\
- 	dbutil.txi array.txi transact.txi srfi.txi srfi-1.txi phil-spc.txi\
- 	lineio.txi differ.txi cvs.txi coerce.txi
--docfiles = ANNOUNCE README COPYING FAQ slib.info slib.texi schmooz.texi	\
--	 ChangeLog $(txifiles)
-+docfiles = ANNOUNCE README COPYING FAQ ChangeLog
- mfiles = Makefile require.scm Template.scm syncase.sh mklibcat.scm \
- 	Bev2slib.scm slib.spec
- ifiles = bigloo.init chez.init elk.init macscheme.init mitscheme.init \
-@@ -352,3 +351,36 @@
- 	-rm -rf *temp
- realempty:	temp/slib
- 	-rm -f $(allfiles)
-+
-+.PHONY: install-sfiles install-bfiles install-docfiles install-mfiles \
-+        install-ifiles install-tfiles install-info install
-+
-+install-sfiles: $(sfiles)
-+	install -d $(libdir)
-+	$(INSTALL_DATA) -m 644 $? $(libdir)
-+
-+install-bfiles: $(bfiles)
-+	install -d $(libdir)
-+	$(INSTALL_DATA) -m 644 $? $(libdir)
-+
-+install-docfiles: $(docfiles)
-+	install -d $(libdir)
-+	$(INSTALL_DATA) -m 644 $? $(libdir)
-+
-+install-mfiles: $(mfiles)
-+	install -d $(libdir)
-+	$(INSTALL_DATA) -m 644 $? $(libdir)
-+
-+install-ifiles: $(ifiles)
-+	install -d $(libdir)
-+	$(INSTALL_DATA) -m 644 $? $(libdir)
-+
-+install-tfiles: $(tfiles)
-+	install -d $(libdir) $(libdir)
-+	$(INSTALL_DATA) -m 644 $? $(libdir)
-+
-+install-info: slib.info
-+	gzip -c $? > $(infodir)/$?.gz
-+
-+install: install-sfiles install-bfiles install-docfiles install-mfiles \
-+	install-ifiles install-tfiles install-info
+@@ -33,6 +36,7 @@
+ S48INIT = scheme48.init
+ S48LIB = $(libdir)$(RUNNABLE)/
+ S48SLIB = $(S48LIB)slib/
++REALS48LIB = $(reallibdir)$(RUNNABLE)/
+ VM = scheme48vm
+ IMAGE48 = slib.image
+ INSTALL_DATA = install -c
+@@ -172,15 +176,15 @@
+ 
+ pinstall:	slib.1
+ 	mkdir -p $(DESTDIR)$(man1dir)
+-	-cp slib.1 $(DESTDIR)$(man1dir)
++	gzip -c slib.1 > $(DESTDIR)$(man1dir)slib.1.gz
+ 
+ install:	pinstall clrnamdb.scm
+ 	mkdir -p $(DESTDIR)$(libslibdir)
+ 	-cp  $(ifiles) $(sfiles) $(bfiles) $(mkfiles) clrnamdb.scm $(DESTDIR)$(libslibdir)
+ 	mkdir -p $(DESTDIR)$(bindir)
+ 	echo '#! /bin/sh'			 > $(DESTDIR)$(bindir)slib
+-	echo SCHEME_LIBRARY_PATH=$(libslibdir)  >> $(DESTDIR)$(bindir)slib
+-	echo S48_VICINITY=$(S48LIB)		>> $(DESTDIR)$(bindir)slib
++	echo SCHEME_LIBRARY_PATH=$(reallibslibdir)  >> $(DESTDIR)$(bindir)slib
++	echo S48_VICINITY=$(REALS48LIB)	>> $(DESTDIR)$(bindir)slib
+ 	echo VERSION=$(VERSION)			>> $(DESTDIR)$(bindir)slib
+ 	echo export SCHEME_LIBRARY_PATH S48_VICINITY >> $(DESTDIR)$(bindir)slib
+ 	cat slib.sh				>> $(DESTDIR)$(bindir)slib

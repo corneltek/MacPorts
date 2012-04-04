@@ -1,53 +1,61 @@
-# $Id: Portfile,v 1.3 2004/01/11 23:29:18 mww Exp $
+# $Id$
 
-PortSystem 1.0
+PortSystem              1.0
+PortGroup               app 1.0
 
-name		defendguin
-version		0.0.10
-categories	games
-platforms	darwin
-maintainers	mww@opendarwin.org
-description	clone of the classic arcade game Defender
-long_description	Defendguin is based loosely on Williams classic \
-			arcade game, Defender. Some recognizable stars in \
-			the realm of modern operating systems should be fairly \
-			obvious. Story: A certain monopoly-owning bad guy has \
-			been cloned hundreds of times by an unknown alien \
-			race. They are now attacking earth, kidnapping little \
-			penguinoids and converting them into mutants. Helping \
-			them on their way are some other nasty alien ships, of \
-			which there are plenty...
+name                    defendguin
+version                 0.0.12
+revision                1
+categories              games
+platforms               darwin
+license                 GPL-2+
+maintainers             nomaintainer
 
-homepage        http://www.newbreedsoftware.com/defendguin/
-master_sites    ftp://ftp.sonic.net/pub/users/nbs/unix/x/defendguin/src/
-checksums       md5 83f3ac061be1ed21648c16665ac0984b
+description             clone of the classic arcade game Defender
+long_description        Defendguin is based loosely on Williams classic \
+                        arcade game, Defender. Some recognizable stars in \
+                        the realm of modern operating systems should be fairly \
+                        obvious. Story: A certain monopoly-owning bad guy has \
+                        been cloned hundreds of times by an unknown alien \
+                        race. They are now attacking earth, kidnapping little \
+                        penguinoids and converting them into mutants. Helping \
+                        them on their way are some other nasty alien ships, of \
+                        which there are plenty...
 
-depends_lib	bin:sdl-config:libsdl \
-                lib:libSDL_mixer:libsdl_mixer
+homepage                http://www.newbreedsoftware.com/defendguin/
+master_sites            ftp://ftp.billsgames.com/unix/x/defendguin/src/ \
+                        freebsd
 
-use_configure	no
+checksums               md5     a543e3f5f4e935546116384c6f20d782 \
+                        sha1    bdbcd49729f879d34d932bec2e3ee7991697a266 \
+                        rmd160  468056a93347ec4b476d6b2daff337626a1e3921
 
-build.env	CFLAGS=-I${prefix}/include \
-		LDFLAGS=-L${prefix}/lib 
+depends_lib             path:lib/pkgconfig/sdl.pc:libsdl \
+                        port:libsdl_mixer
 
-build.args	PREFIX=${prefix} \
-		JOY=NO
+patchfiles              Makefile.diff
 
-destroot.args	PREFIX=${destroot}${prefix} \
-		MAN_PREFIX=${destroot}${prefix}/share
+use_configure           no
 
-pre-destroot	{
-	file mkdir ${destroot}${prefix}/share/doc/${name}
-	file copy ${worksrcpath}/CHANGES.txt ${worksrcpath}/COPYING.txt \
-		${worksrcpath}/README.txt ${worksrcpath}/AUTHORS.txt \
-		${worksrcpath}/INSTALL.txt ${worksrcpath}/TODO.txt \
-		${destroot}${prefix}/share/doc/${name}
-}
+variant universal {}
 
-variant darwin	{
-	post-destroot	{
-		file mkdir ${destroot}/Applications/DarwinPorts/Defendguin.app/Contents/MacOS
-		system "ln -s ${prefix}/bin/defendguin \
-			${destroot}/Applications/DarwinPorts/Defendguin.app/Contents/MacOS/Defendguin"
-	}
+build.env               CFLAGS="${configure.cflags} [get_canonical_archflags]" \
+                        CC=${configure.cc} \
+                        PREFIX=${prefix} \
+                        JOY=NO
+
+destroot.args           PREFIX=${destroot}${prefix} \
+                        MAN_PREFIX=${destroot}${prefix}/share
+
+post-destroot {
+    set docdir ${destroot}${prefix}/share/doc/${name}
+    xinstall -d ${docdir}
+    xinstall -W ${worksrcpath}/docs \
+        AUTHORS.txt \
+        CHANGES.txt \
+        COPYING.txt \
+        INSTALL.txt \
+        README.txt \
+        TODO.txt \
+        ${docdir}
 }

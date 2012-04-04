@@ -1,32 +1,55 @@
-# $Id: Portfile,v 1.1 2004/02/09 17:11:20 ssen Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
-name		xastir
-version		1.2.1
-categories	science
-maintainers	shadow@dementia.org
-description	Amateur Radio APRS tracking software
-platforms	darwin
-homepage	http://www.xastir.org/
+PortSystem          1.0
 
-depends_lib     lib:libX11.6:XFree86 lib:libXm.3:openMotif \
-		lib:libgdal.1:gdal lib:libgeotiff.1:libgeotiff \
-		lib:libtiff.3:tiff lib:libproj.0:proj
+name                xastir
+version             2.0.0
+categories          science
+platforms           darwin
+maintainers         nomaintainer
 
-fetch.type       cvs
-cvs.root         :pserver:anonymous@cvs.sourceforge.net:/cvsroot/xastir
-cvs.module       xastir
-cvs.password	""
-cvs.tag		HEAD
+description         Amateur Radio APRS tracking software
 
-worksrcdir	${cvs.module}
+long_description    ${description}
 
-pre-configure    { cd ${worksrcpath}
-                   system "sh ./bootstrap.sh" }
+homepage            http://www.xastir.org/
+master_sites        sourceforge:project/xastir/xastir-stable/xastir-${version}
 
-configure.args	CFLAGS="-I${prefix}/include" LDFLAGS="-L${prefix}/lib" \
-		CPPFLAGS="-I${prefix}/include"
+checksums           rmd160  43c7f5c1cf9735b0dbe797a3ccc6aead60f7a7bd \
+                    sha256  a7834f9adc802da8fb45c15656efa2f85a5b930dc414251af4cb6b490ddb7281
 
-build.target     all
+depends_build       port:autoconf \
+                    port:automake
 
+depends_lib         port:xorg-libXp \
+                    port:xpm \
+                    port:xorg-libXt \
+                    port:fontconfig \
+                    lib:libXm:openmotif \
+                    port:libgeotiff \
+                    port:ImageMagick \
+                    port:gdal \
+                    port:pcre \
+                    port:db46 \
+                    port:tiff \
+                    port:proj \
+                    port:shapelib
 
+patchfiles          patch-Makefile.am.diff \
+                    patch-acinclude.m4.diff \
+                    patch-bootstrap.sh.diff \
+                    patch-configure.ac.diff
+
+post-patch {
+    reinplace "s|@PREFIX@|${prefix}|g" ${worksrcpath}/bootstrap.sh
+}
+
+pre-configure {
+    system -W ${worksrcpath} "sh ./bootstrap.sh"
+}
+
+configure.cppflags-append   -I${prefix}/include/db46
+configure.ldflags-append    -L${prefix}/lib/db46
+
+livecheck.regex     /${name}-(\[0-9.\]+)/

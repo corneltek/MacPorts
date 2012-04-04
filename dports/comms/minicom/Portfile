@@ -1,22 +1,35 @@
-# $Id: Portfile,v 1.2 2004/02/03 00:30:06 waqar Exp $
+# $Id$
 
 PortSystem 1.0
+
 name		minicom
-version		2.1
+version		2.5
 categories	comms
-maintainers	waqar@opendarwin.org
+maintainers	waqar openmaintainer
 platforms	darwin
-homepage	http://alioth.debian.org/projects/minicom/
 description	Menu driven communications program
 long_description  \
-	Minicom is a menu driven communications program. It emulates \
-	ANSI and VT102 terminals. It has a dialing directory and auto \
+	Minicom is a menu driven communications program. It emulates 	\
+	ANSI and VT102 terminals. It has a dialing directory and auto 	\
 	zmodem download.
-master_sites	http://alioth.debian.org/download.php/123/
-checksums	md5 1c8f3b247c38fb16c3c2170df9fc102a
-depends_build   bin:sz:lrzsz bin:kermit:kermit
-patchfiles      patch-windiv.c
-configure.args  --enable-dfl-port=/dev/cu.modem \
-	        --enable-lock-dir=${prefix}/var  \
-		--infodir=${prefix}/share/info --mandir=${prefix}/share/man
+homepage	http://alioth.debian.org/projects/minicom
+master_sites	http://alioth.debian.org/frs/download.php/3487
+checksums	md5 a5117d4d21e2c9e825edb586ee2fe8d2			\
+		sha1 442250314de63189b619f8744c0669445e2cdd1d		\
+		rmd160 4131b9ef37d25cf8f77a70fc4b4de32e7896cc23
 
+depends_lib	port:ncurses port:gettext port:kermit
+depends_run	port:lrzsz
+
+use_autoreconf	yes
+
+configure.args  --enable-dfl-port=/dev/cu.modem     \
+	        --enable-lock-dir=/tmp              \
+		--infodir=${prefix}/share/info      \
+		--mandir=${prefix}/share/man        \
+		--with-libiconv-prefix=${prefix}/lib
+
+post-destroot	{
+	file delete -force ${destroot}${prefix}/lib/charset.alias	\
+		${destroot}${prefix}/share/locale/locale.alias
+}

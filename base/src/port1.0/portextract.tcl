@@ -1,7 +1,10 @@
 # et:ts=4
 # portextract.tcl
+# $Id$
 #
-# Copyright (c) 2002 - 2003 Apple Computer, Inc.
+# Copyright (c) 2005, 2007-2011 The MacPorts Project
+# Copyright (c) 2002 - 2003 Apple Inc.
+# Copyright (c) 2007 Markus W. Weissmann <mww@macports.org>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -12,10 +15,10 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of Apple Computer, Inc. nor the names of its contributors
+# 3. Neither the name of Apple Inc. nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,61 +35,108 @@
 package provide portextract 1.0
 package require portutil 1.0
 
-set com.apple.extract [target_new com.apple.extract extract_main]
-target_init ${com.apple.extract} extract_init
-target_provides ${com.apple.extract} extract
-target_requires ${com.apple.extract} fetch checksum
-target_prerun ${com.apple.extract} extract_start
+set org.macports.extract [target_new org.macports.extract portextract::extract_main]
+target_provides ${org.macports.extract} extract
+target_requires ${org.macports.extract} main fetch checksum
+target_prerun ${org.macports.extract} portextract::extract_start
+
+namespace eval portextract {
+}
 
 # define options
-options extract.only
+options extract.only extract.mkdir extract.asroot
 commands extract
 
 # Set up defaults
+default extract.asroot no
 # XXX call out to code in portutil.tcl XXX
 # This cleans the distfiles list of all site tags
-default extract.only {[disttagclean $distfiles]}
+default extract.only {[portextract::disttagclean $distfiles]}
 
 default extract.dir {${workpath}}
-default extract.cmd gzip
+default extract.cmd {[findBinary gzip ${portutil::autoconf::gzip_path}]}
 default extract.pre_args -dc
-default extract.post_args {{| tar -xf -}}
+default extract.post_args {"| ${portutil::autoconf::tar_command} -xf -"}
+default extract.mkdir no
 
 set_ui_prefix
 
-proc extract_init {args} {
-    global extract.only extract.dir extract.cmd extract.pre_args extract.post_args distfiles use_bzip2 use_zip workpath
-    
+# XXX
+# Helper function for portextract.tcl that strips all tag names from a list
+# Used to clean ${distfiles} for setting the ${extract.only} default
+proc portextract::disttagclean {list} {
+    if {"$list" == ""} {
+        return $list
+    }
+    foreach name $list {
+        lappend val [getdistname $name]
+    }
+    return $val
+}
+
+proc portextract::extract_start {args} {
+    global UI_PREFIX extract.dir extract.mkdir use_bzip2 use_lzma use_xz use_zip use_7z use_dmg
+
+    ui_notice "$UI_PREFIX [format [msgcat::mc "Extracting %s"] [option subport]]"
+
+    # create any users and groups needed by the port
+    handle_add_users
+
+    # should the distfiles be extracted to worksrcpath instead?
+    if {[tbool extract.mkdir]} {
+        global worksrcpath
+        ui_debug "Extracting to subdirectory worksrcdir"
+        file mkdir ${worksrcpath}
+        set extract.dir ${worksrcpath}
+    }
     if {[tbool use_bzip2]} {
-	option extract.cmd [binaryInPath "bzip2"]
+        option extract.cmd [findBinary bzip2 ${portutil::autoconf::bzip2_path}]
+    } elseif {[tbool use_lzma]} {
+        option extract.cmd [findBinary lzma ${portutil::autoconf::lzma_path}]
+    } elseif {[tbool use_xz]} {
+        option extract.cmd [findBinary xz ${portutil::autoconf::xz_path}]
     } elseif {[tbool use_zip]} {
-	option extract.cmd [binaryInPath "unzip"]
-	option extract.pre_args -q
-	option extract.post_args "-d [option extract.dir]"
+        option extract.cmd [findBinary unzip ${portutil::autoconf::unzip_path}]
+        option extract.pre_args -q
+        option extract.post_args "-d ${extract.dir}"
+    } elseif {[tbool use_7z]} {
+        option extract.cmd [binaryInPath "7za"]
+        option extract.pre_args x
+        option extract.post_args ""
+    } elseif {[tbool use_dmg]} {
+        global distname extract.cmd
+        set dmg_mount [mkdtemp "/tmp/mports.XXXXXXXX"]
+        option extract.cmd [findBinary hdiutil ${portutil::autoconf::hdiutil_path}]
+        option extract.pre_args attach
+        option extract.post_args "-private -readonly -nobrowse -mountpoint \\\"${dmg_mount}\\\" && [findBinary cp ${portutil::autoconf::cp_path}] -Rp \\\"${dmg_mount}\\\" \\\"${extract.dir}/${distname}\\\" && ${extract.cmd} detach \\\"${dmg_mount}\\\" && [findBinary rmdir ${portutil::autoconf::rmdir_path}] \\\"${dmg_mount}\\\""
     }
 }
 
-proc extract_start {args} {
-    global UI_PREFIX
-    
-    ui_msg "$UI_PREFIX [format [msgcat::mc "Extracting %s"] [option portname]]"
-}
+proc portextract::extract_main {args} {
+    global UI_PREFIX filespath worksrcpath extract.dir usealtworkpath altprefix
 
-proc extract_main {args} {
-    global UI_PREFIX
-    
     if {![exists distfiles] && ![exists extract.only]} {
-	# nothing to do
-	return 0
+        # nothing to do
+        return 0
     }
-    
+
     foreach distfile [option extract.only] {
-	ui_info "$UI_PREFIX [format [msgcat::mc "Extracting %s"] $distfile]"
-	option extract.args "[option distpath]/$distfile"
-	if {[catch {system "[command extract]"} result]} {
-	    return -code error "$result"
-	}
-	ui_info [msgcat::mc "Done"]
+        ui_info "$UI_PREFIX [format [msgcat::mc "Extracting %s"] $distfile]"
+        if {[file exists $filespath/$distfile]} {
+            option extract.args "'$filespath/$distfile'"
+        } elseif {![file exists "[option distpath]/$distfile"] && !$usealtworkpath && [file exists "${altprefix}[option distpath]/$distfile"]} {
+            option extract.args "'${altprefix}[option distpath]/$distfile'"
+        } else {
+            option extract.args "'[option distpath]/$distfile'"
+        }
+        if {[catch {command_exec extract} result]} {
+            return -code error "$result"
+        }
+
+    # start gsoc08-privileges
+    chownAsRoot ${extract.dir}
+    # end gsoc08-privileges
+
     }
     return 0
 }

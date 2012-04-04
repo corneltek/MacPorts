@@ -1,23 +1,39 @@
-# $Id: Portfile,v 1.1 2003/12/08 09:14:16 olegb Exp $
-PortSystem 1.0
-name		enlightenment
-version		0.16.5
-description	Enlightenment is a highly configurable windowmanager.
-long_description        Enlightenment is a completely themeable, \
-			highly configurable Window Manager for i \
-			the X Window System, traditionally used \
-			in Unix environments. 
-maintainers	olegb@opendarwin.org
-categories	x11 x11-wm
-platforms	darwin 
-homepage	http://www.enlightenment.org/
-master_sites    sourceforge
-checksums	md5 3902b7c9cfaa8f70ca8079b348de0ed5
-depends_lib	lib:libX11.6:XFree86 lib:libjpeg.62:jpeg \
-		lib:libpng.3:libpng lib:libtiff.3:tiff \
-		lib:libXpm.4:xpm lib:libImlib:imlib \
-		lib:libesd:esound lib:libFnlib:fnlib \
-		lib:libttf:freetype1
-configure.env	CPPFLAGS=-I${prefix}/include/freetype1
-configure.args	--enable-fsstd=yes 
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
+PortSystem              1.0
+
+name                    enlightenment
+version                 1.0.7
+categories              x11 x11-wm
+platforms               darwin
+maintainers             nomaintainer
+
+description             Enlightenment is a highly configurable windowmanager.
+
+long_description        Enlightenment is a completely themeable, \
+                        highly configurable Window Manager for i \
+                        the X Window System, traditionally used \
+                        in Unix environments.
+
+homepage                http://www.enlightenment.org/
+master_sites            sourceforge
+distname                e16-${version}
+
+checksums               rmd160  7de9d13d1d0e0d8313501bdd355bae855954f0da \
+                        sha256  d36cf57e4125b173608a6f4cbfa53d91f59f047579fe6a40939874293cfe71bc
+
+depends_build           port:pkgconfig
+
+depends_lib             port:xorg-libsm \
+                        port:xorg-libXcomposite \
+                        port:xorg-libXdamage \
+                        port:xorg-libXinerama \
+                        port:xorg-libXrandr \
+                        port:xorg-libXxf86vm \
+                        port:freetype \
+                        port:imlib2 \
+                        port:esound \
+                        port:gettext
+
+use_parallel_build      yes

@@ -1,48 +1,46 @@
-# $Id: Portfile,v 1.3 2004/01/18 03:24:47 toby Exp $
+# $Id$
 
 PortSystem 1.0
 
-name		xalanc
-version		1.6
-categories	textproc
-platforms	darwin freebsd
-maintainers	mww@opendarwin.org
-description	XSLT processor in C++ for transforming XML
+name			xalanc
+version			1.10.0
+revision		1
+categories		textproc
+platforms		darwin freebsd
+maintainers		mww
+license			Apache-2
+description		XSLT processor in C++ for transforming XML
 long_description	Xalan is an XSLT processor for transforming XML \
-			documents into HTML, text, or other XML document \
-			types.  Xalan-C++ version 1.6 is a robust \
-			implementation of the W3C Recommendations for XSL \
-			Transformations (XSLT) and the XML Path Language \
-			(XPath).
+				documents into HTML, text, or other XML document \
+				types.  Xalan-C++ version 1.6 is a robust \
+				implementation of the W3C Recommendations for XSL \
+				Transformations (XSLT) and the XML Path Language \
+				(XPath).
 
-homepage	http://xml.apache.org/xalan-c/
-master_sites	apache:xml/xalan-c/
-distname	Xalan-C_1_6-src
-checksums	md5 583bcfdf055cf4e8cbe7066a244c3169
+homepage		http://xml.apache.org/xalan-c/
+master_sites	apache:xml/xalan-c/source/
+distname		Xalan-C_1_10_0-src
+checksums		md5 0a3fbb535885531cc544b07a2060bfb1
+patchfiles		patch-Makefile.incl.in
 
-depends_lib	lib:libxerces:xercesc
+depends_lib		port:xercesc
 
-configure.dir	${workpath}/xml-xalan/c/src/xalanc
+worksrcdir		xml-xalan/c
+
 configure.env	XALANCROOT='${workpath}/xml-xalan/c' \
-		XERCESCROOT='${prefix}'
+				XERCESCROOT='${prefix}'
 configure.cmd	./runConfigure
-configure.pre_args -C --prefix=${prefix}
+configure.pre_args -C --prefix=${prefix} \
+                   -c ${configure.cc} -x ${configure.cxx}
 
-variant darwin	{
+platform darwin	{
 	configure.pre_args-append	-p macosx
 }
 
-variant freebsd	{
-	configure.pre_args-append	-p freebsd
-}
-
-build.dir	${configure.dir}
-build.env	${configure.env}
-build.type	gnu
-
-pre-destroot	{
-	reinplace "s|PREFIX = ${prefix}|PREFIX = ${destroot}${prefix}|g" \
-		${configure.dir}/Makefile
-}       
+build.env		${configure.env}
+build.type		gnu
+use_parallel_build no
 
 destroot.env	${configure.env}
+
+livecheck.type	moddate

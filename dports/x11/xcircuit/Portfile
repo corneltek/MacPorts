@@ -1,10 +1,12 @@
-# $Id: Portfile,v 1.1 2004/01/28 12:14:22 toby Exp $
+# $Id$
 
-PortSystem       1.0
+PortSystem 1.0
+
 name             xcircuit
-version          3.1.37
+version          3.4.30
+revision         5
 categories       x11
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      circuit-drawing program
 long_description \
     XCircuit is a program for drawing publishable-quality \
@@ -17,9 +19,20 @@ long_description \
     XCircuit does not separate artistic expression from \
     circuit drawing\; it maintains flexiblity in style without \
     compromising the power of schematic capture.
-homepage         http://xcircuit.ece.jhu.edu/
+homepage         http://opencircuitdesign.com/${name}
 platforms        darwin
-master_sites     ${homepage}archive/
+master_sites     ${homepage}/archive/
 extract.suffix   .tgz
-checksums        md5 33a991b10de678fd0eb110f617f84514
-configure.args   --mandir=${prefix}/share/man
+checksums        md5 adabfa8432ad4c95344d12a821902e81 \
+                 sha1 778d903f3daf2642be36d6a2c9a93dee8278b13d
+
+depends_lib      port:ghostscript \
+                 port:tk \
+                 port:xpm
+
+configure.args   --mandir=${prefix}/share/man \
+                 --with-tcl=${prefix}/lib \
+                 --with-tk=${prefix}/lib \
+                 --with-gs=${prefix}/bin/gs \
+                 --x-includes=${prefix}/include \
+                 --x-libraries=${prefix}/lib

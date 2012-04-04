@@ -1,35 +1,40 @@
-# $Id: Portfile,v 1.5 2003/10/08 01:39:41 landonf Exp $
+# $Id$
 
 PortSystem 1.0
-name			cvsup
-version			16.1h
-categories		net devel
-maintainers		landonf@opendarwin.org
-description		General network file distribution system optimized for CVS
-platforms		darwin
-#depends_build		bin:cm3:cm3 path:${prefix}/lib/libz.a:zlib
-depends_lib		bin:cm3:cm3
-set cvsup-srcs		"/pub/FreeBSD/development/CVSup/sources/"
-master_sites		ftp://ftp8.FreeBSD.org/${cvsup-srcs} \
-			ftp://ftp3.FreeBSD.org/${cvsup-srcs} \
-			ftp://ftp5.FreeBSD.org/${cvsup-srcs}
-distname		cvsup-snap-${portversion}
-checksums		md5 b100ace98a41aa9f3d3e75b0d3c245b0
+name            cvsup
+version         16.1h
+revision        1
+categories      net devel
+maintainers     nomaintainer
+description     General network file distribution system optimized for CVS
+long_description ${description}
+platforms       darwin
+#depends_build  bin:cm3:cm3 path:lib/libz.a:zlib
+depends_lib     bin:cm3:cm3
+set cvsup-srcs  "/pub/FreeBSD/development/CVSup/sources/"
+homepage        http://www.cvsup.org/
+master_sites    freebsd
+distname        cvsup-snap-${version}
+checksums       sha1 976439eb09c9e929d3bb2837b5e4db14719393b2
 
 # Mark destroot.target as .PHONY because HFS+ case insensitivity
 # screws us over yet again.
-patchfiles		patch-Makefile
+patchfiles      patch-Makefile
 
-configure		{}
-post-patch		"reinplace s|/usr/local/lib|${prefix}/lib|g \
-			${worksrcpath}/suplib/src/m3makefile"
+use_configure   no
+post-patch      "reinplace s|/usr/local/lib|${prefix}/lib|g \
+            ${worksrcpath}/suplib/src/m3makefile"
 
 # Disable static building until cm3 is fixed
-#build.args		PREFIX=${prefix} M3=cm3 M3FLAGS=-DNOGUI\\ -DSTATIC
-build.args		PREFIX=${prefix} M3=cm3 M3FLAGS=-DNOGUI
+#build.args     PREFIX=${prefix} M3=cm3 M3FLAGS=-DNOGUI\\ -DSTATIC
+build.args      PREFIX=${prefix} M3=cm3 M3FLAGS=-DNOGUI
 
 # Add ${prefix}/cm3/bin to our path
-build.env		PATH=$env(PATH):${prefix}/cm3/bin
-destroot.env		${build.env}
-destroot.args		PREFIX=${destroot}/${prefix}/ M3=cm3
+build.env       PATH=$env(PATH):${prefix}/cm3/bin
+destroot.env    ${build.env}
+destroot.args   PREFIX=${destroot}${prefix}/ M3=cm3 \
+                MANDIR=${destroot}${prefix}/share/man
 
+livecheck.type  regex
+livecheck.regex changes in development snapshot (\[0-9\.\]+\[a-z\]*)
+livecheck.url ftp://ftp.freebsd.org/pub/FreeBSD/development/CVSup/sources/ChangeLog

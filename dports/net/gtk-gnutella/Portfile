@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.5 2004/01/14 11:44:22 jkh Exp $
+# $Id$
 
 PortSystem 1.0
+
 name		gtk-gnutella
-version		0.91.9.1
+version		0.97
 categories	net
-maintainers	mij@opendarwin.org
+maintainers	nomaintainer
 description	GTK-based Gnutella client
 homepage	http://gtk-gnutella.sourceforge.net/
 platforms	darwin
@@ -13,22 +14,26 @@ long_description GTK-Gnutella is a Gnutella client that features search, \
 		 download, file sharing, bandwidth limiting, host caching, \
 		 and some basic statistics.
 
-master_sites	sourceforge
+master_sites	sourceforge:project/${name}/${name}/${version}
 
-checksums	md5 3618e030a54aa7c5488de86aed345a65
+checksums	md5     d44e1af3441fb07a5e5712b0d522fae5 \
+		sha1    1b50790adc494d7023a7cf9319d7cdef1c9ab51e \
+		rmd160  aef2c1f8c7526e7867d0ba0513c01d587ff53180
 
 use_bzip2	yes
 
-depends_lib	lib:libxml.2:libxml2
+depends_lib	port:libxml2 port:gtk2
 
-configure.env	LDFLAGS="-L${prefix}/lib -L/usr/X11R6/lib" \
-		CFLAGS="-I${prefix}/include" \
-		CPPFLAGS="-I${prefix}/include -no-cpp-precomp"
+depends_build	bin:gawk:gawk port:pkgconfig
 
-configure.args	--enable-no-rfc1918
+patchfiles	patch-Configure
 
-default_variants +gtk1
+universal_variant	no
 
-variant gtk1	{ depends_lib-append lib:libgtk.1:gtk1 }
-variant gtk2	{ depends_lib-append lib:libgtk.2:gtk2
-		  configure.args --enable-gtk2 }
+configure.cmd	./build.sh
+
+configure.args	--configure-only \
+		--mandir=${prefix}/share/man \
+		--cc=${configure.cc}
+
+destroot.destdir	INSTALL_PREFIX=${destroot}

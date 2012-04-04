@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.1 2004/02/16 00:23:59 rshaw Exp $
-PortSystem          1.0
+# $Id$
 
-name			zope-cmf
-version			1.4.2
-categories		www zope python
-maintainers		wbb4@opendarwin.org rshaw@opendarwin.org
+PortSystem		1.0
+PortGroup		zope 1.0
+
+zope.setup		CMF 1.4.7 {CMFCore CMFDefault CMFTopic CMFCalendar DCWorkflow}
+license			ZPL-2
+maintainers		nomaintainer
 description		The Zope Content Management Framework (CMF)
 long_description	The Zope Content Management Framework provides a set \
 					of services and content objects useful for building \
@@ -13,64 +14,15 @@ long_description	The Zope Content Management Framework provides a set \
 					Zope.org site.  The CMF is intended to be easily \
 					customizable, in terms of both the types of content \
 					used and the policies and services it provides.
+homepage		http://zope.org/Products/${zope.product}
+master_sites	${homepage}/${distname}/
+checksums		md5 2aca7518950444fa4f7437860865647f
 platforms		darwin freebsd
-homepage		http://cmf.zope.org/
-master_sites	http://cmf.zope.org/download/CMF-${version}/
-dist_subdir		zope/${name}
-distname		CMF-${version}
-checksums		md5 345f8f79ce68d5535933ee897782005b
 
-# Use Python 2.3 from DarwinPorts explicitly 
-set python		${prefix}/bin/python2.3
-
-# Location to install Zope products and the Zope user                  
-set zopehome	${prefix}/libexec/Zope
-set zopeinst	${prefix}/www/Zope
-set zopeprod	${zopehome}/lib/python/Products
-set zopeuser	zope
-set zopegroup	www
-
-# Depends on Zope
-depends_build	path:${zopehome}:zope
-
-platform freebsd {
-	extract.post_args	| gtar -xf -
-}
-
-use_configure	no
-
-pre-build {
-	file copy ${zopehome}/bin/compilezpy.py ${workpath}
-	reinplace "s|^.*sys.stdout|#&|" ${workpath}/compilezpy.py
-	system "find ${worksrcpath} -name '*.py\[co\]' | xargs rm"
-}
-
-build {
-	system "cd ${worksrcpath} && ${python} ${workpath}/compilezpy.py"
-}
-
-destroot {
-	if {$env(USER) != "root"} {
-		ui_msg "------------------------------------------------------------"
-		ui_msg "Note that you are not installing as root, so files installed"
-		ui_msg "by this port will not end up with proper ownership and"
-		ui_msg "likely not work correctly with Zope."
-		ui_msg "------------------------------------------------------------"
+post-destroot {
+	if {[file isdirectory ${worksrcpath}/docs]} {
+		set docPath ${destroot}${prefix}/share/doc
+		xinstall -d -m 0755 ${docPath}
+		system "cp -R ${worksrcpath}/docs ${docPath}/${name}"
 	}
-
-	# Install products
-	xinstall -d -m 0755 ${destroot}${zopeprod}
-	foreach product {CMFCore CMFDefault CMFTopic CMFCalendar DCWorkflow} {
-		system "cp -R ${worksrcpath}/${product} ${destroot}${zopeprod}"
-	}
-	if {$env(USER) == "root"} {
-		system "chown -R ${zopeuser} ${destroot}${zopehome}"
-		system "chgrp -R ${zopegroup} ${destroot}${zopehome}"
-	}
-
-	# Install docs
-	set docPath ${destroot}${prefix}/share/doc
-	xinstall -d -m 0755 ${docPath}
-	system "cp -R ${worksrcpath}/docs ${docPath}/Zope-CMF"
-} 
-
+}

@@ -1,11 +1,11 @@
-# $Id: Portfile,v 1.1 2004/01/17 00:35:04 toby Exp $
+# $Id$
 
 PortSystem 1.0
 
 name             webredirect
 version          0.3
 categories       www
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      small webserver which redirects all requests
 long_description \
     webredirect is a small web server serving 301 Moved Permanently or \

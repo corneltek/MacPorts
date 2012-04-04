@@ -1,7 +1,9 @@
-# et:ts=4
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
 # portfetch.tcl
+# $Id$
 #
-# Copyright (c) 2002 - 2003 Apple Computer, Inc.
+# Copyright (c) 2004 - 2011 The MacPorts Project
+# Copyright (c) 2002 - 2003 Apple Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -12,10 +14,10 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of Apple Computer, Inc. nor the names of its contributors
+# 3. Neither the name of Apple Inc. nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -30,350 +32,537 @@
 #
 
 package provide portfetch 1.0
+package require fetch_common 1.0
 package require portutil 1.0
+package require Pextlib 1.0
 
-set com.apple.fetch [target_new com.apple.fetch fetch_main]
-target_init ${com.apple.fetch} fetch_init
-target_provides ${com.apple.fetch} fetch
-target_requires ${com.apple.fetch} main
-target_prerun ${com.apple.fetch} fetch_start
+set org.macports.fetch [target_new org.macports.fetch portfetch::fetch_main]
+target_init ${org.macports.fetch} portfetch::fetch_init
+target_provides ${org.macports.fetch} fetch
+target_requires ${org.macports.fetch} main
+target_prerun ${org.macports.fetch} portfetch::fetch_start
+
+namespace eval portfetch {
+    namespace export suffix
+    variable fetch_urls {}
+}
 
 # define options: distname master_sites
-options master_sites patch_sites extract.suffix distfiles patchfiles use_zip use_bzip2 dist_subdir fetch.type cvs.module cvs.root cvs.password cvs.tag master_sites.mirror_subdir patch_sites.mirror_subdir portname
+options master_sites patch_sites extract.suffix distfiles patchfiles use_bzip2 use_lzma use_xz use_zip use_7z use_dmg dist_subdir \
+    fetch.type fetch.user fetch.password fetch.use_epsv fetch.ignore_sslcert \
+    master_sites.mirror_subdir patch_sites.mirror_subdir \
+    bzr.url bzr.revision \
+    cvs.module cvs.root cvs.password cvs.date cvs.tag cvs.method \
+    svn.url svn.revision svn.method \
+    git.cmd git.url git.branch \
+    hg.cmd hg.url hg.tag
+
 # XXX we use the command framework to buy us some useful features,
 # but this is not a user-modifiable command
+commands bzr
 commands cvs
-commands fetch
+commands svn
 
 # Defaults
 default extract.suffix .tar.gz
 default fetch.type standard
-default cvs.cmd cvs
+
+default bzr.cmd {[findBinary bzr $portutil::autoconf::bzr_path]}
+default bzr.dir {${workpath}}
+default bzr.revision {-1}
+default bzr.pre_args {"--builtin --no-aliases checkout --lightweight"}
+default bzr.args ""
+default bzr.post_args {"-r ${bzr.revision} ${bzr.url} ${worksrcdir}"}
+
+default cvs.cmd {[findBinary cvs $portutil::autoconf::cvs_path]}
 default cvs.password ""
 default cvs.dir {${workpath}}
+default cvs.method {export}
 default cvs.module {$distname}
 default cvs.tag ""
+default cvs.date ""
 default cvs.env {CVS_PASSFILE=${workpath}/.cvspass}
 default cvs.pre_args {"-z9 -f -d ${cvs.root}"}
 default cvs.args ""
 default cvs.post_args {"${cvs.module}"}
 
+default svn.cmd {[portfetch::find_svn_path]}
+default svn.dir {${workpath}}
+default svn.method {export}
+default svn.revision ""
+default svn.env {}
+default svn.pre_args {"--non-interactive --trust-server-cert"}
+default svn.args ""
+default svn.post_args ""
+
+default git.cmd {[findBinary git $portutil::autoconf::git_path]}
+default git.dir {${workpath}}
+default git.branch {}
+
+default hg.cmd {[findBinary hg $portutil::autoconf::hg_path]}
+default hg.dir {${workpath}}
+default hg.tag {tip}
+
 # Set distfiles
-default distfiles {[suffix $distname]}
-default dist_subdir {${portname}}
+default distfiles {[list [portfetch::suffix $distname]]}
+default dist_subdir {${name}}
 
-default fetch.cmd curl
-default fetch.dir {${distpath}}
-default fetch.pre_args {"-f -L -o ${distfile}.TMP"}
-default fetch.post_args {[portfetch::assemble_url ${site} ${distfile}]}
+# user name & password
+default fetch.user ""
+default fetch.password ""
+# Use EPSV for FTP transfers
+default fetch.use_epsv "yes"
+# Ignore SSL certificate
+default fetch.ignore_sslcert "no"
+# Use remote timestamps
+default fetch.remote_time "no"
 
-default fallback_mirror_site "opendarwin"
+default fallback_mirror_site "macports"
+default global_mirror_site "macports_distfiles"
 default mirror_sites.listfile {"mirror_sites.tcl"}
-default mirror_sites.listpath {"${portresourcepath}/fetch/"}
+default mirror_sites.listpath {"port1.0/fetch"}
 
 # Option-executed procedures
-option_proc use_bzip2 fix_extract_suffix
-option_proc use_zip fix_extract_suffix
+option_proc use_bzip2 portfetch::set_extract_type
+option_proc use_lzma  portfetch::set_extract_type
+option_proc use_xz    portfetch::set_extract_type
+option_proc use_zip   portfetch::set_extract_type
+option_proc use_7z    portfetch::set_extract_type
+option_proc use_dmg   portfetch::set_extract_type
 
-proc fix_extract_suffix {option action args} {
+option_proc fetch.type portfetch::set_fetch_type
+
+proc portfetch::set_extract_type {option action args} {
     global extract.suffix
     if {[string equal ${action} "set"] && [tbool args]} {
         switch $option {
             use_bzip2 {
                 set extract.suffix .tar.bz2
             }
+            use_lzma {
+                set extract.suffix .tar.lzma
+                depends_extract-append bin:lzma:xz
+            }
+            use_xz {
+                set extract.suffix .tar.xz
+                depends_extract-append bin:xz:xz
+            }
             use_zip {
                 set extract.suffix .zip
+                depends_extract-append bin:unzip:unzip
+            }
+            use_7z {
+                set extract.suffix .7z
+                depends_extract-append bin:7za:p7zip
+            }
+            use_dmg {
+                set extract.suffix .dmg
             }
         }
     }
 }
 
-# Name space for internal implementation variables
-# Site lists are stored here
-namespace eval portfetch { }
+proc portfetch::set_fetch_type {option action args} {
+    global os.platform os.major
+    if {[string equal ${action} "set"]} {
+        if {$args != "standard"} {
+            distfiles
+        }
+        switch $args {
+            bzr {
+                depends_fetch-append bin:bzr:bzr
+            }
+            cvs {
+                depends_fetch-append bin:cvs:cvs
+            }
+            svn {
+                if {${os.platform} == "darwin" && ${os.major} >= 10} {
+                    depends_fetch-append bin:svn:subversion
+                } else {
+                    depends_fetch-append port:subversion
+                }
+            }
+            git {
+                depends_fetch-append bin:git:git-core
+            }
+            hg {
+                depends_fetch-append bin:hg:mercurial
+            }
+        }
+    }
+}
+
+proc portfetch::find_svn_path {args} {
+    global prefix os.platform os.major
+    # Snow Leopard is the first Mac OS X version to include a recent enough svn (1.6.x) to support the --trust-server-cert option.
+    if {${os.platform} == "darwin" && ${os.major} >= 10} {
+        return [findBinary svn $portutil::autoconf::svn_path]
+    } else {
+        return ${prefix}/bin/svn
+    }
+}
 
 set_ui_prefix
 
-# Given a distname, return a suffix based on the use_zip / use_bzip2 / extract.suffix options
-proc suffix {distname} {
-    global extract.suffix fetch.type
-    if {"${fetch.type}" == "cvs"} {
-        return ""
-    }
-    return ${distname}${extract.suffix}
-}
 
-# Given a site url and the name of the distfile, assemble url and
-# return it
-proc portfetch::assemble_url {site distfile} {
-    if {[string index $site end] != "/"} {
-        return "${site}/${distfile}"
-    } else {
-        return "${site}${distfile}"
-    }
+# Given a distname, return the distname with extract.suffix appended
+proc portfetch::suffix {distname} {
+    global extract.suffix
+    return "${distname}${extract.suffix}"
 }
+# XXX import suffix into the global namespace as it is currently used from
+# Portfiles, but should better go somewhere else
+namespace import portfetch::suffix
 
-# Given a distribution file name, return the appended tag
-# Example: getdisttag distfile.tar.gz:tag1 returns "tag1"
-proc getdisttag {name} {
-    if {[regexp {.+:([A-Za-z]+)} $name match tag]} {
-        return $tag
-    } else {
-        return ""
-    }
-}
+# Checks patch files and their tags to assemble url lists for later fetching
+proc portfetch::checkpatchfiles {urls} {
+    global patchfiles all_dist_files patch_sites filespath
+    upvar $urls fetch_urls
 
-# Given a distribution file name, return the name without an attached tag
-# Example : getdistname distfile.tar.gz:tag1 returns "distfile.tar.gz"
-proc getdistname {name} {
-    regexp {(.+):[A-Za-z_-]+} $name match name
-    return $name
-}
-
-# XXX
-# Helper function for portextract.tcl that strips all tag names from a list
-# Used to clean ${distfiles} for setting the ${extract.only} default
-proc disttagclean {list} {
-    if {"$list" == ""} {
-        return $list
-    }
-    foreach name $list {
-        lappend val [getdistname $name]
-    }
-    return $val
-}
-
-# For a given mirror site type, e.g. "gnu" or "x11", check to see if there's a
-# pre-registered set of sites, and if so, return them.
-proc mirror_sites {mirrors tag subdir} {
-    global UI_PREFIX portname portresourcepath mirror_sites.listfile mirror_sites.listpath
-    source ${mirror_sites.listpath}${mirror_sites.listfile}
-    if {![info exists portfetch::mirror_sites::sites($mirrors)]} {
-        ui_warn "[format [msgcat::mc "No mirror sites on file for class %s"] $mirrors]"
-        return {}
-    }
-    
-    set ret [list]
-    foreach element $portfetch::mirror_sites::sites($mirrors) {
-	
-	# here we have the chance to take a look at tags, that possibly
-	# have been assigned in mirror_sites.tcl
-	set splitlist [split $element :]
-	if {[llength $splitlist] > 1} {
-	    set element "[lindex $splitlist 0]:[lindex $splitlist 1]" 
-	    set mirror_tag "[lindex $splitlist 2]"
-	}
-	
-	if {$subdir == "" && $mirror_tag != "nosubdir"} {
-	    set subdir ${portname}
-	}
-	
-	if {"$tag" != ""} {
-	    eval append element "${subdir}:${tag}"
-	} else {
-	    eval append element "${subdir}"
-	}
-        eval lappend ret $element
-    }
-    
-    return $ret
-}
-
-# Checks all files and their tags to assemble url lists for later fetching
-# sites tags create variables in the portfetch:: namespace containing all sites
-# within that tag distfiles are added in $site $distfile format, where $site is
-# the name of a variable in the portfetch:: namespace containing a list of fetch
-# sites
-proc checkfiles {args} {
-    global distdir distfiles patchfiles all_dist_files patch_sites fetch_urls \
-	master_sites filespath master_sites.mirror_subdir \
-        patch_sites.mirror_subdir fallback_mirror_site env
-    
-    append master_sites " ${fallback_mirror_site}"
-    if {[info exists env(MASTER_SITE_LOCAL)]} {
-	set master_sites [concat $env(MASTER_SITE_LOCAL) $master_sites]
-    }
-    
-    foreach list {master_sites patch_sites} {
-        upvar #0 $list uplist
-        if {![info exists uplist]} {
-            continue
-        }
-        
-        set site_list [list]
-        foreach site $uplist {
-            if {[regexp {([a-zA-Z]+://.+)} $site match site]} {
-                set site_list [concat $site_list $site]
-            } else {
-	    	set splitlist [split $site :]
-		if {[llength $splitlist] > 3 || [llength $splitlist] <1} {
-                    ui_error [format [msgcat::mc "Unable to process mirror sites for: %s, ignoring."] $site]
-		}
-		set mirrors "[lindex $splitlist 0]"
-		set subdir "[lindex $splitlist 1]"
-		set tag "[lindex $splitlist 2]"
-                if {[info exists $list.mirror_subdir]} {
-                    append subdir "[set ${list}.mirror_subdir]"
-                }
-                set site_list [concat $site_list [mirror_sites $mirrors $tag $subdir]]
-            }
-        }
-        
-        foreach site $site_list {
-	    if {[regexp {([a-zA-Z]+://.+/?):([a-zA-Z]+)} $site match site tag]} {
-                lappend portfetch::$tag $site
-            } else {
-                lappend portfetch::$list $site
-            }
-        }
-    }
-    
     if {[info exists patchfiles]} {
-	foreach file $patchfiles {
-	    if {![file exists $filespath/$file]} {
-		set distsite [getdisttag $file]
-		set file [getdistname $file]
-		lappend all_dist_files $file
-		if {$distsite != ""} {
-		    lappend fetch_urls $distsite $file
-		} elseif {[info exists patch_sites]} {
-		    lappend fetch_urls patch_sites $file
-		} else {
-		    lappend fetch_urls master_sites $file
-		}
-	    }
-	}
+        foreach file $patchfiles {
+            if {![file exists "${filespath}/${file}"]} {
+                set distsite [getdisttag $file]
+                set file [getdistname $file]
+                lappend all_dist_files $file
+                if {$distsite != ""} {
+                    lappend fetch_urls $distsite $file
+                } elseif {[info exists patch_sites]} {
+                    lappend fetch_urls patch_sites $file
+                } else {
+                    lappend fetch_urls master_sites $file
+                }
+            }
+        }
     }
-    
-    foreach file $distfiles {
-	if {![file exists $filespath/$file]} {
-	    set distsite [getdisttag $file]
-	    set file [getdistname $file]
-	    lappend all_dist_files $file
-	    if {$distsite != ""} {
-		lappend fetch_urls $distsite $file
-	    } else {
-		lappend fetch_urls master_sites $file
-	    }
-	}
+}
+
+# Checks dist files and their tags to assemble url lists for later fetching
+proc portfetch::checkdistfiles {urls} {
+    global distfiles all_dist_files filespath
+    upvar $urls fetch_urls
+
+    if {[info exists distfiles]} {
+        foreach file $distfiles {
+            if {![file exists "${filespath}/${file}"]} {
+                set distsite [getdisttag $file]
+                set file [getdistname $file]
+                lappend all_dist_files $file
+                if {$distsite != ""} {
+                    lappend fetch_urls $distsite $file
+                } else {
+                    lappend fetch_urls master_sites $file
+                }
+            }
+        }
     }
+}
+
+# returns full path to mirror list file
+proc portfetch::get_full_mirror_sites_path {} {
+    global mirror_sites.listfile mirror_sites.listpath porturl
+    return [getportresourcepath $porturl [file join ${mirror_sites.listpath} ${mirror_sites.listfile}]]
+}
+
+# Perform the full checksites/checkpatchfiles/checkdistfiles sequence.
+# This method is used by distcheck target.
+proc portfetch::checkfiles {urls} {
+    global global_mirror_site fallback_mirror_site
+    upvar $urls fetch_urls
+
+    checksites [list patch_sites [list $global_mirror_site $fallback_mirror_site PATCH_SITE_LOCAL] \
+                master_sites [list $global_mirror_site $fallback_mirror_site MASTER_SITE_LOCAL]] \
+               [get_full_mirror_sites_path]
+    checkpatchfiles fetch_urls
+    checkdistfiles fetch_urls
+}
+
+# Perform a bzr fetch
+proc portfetch::bzrfetch {args} {
+    global patchfiles
+    if {[catch {command_exec bzr "" "2>&1"} result]} {
+        return -code error [msgcat::mc "Bazaar checkout failed"]
+    }
+
+    if {[info exists patchfiles]} {
+        return [portfetch::fetchfiles]
+    }
+
+    return 0
 }
 
 # Perform a CVS login and fetch, storing the CVS login
 # information in a custom .cvspass file
-proc cvsfetch {args} {
-    global workpath cvs.env cvs.cmd cvs.args cvs.post_args 
-    global cvs.root cvs.tag cvs.password
+proc portfetch::cvsfetch {args} {
+    global workpath cvs.env cvs.cmd cvs.args cvs.post_args
+    global cvs.root cvs.date cvs.tag cvs.method cvs.password
+    global patch_sites patchfiles filespath
 
-    set cvs.args "co ${cvs.args}"
+    set cvs.args "${cvs.method} ${cvs.args}"
+    if {${cvs.method} == "export" && ![string length ${cvs.tag}] && ![string length ${cvs.date}]} {
+        set cvs.tag "HEAD"
+    }
     if {[string length ${cvs.tag}]} {
-	set cvs.args "${cvs.args} -r ${cvs.tag}"
+        set cvs.args "${cvs.args} -r ${cvs.tag}"
+    }
+
+    if {[string length ${cvs.date}]} {
+        set cvs.args "${cvs.args} -D ${cvs.date}"
     }
 
     if {[regexp ^:pserver: ${cvs.root}]} {
-	set savecmd ${cvs.cmd}
-	set saveenv ${cvs.env}
-	set saveargs ${cvs.args}
-	set savepost_args ${cvs.post_args}
-	set cvs.cmd "echo ${cvs.password} | /usr/bin/env ${cvs.env} cvs"
-	set cvs.env ""
-	set cvs.args login
-	set cvs.post_args ""
-	if {[catch {system -notty "[command cvs] 2>&1"} result]} {
-	    return -code error [msgcat::mc "CVS login failed"]
-	}
-	set cvs.cmd ${savecmd}
-	set cvs.env ${saveenv}
-	set cvs.args ${saveargs}
-	set cvs.post_args ${savepost_args}
+        set savecmd ${cvs.cmd}
+        set saveargs ${cvs.args}
+        set savepost_args ${cvs.post_args}
+        set cvs.cmd "echo ${cvs.password} | ${cvs.cmd}"
+        set cvs.args login
+        set cvs.post_args ""
+        if {[catch {command_exec cvs -notty "" "2>&1"} result]} {
+            return -code error [msgcat::mc "CVS login failed"]
+        }
+        set cvs.cmd ${savecmd}
+        set cvs.args ${saveargs}
+        set cvs.post_args ${savepost_args}
     } else {
-	set env(CVS_RSH) ssh
+        set env(CVS_RSH) ssh
     }
 
-    if {[catch {system "[command cvs] 2>&1"} result]} {
-	return -code error [msgcat::mc "CVS check out failed"]
+    if {[catch {command_exec cvs "" "2>&1"} result]} {
+        return -code error [msgcat::mc "CVS check out failed"]
+    }
+
+    if {[info exists patchfiles]} {
+        return [portfetch::fetchfiles]
+    }
+    return 0
+}
+
+# Perform an svn fetch
+proc portfetch::svnfetch {args} {
+    global svn.args svn.method svn.revision svn.url patchfiles
+
+    if {[regexp {\s} ${svn.url}]} {
+        return -code error [msgcat::mc "Subversion URL cannot contain whitespace"]
+    }
+
+    if {[string length ${svn.revision}]} {
+        append svn.url "@${svn.revision}"
+    }
+    set svn.args "${svn.method} ${svn.args} ${svn.url}"
+
+    if {[catch {command_exec svn "" "2>&1"} result]} {
+        return -code error [msgcat::mc "Subversion check out failed"]
+    }
+
+    if {[info exists patchfiles]} {
+        return [portfetch::fetchfiles]
+    }
+
+    return 0
+}
+
+# Perform a git fetch
+proc portfetch::gitfetch {args} {
+    global worksrcpath patchfiles
+    global git.url git.branch git.sha1 git.cmd
+
+    set options "-q"
+    if {[string length ${git.branch}] == 0} {
+        # if we're just using HEAD, we can make a shallow repo
+        set options "$options --depth=1"
+    }
+    set cmdstring "${git.cmd} clone $options ${git.url} ${worksrcpath} 2>&1"
+    ui_debug "Executing: $cmdstring"
+    if {[catch {system $cmdstring} result]} {
+        return -code error [msgcat::mc "Git clone failed"]
+    }
+
+    if {[string length ${git.branch}] > 0} {
+        set env "GIT_DIR=${worksrcpath}/.git GIT_WORK_TREE=${worksrcpath}"
+        set cmdstring "$env ${git.cmd} checkout -q ${git.branch} 2>&1"
+        ui_debug "Executing $cmdstring"
+        if {[catch {system $cmdstring} result]} {
+            return -code error [msgcat::mc "Git checkout failed"]
+        }
+    }
+
+    if {[info exists patchfiles]} {
+        return [portfetch::fetchfiles]
+    }
+
+    return 0
+}
+
+# Perform a mercurial fetch.
+proc portfetch::hgfetch {args} {
+    global worksrcpath prefix_frozen patchfiles hg.url hg.tag hg.cmd \
+           fetch.ignore_sslcert
+
+    set insecureflag ""
+    if {${fetch.ignore_sslcert}} {
+        set insecureflag " --insecure"
+    }
+
+    set cmdstring "${hg.cmd} clone${insecureflag} --rev ${hg.tag} ${hg.url} ${worksrcpath} 2>&1"
+    ui_debug "Executing: $cmdstring"
+    if {[catch {system $cmdstring} result]} {
+        return -code error [msgcat::mc "Mercurial clone failed"]
+    }
+
+    if {[info exists patchfiles]} {
+        return [portfetch::fetchfiles]
     }
 
     return 0
 }
 
 # Perform a standard fetch, assembling fetch urls from
-# the listed url varable and associated distfile
-proc fetchfiles {args} {
-    global distpath all_dist_files UI_PREFIX fetch_urls fetch.cmd fetch.pre_args
-    global distfile site
-    
-    if {![file isdirectory $distpath]} {
-        if {[catch {file mkdir $distpath} result]} {
-	    return -code error [format [msgcat::mc "Unable to create distribution files path: %s"] $result]
-	}
+# the listed url variable and associated distfile
+proc portfetch::fetchfiles {args} {
+    global distpath all_dist_files UI_PREFIX
+    global fetch.user fetch.password fetch.use_epsv fetch.ignore_sslcert fetch.remote_time
+    global fallback_mirror_site portverbose usealtworkpath altprefix
+    variable fetch_urls
+    variable urlmap
+
+    set fetch_options {}
+    if {[string length ${fetch.user}] || [string length ${fetch.password}]} {
+        lappend fetch_options -u
+        lappend fetch_options "${fetch.user}:${fetch.password}"
     }
+    if {${fetch.use_epsv} != "yes"} {
+        lappend fetch_options "--disable-epsv"
+    }
+    if {${fetch.ignore_sslcert} != "no"} {
+        lappend fetch_options "--ignore-ssl-cert"
+    }
+    if {${fetch.remote_time} != "no"} {
+        lappend fetch_options "--remote-time"
+    }
+    if {$portverbose == "yes"} {
+        lappend fetch_options "-v"
+    }
+    set sorted no
+
     foreach {url_var distfile} $fetch_urls {
-	if {![file isfile $distpath/$distfile]} {
-	    ui_info "$UI_PREFIX [format [msgcat::mc "%s doesn't seem to exist in %s"] $distfile $distpath]"
+        if {![file isfile "${distpath}/${distfile}"]} {
+            ui_info "$UI_PREFIX [format [msgcat::mc "%s doesn't seem to exist in %s"] $distfile $distpath]"
             if {![file writable $distpath]} {
                 return -code error [format [msgcat::mc "%s must be writable"] $distpath]
             }
-            global portfetch::$url_var
-            if {![info exists $url_var]} {
-                ui_error [format [msgcat::mc "No defined site for tag: %s, using master_sites"] $url_var]
-                set url_var master_sites
-		global portfetch::$url_var
+            if {!$usealtworkpath && [file isfile ${altprefix}${distpath}/${distfile}]} {
+                if {[catch {file link -hard "${distpath}/${distfile}" "${altprefix}${distpath}/${distfile}"}]} {
+                    ui_debug "failed to hardlink ${distfile} into distpath, copying instead"
+                    file copy "${altprefix}${distpath}/${distfile}" "${distpath}/${distfile}"
+                }
+                ui_info "Found $distfile in ${altprefix}${distpath}"
+                continue
             }
-	    foreach site [set $url_var] {
-		ui_msg "$UI_PREFIX [format [msgcat::mc "Attempting to fetch %s from %s"] $distfile $site]"
-		if {![catch {system "[command fetch]"} result] &&
-		    ![catch {system "mv ${distpath}/${distfile}.TMP ${distpath}/${distfile}"}]} {
-		    set fetched 1
-		    break
-		} else {
-#		    ui_warn "[msgcat::mc "Unable to fetch:"]: $result"
-		    exec rm -f ${distpath}/${distfile}.TMP
-		}
-	    }
-	    if {![info exists fetched]} {
-		return -code error [msgcat::mc "fetch failed"]
-	    } else {
-		unset fetched
-	    }
-	}
+            if {!$sorted} {
+                sortsites fetch_urls [mirror_sites $fallback_mirror_site {} {} [get_full_mirror_sites_path]] master_sites
+                set sorted yes
+            }
+            if {![info exists urlmap($url_var)]} {
+                ui_error [format [msgcat::mc "No defined site for tag: %s, using master_sites"] $url_var]
+                set urlmap($url_var) $urlmap(master_sites)
+            }
+            unset -nocomplain fetched
+            foreach site $urlmap($url_var) {
+                ui_notice "$UI_PREFIX [format [msgcat::mc "Attempting to fetch %s from %s"] $distfile $site]"
+                set file_url [portfetch::assemble_url $site $distfile]
+                if {![catch {eval curl fetch $fetch_options {$file_url} {"${distpath}/${distfile}.TMP"}} result] &&
+                    ![catch {file rename -force "${distpath}/${distfile}.TMP" "${distpath}/${distfile}"} result]} {
+                    set fetched 1
+                    break
+                } else {
+                    ui_debug "[msgcat::mc "Fetching distfile failed:"]: $result"
+                    file delete -force "${distpath}/${distfile}.TMP"
+                }
+            }
+            if {![info exists fetched]} {
+                return -code error [msgcat::mc "fetch failed"]
+            }
+        }
     }
     return 0
 }
 
-# Initialize fetch target, calling checkfiles if neccesary
-proc fetch_init {args} {
-    global distfiles distname distpath all_dist_files dist_subdir fetch.type
-    
-    if {[info exist distpath] && [info exists dist_subdir]} {
-	set distpath ${distpath}/${dist_subdir}
-    }
-    if {"${fetch.type}" == "standard"} {
-        checkfiles
+# Utility function to delete fetched files.
+proc portfetch::fetch_deletefiles {args} {
+    global distpath
+    variable fetch_urls
+    foreach {url_var distfile} $fetch_urls {
+        if {[file isfile $distpath/$distfile]} {
+            file delete -force "${distpath}/${distfile}"
+        }
     }
 }
 
-proc fetch_start {args} {
-    global UI_PREFIX portname
-    
-    ui_msg "$UI_PREFIX [format [msgcat::mc "Fetching %s"] $portname]"
+# Utility function to add files to a list of fetched files.
+proc portfetch::fetch_addfilestomap {filemapname} {
+    global distpath $filemapname
+    variable fetch_urls
+    foreach {url_var distfile} $fetch_urls {
+        if {[file isfile $distpath/$distfile]} {
+            filemap set $filemapname $distpath/$distfile 1
+        }
+    }
+}
+
+# Initialize fetch target and call checkfiles.
+proc portfetch::fetch_init {args} {
+    variable fetch_urls
+
+    portfetch::checkfiles fetch_urls
+}
+
+proc portfetch::fetch_start {args} {
+    global UI_PREFIX subport distpath
+
+    ui_notice "$UI_PREFIX [format [msgcat::mc "Fetching distfiles for %s"] $subport]"
+
+    # create and chown $distpath
+    if {![file isdirectory $distpath]} {
+        if {[catch {file mkdir $distpath} result]} {
+            elevateToRoot "fetch"
+            if {[catch {file mkdir $distpath} result]} {
+                return -code error [format [msgcat::mc "Unable to create distribution files path: %s"] $result]
+            }
+            chownAsRoot $distpath
+            dropPrivileges
+        }
+    }
+    if {![file owned $distpath]} {
+        if {[catch {chownAsRoot $distpath} result]} {
+            if {[file writable $distpath]} {
+                ui_warn "$UI_PREFIX [format [msgcat::mc "Couldn't change ownership of distribution files path to macports user: %s"] $result]"
+            } else {
+                return -code error [format [msgcat::mc "Distribution files path %s not writable and could not be chowned: %s"] $distpath $result]
+            }
+        }
+    }
 }
 
 # Main fetch routine
 # If all_dist_files is not populated and $fetch.type == standard, then
 # there are no files to download. Otherwise, either do a cvs checkout
 # or call the standard fetchfiles procedure
-proc fetch_main {args} {
-    global distname distpath all_dist_files fetch.type
-    
-    # Check for files, download if neccesary
+proc portfetch::fetch_main {args} {
+    global all_dist_files fetch.type
+
+    # Check for files, download if necessary
     if {![info exists all_dist_files] && "${fetch.type}" == "standard"} {
         return 0
     }
-    if {"${fetch.type}" == "cvs"} {
-        return [cvsfetch]
-    } else {
-	return [fetchfiles]
+
+    # Fetch the files
+    switch -- "${fetch.type}" {
+        bzr     { return [bzrfetch] }
+        cvs     { return [cvsfetch] }
+        svn     { return [svnfetch] }
+        git     { return [gitfetch] }
+        hg      { return [hgfetch] }
+        standard -
+        default { return [portfetch::fetchfiles] }
     }
 }

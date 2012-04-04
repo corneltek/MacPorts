@@ -1,17 +1,48 @@
-# $Id: Portfile,v 1.1 2003/08/15 01:53:35 macdome Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
 PortSystem 1.0
-name		libmad
-version		0.15.0b
-categories	audio
-maintainers	macdome@opendarwin.org
-description	MPEG Audio Decoder
-long_description	MAD is a high-quality MPEG audio decoder.  \
-	It currently supports MPEG-1 as well as the \
-	MPEG-2 extension to Lower Sampling Frequencies.  \
-	All three audio layers (Layer I, Layer II, and Layer \
-	III a.k.a. MP3) are fully implemented.  \
-	homepage	http://www.mars.org/home/rob/proj/mpeg/
-platforms	darwin freebsd
-master_sites	ftp://ftp.mars.org/pub/mpeg/
-checksums	md5 2e4487cdf922a6da2546bad74f643205
+
+name            libmad
+version         0.15.1b
+revision        2
+categories      audio
+license         GPL-2+
+maintainers     nomaintainer
+description     MPEG Audio Decoder
+long_description \
+    MAD is a high-quality MPEG audio decoder.  \
+    It currently supports MPEG-1 as well as the \
+    MPEG-2 extension to Lower Sampling Frequencies.  \
+    All three audio layers (Layer I, Layer II, and Layer \
+    III a.k.a. MP3) are fully implemented.
+homepage        http://www.underbit.com/products/mad/
+platforms       darwin freebsd
+master_sites    ftp://ftp.mars.org/pub/mpeg/ \
+                sourceforge:mad
+checksums       md5 1be543bc30c56fb6bea1d7bf6a64e66c
+
+depends_build   port:pkgconfig
+
+use_autoreconf  yes
+
+post-extract {
+    copy ${filespath}/mad.pc.in ${worksrcpath}/mad.pc
+    touch ${worksrcpath}/AUTHORS ${worksrcpath}/ChangeLog ${worksrcpath}/NEWS
+}
+
+patchfiles      patch-configure.ac.diff
+
+post-patch {
+    reinplace "s|%PREFIX%|${prefix}|g" ${worksrcpath}/mad.pc
+    reinplace "s|%VERSION%|${version}|g" ${worksrcpath}/mad.pc
+}
+
+post-destroot {
+    xinstall -d ${destroot}${prefix}/lib/pkgconfig
+    xinstall -m 644 ${worksrcpath}/mad.pc ${destroot}${prefix}/lib/pkgconfig
+}
+
+livecheck.type  regex
+livecheck.url   ftp://ftp.mars.org/pub/mpeg/
+livecheck.regex "${name}-(\\d+(?:\\.\\d+)*\[a-z\])${extract.suffix}"

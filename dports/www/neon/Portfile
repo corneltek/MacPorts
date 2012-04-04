@@ -1,32 +1,79 @@
-# $Id: Portfile,v 1.16 2004/01/19 22:25:44 matt Exp $
+# $Id$
 
-PortSystem 1.0
+PortSystem	1.0
+
 name		neon
-version		0.24.4
-
+version		0.29.6
+revision        1
 categories	www
-maintainers	dluke@geeklair.net
+maintainers	geeklair.net:dluke
 description	An HTTP and WebDAV client library with a C interface
-platforms	darwin
+license		LGPL-2+
 
-long_description neon is an HTTP and WebDAV client library with a C language \
-                 API.  It provides a high-level interface to HTTP and WebDAV \
-                 methods and a low-level interface to HTTP request handling, \
-                 easily allowing the implementation of new methods.
+platforms	darwin freebsd
+
+long_description \
+	neon is an HTTP and WebDAV client library with a C language API. \
+	It provides a high-level interface to HTTP and WebDAV methods and a \
+	low-level interface to HTTP request handling, easily allowing the \
+	implementation of new methods.
 
 homepage	http://www.webdav.org/neon/
+master_sites	${homepage}
 
-master_sites	http://www.webdav.org/neon/
-checksums	md5 e1e5000cbdcdcd18bc953bff5d4006eb
+depends_lib	port:expat \
+		port:gettext \
+		port:libiconv \
+		port:openssl \
+		port:zlib
 
-depends_lib	lib:libexpat.0.4:expat
-configure.env	LDFLAGS=-L$prefix/lib CPPFLAGS=-I$prefix/include
+checksums	md5	591e0c82e6979e7e615211b386b8f6bc \
+		sha1	ae1109923303f67ed3421157927bc4bc29c58961 \
+		rmd160	f2cd96ed659675812a97b99d1b54e3d8eb66e4ed
+
+use_parallel_build	yes
+
 configure.args	--with-ssl \
 		--enable-shared \
 		--with-expat \
-		--mandir=${destroot}${prefix}/share/man
-configure.type	gnu
+		--without-libproxy \
+		--mandir=${prefix}/share/man 
 
-destroot.destdir prefix=${destroot}${prefix}
+pre-test {
+	set x {}
 
-patchfiles	patch-configure
+	fs-traverse dir ${worksrcpath} {
+		if {[file tail ${dir}] == ".libs" && [file isdirectory ${dir}]} {
+			lappend x ${dir}
+			continue
+		}
+	}
+
+	test.env-append DYLD_LIBRARY_PATH=[join ${x} ":"]
+}
+
+post-configure {
+	if {[variant_isset universal]} {
+		system "cd ${worksrcpath} && ed - config.h < ${filespath}/config.h.ed && touch stamp-h1"
+	}
+}
+
+post-destroot {
+	if {[variant_isset universal]} {
+		if {${configure.universal_cppflags} != ""} {
+			reinplace "s|${configure.universal_cppflags}||g" \
+				${destroot}${prefix}/bin/neon-config \
+				${destroot}${prefix}/lib/pkgconfig/neon.pc
+		}
+		reinplace "s|${configure.universal_ldflags}||g" \
+			${destroot}${prefix}/bin/neon-config \
+			${destroot}${prefix}/lib/pkgconfig/neon.pc
+	}
+}
+
+test.run	yes
+test.target	check
+
+livecheck.type	regex
+livecheck.url	${homepage}
+livecheck.regex ${name}-(\\d+(?:\\.\\d+)*)

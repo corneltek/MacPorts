@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.1 2004/01/27 22:37:23 gwright Exp $
+# $Id$
 
 PortSystem 1.0
 name		hat
-version		2.03
+version		2.05
 categories	devel
-maintainers	gwright@comcast.com
+maintainers	nomaintainer
 platforms	darwin
 
 description	hat is the Haskell Tracer
@@ -21,33 +21,35 @@ long_description	\
 		module namespaces.
 
 homepage	http://www.cs.york.ac.uk/fp/hat/
-master_sites	ftp://ftp.cs.york.ac.uk/pub/haskell/hat/
+master_sites	${homepage}
 
-fetch.type	cvs
-cvs.root	:pserver:anoncvs@glass.cse.ogi.edu:/cvs
-cvs.password	cvs
-cvs.module	${name}
+checksums	md5 027a74fe438f51529bc781d4dfc8ff40
 
-depends_build	bin:ghc:ghc \
-		bin:hmake:hmake
+depends_build	port:ghc \
+		port:hmake
 
 depends_lib	lib:libglib.1:glib1
 
-depends_run	bin:xterm:XFree86
+depends_run	port:xterm
 
 #user_notes	Despite being compatible with both nhc98 and ghc, the \
 #		port depends on the more featureful ghc.
-#
-#		If the message "resize: command not found" appears,
-#		you need to restart hat-* command in an xterm
-#		(a real X11 xterm, not an OS X terminal application).
-#
 
-post-fetch	{ file rename  ${workpath}/${name} ${workpath}/${name}-${version} }
+configure.args	--mandir=${prefix}/share/man/man1
 
-post-destroot	{ file delete ${destroot}/${prefix}/bin/harch }
+post-destroot	{ file delete ${destroot}${prefix}/bin/harch }
 
-post-install	{ set ghcversion [ exec ghc --version | sed "s|^.*version ||" ]
-		  system "ranlib ${prefix}/lib/ghc-${ghcversion}/libHShat.a"
+post-activate	{ set ghcversion [ exec ghc --version | sed "s|^.*version ||" ]
+
+		  reinplace "s|${destroot}${prefix}|${prefix}|g" ${prefix}/lib/ghc-${ghcversion}/package.conf
+
+		  ui_msg "hat requires that you add ${x11prefix}/bin to your PATH"
 		}
 
+
+# When the post-uninstall target is written, this should be executed:
+#post-uninstall	{ system "ghc-pkg unregister ${name}-${version}" }
+
+livecheck.type	regex
+livecheck.url	${homepage}download.html
+livecheck.regex	${name}-(\[0-9.\]+)${extract.suffix}

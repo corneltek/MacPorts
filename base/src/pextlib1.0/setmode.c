@@ -2,6 +2,7 @@
 /*	$NetBSD: setmode.c,v 1.15 1997/02/07 22:21:06 christos Exp $	*/
 
 /*
+ * $Id$
  * Copyright (c) 1989, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -34,6 +35,8 @@
  */
 
 #include <config.h>
+
+extern int xxx_so_this_isnt_empty;
 
 #if !HAVE_SETMODE
 

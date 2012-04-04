@@ -1,11 +1,14 @@
-# $Id: Portfile,v 1.6 2003/08/05 09:29:08 jkh Exp $
+# $Id$
 
 PortSystem 1.0
 name			qthello
 version			1.0
+revision                1
 categories		games x11
-maintainers		landonf@opendarwin.org
+maintainers		nomaintainer
 homepage		http://qthello.sourceforge.net/
+master_sites		sourceforge:project/qthello/qthello/${version}
+
 description		Othello program written in Qt
 long_description	QtHello is an Othello program written in Qt. It's \
 			design makes it easy to extend both the computer \
@@ -14,10 +17,9 @@ long_description	QtHello is an Othello program written in Qt. It's \
 			completely random to tree search with Alpha-Beta \
 			pruning. 
 
-depends_lib		lib:libqt-mt.3:qt3 lib:libX11.6:XFree86
+depends_lib		port:qt3
 
 platforms		darwin
-master_sites		http://download.sourceforge.net/qthello/
 checksums		md5 a5eea252376b5e5082ac68cb649089f7
 patchfiles		patch-Makefile
 
@@ -28,7 +30,7 @@ post-patch {
 			reinplace s|gfx|${prefix}/share/${name}/gfx|g ${worksrcpath}/boardwidget.cpp
 }
 
-configure {}
+use_configure		no
 
 build.target		all QTDIR=${prefix}
 

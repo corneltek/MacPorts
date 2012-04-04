@@ -1,20 +1,67 @@
-# $Id: Portfile,v 1.6 2004/01/08 19:43:11 pguyot Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
-name		rrdtool
-version		1.0.46
-revision	1
-categories	net
-maintainers	opendarwin.org@darkart.com
-description	Round Robin Database
-long_description	RRDtool is a system to store and display time-series data
-homepage	http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/
-platforms	darwin openbsd
-master_sites	${homepage}pub/
-checksums	md5 718676770c06b25d1471cec1e4f0bbdc
-configure.args	--prefix=${prefix} --mandir=${prefix}/share/man --enable-shared=yes
-build.type	gnu
-patchfiles	patch-contrib-Makefile.in \
-		patch-contrib-trytime-Makefile.in \
-		patch-doc-Makefile.in \
-		patch-examples-Makefile.in
+PortSystem          1.0
+
+name                rrdtool
+version             1.4.7
+categories          net
+maintainers         markd openmaintainer
+description         Round Robin Database
+long_description    RRDtool is a system to store and display time-series data
+homepage            http://oss.oetiker.ch/rrdtool/
+platforms           darwin
+master_sites        ${homepage}pub/
+checksums           rmd160 3a8c1c0f3fe0d76fb7da8b712cdd19d59d5171ba \
+                    sha256 956aaf431c955ba88dd7d98920ade3a8c4bad04adb1f9431377950a813a7af11
+
+depends_build       port:pkgconfig
+depends_lib         port:expat \
+                    path:lib/pkgconfig/glib-2.0.pc:glib2 \
+                    port:libiconv \
+                    port:gettext \
+                    path:lib/pkgconfig/pango.pc:pango \
+                    path:bin/perl:perl5 \
+                    port:tcl \
+                    port:zlib \
+                    port:libpng \
+                    port:libxml2 \
+                    port:intltool
+
+patchfiles          patch-bindings_lua_Makefile_in.diff
+
+configure.args      --enable-perl-site-install \
+                    --with-perl-options="INSTALLDIRS=vendor" \
+                    --with-tcllib=${prefix}/lib \
+                    --disable-python \
+                    --disable-ruby \
+                    --mandir=${prefix}/share/man \
+                    --disable-tcl
+
+configure.cppflags-append \
+                    -I${prefix}/include/freetype2 \
+                    -I${prefix}/include/libpng14
+
+build.type          gnu
+
+variant python25 description {Python 2.5 bindings for RRDtool} conflicts python26 python27 {
+    depends_lib-append      port:python25
+    configure.args-delete   --disable-python
+    configure.args-append   --enable-python
+}
+
+variant python26 description {Python 2.6 bindings for RRDtool} conflicts python25 python27 {
+    depends_lib-append      port:python26
+    configure.args-delete   --disable-python
+    configure.args-append   --enable-python
+}
+
+variant python27 description {Python 2.7 bindings for RRDtool} conflicts python25 python26 {
+    depends_lib-append      port:python27
+    configure.args-delete   --disable-python
+    configure.args-append   --enable-python
+}
+
+notes "
+See ${prefix}/share/doc/rrdtool-${version} for example code.
+"

@@ -1,7 +1,9 @@
-# et:ts=4
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
 # portmain.tcl
+# $Id$
 #
-# Copyright (c) 2002 - 2003 Apple Computer, Inc.
+# Copyright (c) 2004 - 2005, 2007 - 2011 The MacPorts Project
+# Copyright (c) 2002 - 2003 Apple Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -12,7 +14,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of Apple Computer, Inc. nor the names of its contributors
+# 3. Neither the name of Apple Inc. nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
 # 
@@ -35,27 +37,60 @@
 package provide portmain 1.0
 package require portutil 1.0
 
-set com.apple.main [target_new com.apple.main main]
-target_provides ${com.apple.main} main
+set org.macports.main [target_new org.macports.main portmain::main]
+target_provides ${org.macports.main} main
+target_state ${org.macports.main} no
+
+namespace eval portmain {
+}
+
+set_ui_prefix
 
 # define options
-options prefix name version revision epoch categories maintainers
-options long_description description homepage
-options workdir worksrcdir filedir filesdir distname portdbpath libpath distpath sources_conf os.platform os.version os.arch os.endian platforms default_variants
+options prefix name version revision epoch categories maintainers \
+        long_description description homepage notes license \
+        provides conflicts replaced_by \
+        worksrcdir filesdir distname portdbpath libpath distpath sources_conf \
+        os.platform os.subplatform os.version os.major os.arch os.endian \
+        platforms default_variants install.user install.group \
+        macosx_deployment_target universal_variant os.universal_supported \
+        supported_archs depends_skip_archcheck installs_libs \
+        license_noconflict copy_log_files \
+        compiler.cpath compiler.library_path \
+        add_users altprefix
 
-# Export options via PortInfo
-options_export name version revision epoch categories maintainers platforms description long_description homepage
+# Order of option_proc and option_export matters. Filter before exporting.
 
 # Assign option procedure to default_variants
 option_proc default_variants handle_default_variants
+# Handle notes special for better formatting
+option_proc notes handle_option_string
 
-# Hard coded version number for resource location
-default portresourcepath {[file join $portsharepath resources/port1.0]}
-default distpath {[file join $portdbpath distfiles]}
-default workdir work
-default workpath {[file join $portpath $workdir]}
+# Export options via PortInfo
+options_export name version revision epoch categories maintainers platforms description long_description notes homepage license provides conflicts replaced_by installs_libs license_noconflict
+
+default subport {[portmain::get_default_subport]}
+proc portmain::get_default_subport {} {
+    global name portpath
+    if {[info exists name]} {
+        return $name
+    }
+    return [file tail $portpath]
+}
+default subbuildpath {[portmain::get_subbuildpath]}
+proc portmain::get_subbuildpath {} {
+    global portpath portbuildpath subport
+    if {$subport != ""} {
+        set subdir $subport
+    } else {
+        set subdir [file tail $portpath]
+    }
+    return [file join $portbuildpath $subdir]
+}
+default workpath {[getportworkpath_from_buildpath $subbuildpath]}
 default prefix /opt/local
-default x11prefix /usr/X11R6
+default applications_dir /Applications/MacPorts
+default frameworks_dir {${prefix}/Library/Frameworks}
 default destdir destroot
 default destpath {${workpath}/${destdir}}
 # destroot is provided as a clearer name for the "destpath" variable
@@ -63,34 +98,81 @@ default destroot {${destpath}}
 default filesdir files
 default revision 0
 default epoch 0
-default distname {${portname}-${portversion}}
+default license unknown
+default distname {${name}-${version}}
 default worksrcdir {$distname}
 default filespath {[file join $portpath $filesdir]}
 default worksrcpath {[file join $workpath $worksrcdir]}
+# empty list means all archs are supported
+default supported_archs {}
+default depends_skip_archcheck {}
+default add_users {}
 
-# Compatibility namespace
-default portname {$name}
-default portversion {$version}
-default portrevision {$revision}
-default portepoch {$epoch}
+# Configure settings
+default install.user {${portutil::autoconf::install_user}}
+default install.group {${portutil::autoconf::install_group}}
 
 # Platform Settings
-set os_arch $tcl_platform(machine)
-if {$os_arch == "Power Macintosh"} { set os_arch "powerpc" }
-
-default os.platform {[string tolower $tcl_platform(os)]}
-default os.version {$tcl_platform(osVersion)}
+default os.platform {$os_platform}
+default os.version {$os_version}
+default os.major {$os_major}
 default os.arch {$os_arch}
-# Remove trailing "Endian"
-default os.endian {[string range $tcl_platform(byteOrder) 0 [expr [string length $tcl_platform(byteOrder)] - 7]]}
+default os.endian {$os_endian}
 
-# Select implicit variants
-if {[info exists os.platform] && ![info exists variations(${os.platform})]} { variant_set ${os.platform}}
-if {[info exists os.arch] && ![info exists variations(${os.arch})]} { variant_set ${os.arch} }
+set macosx_version_text {}
+if {[option os.platform] == "darwin"} {
+    set macosx_version_text "(Mac OS X ${macosx_version}) "
+}
+ui_debug "OS [option os.platform]/[option os.version] ${macosx_version_text}arch [option os.arch]"
 
-# deprecate options here
-option_deprecate filedir filesdir
+default universal_variant {${use_configure}}
 
-proc main {args} {
+# sub-platforms of darwin
+if {[option os.platform] == "darwin"} {
+    if {[file isdirectory /System/Library/Frameworks/Carbon.framework]} {
+        default os.subplatform macosx
+        # we're on Mac OS X and can therefore build universal
+        default os.universal_supported yes
+    } else {
+        default os.subplatform puredarwin
+        default os.universal_supported no
+    }
+} else {
+    default os.subplatform {}
+    default os.universal_supported no
+}
+
+default compiler.cpath {${prefix}/include}
+default compiler.library_path {${prefix}/lib}
+
+# start gsoc08-privileges
+
+# Record initial euid/egid
+set euid [geteuid]
+set egid [getegid]
+
+# if unable to write to workpath, implies running without either root privileges
+# or a shared directory owned by the group so use ~/.macports
+default altprefix {[file join $user_home .macports]}
+if { $euid != 0 && (([info exists workpath] && [file exists $workpath] && ![file writable $workpath]) || ([info exists portdbpath] && ![file writable [file join $portdbpath build]])) } {
+
+    # set global variable indicating to other functions to use ~/.macports as well
+    set usealtworkpath yes
+
+    default worksymlink {[file join ${altprefix}${portpath} work]}
+    default distpath {[file join ${altprefix}${portdbpath} distfiles ${dist_subdir}]}
+    set portbuildpath "${altprefix}${portbuildpath}"
+
+    ui_debug "Going to use alternate build prefix: $altprefix"
+    ui_debug "workpath = $workpath"
+} else {
+    set usealtworkpath no
+    default worksymlink {[file join $portpath work]}
+    default distpath {[file join $portdbpath distfiles ${dist_subdir}]}
+}
+
+# end gsoc08-privileges
+
+proc portmain::main {args} {
     return 0
 }

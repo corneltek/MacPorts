@@ -9,11 +9,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,36 +27,34 @@
 .\"
 .\"	@(#)hier.7	8.1 (Berkeley) 6/5/93
 .\" $FreeBSD: src/share/man/man7/hier.7,v 1.29.2.17 2003/01/13 21:43:50 ceri Exp $
-.\" $Id: porthier.7,v 1.3 2003/10/24 06:39:10 fkr Exp $
+.\" $Id$
 .\"
-.\" Take from FreeBSD and adjusted to DarwinPortss' needs.
-.Dd October 11, 2003
+.\" Take from FreeBSD and adjusted to MacPortss' needs.
+.Dd June 1, 2007
 .Dt PORTHIER 7
 .Os
 .Sh NAME
 .Nm porthier
 .Nd layout of the ports-filesystems
 .Sh DESCRIPTION
-A sketch of the filesystem hierarchy as it is applied on ports being distributed by DarwinPorts.
+A sketch of the filesystem hierarchy as it is applied on ports being distributed by MacPorts.
 .Bl -tag -width "/Applications/"
-.It Pa /${prefix}/
-The base of the DarwinPorts filesystem hierarchy. By default set to "/opt/local/"
+.It Pa ${prefix}/
+The base of the MacPorts filesystem hierarchy. By default set to "/opt/local/"
 .Pp
 .Bl -tag -width "include/"
 .It Pa bin/
 common utilities, programming tools, and applications
 .It Pa etc/
 system configuration files and scripts
-.It Pa games/
-useful and semi-frivolous programs
 .It Pa include/
 standard C include files
-.It Pa java/
-applications based on Java
 .It Pa lib/
 archive libraries
 .It Pa libexec/
 system daemons & system utilities (executed by other programs)
+.It Pa Library/Frameworks/
+Native Mac OS X Library Frameworks
 .It Pa sbin/
 system programs and administration utilities
 .It Pa share/
@@ -73,6 +67,8 @@ miscellaneous documentation
 various examples for users and programmers
 .It Pa info/
 GNU Info hypertext system
+.It Pa java/
+applications based on Java
 .It Pa locale/
 localization files
 .It Pa man/
@@ -81,15 +77,38 @@ manual pages
 misc system-wide ASCII text files
 .El
 .Pp
+.It Pa src/
+source code
+.Pp
+.Bl -tag -width "macports/" -compact
+.It Pa macports/
+MacPorts package building topdir
+.Pp
+.El
 .It Pa var/
 multi-purpose log, temporary, transient, and spool files
 .Pp
 .Bl -tag -width "spool/" -compact
 .It Pa db/
 misc. automatically generated system-specific database files
-.Bl -tag -width "dports/"
-.It Pa dports/
-DarwinPorts runtime data
+.It Pa macports/
+MacPorts runtime data
+.Bl -tag -width "build/" -compact
+.It Pa build/
+Where ports are built and destrooted
+.It Pa distfiles/
+Holds the distfiles of the fetched ports
+.It Pa receipts/
+Obsolete. Formerly held the registry information and receipts for the installed ports,
+in flat-file format.
+.It Pa registry/
+Contains the registry database in sqlite format.
+.It Pa software/
+Holds compressed images of the installed ports. These
+are extracted to ${prefix} when activated.
+.It Pa sources/
+Holds the sources of both the porttree (the Portfiles) and the
+sources for the base system
 .Pp
 .El
 .It Pa spool/
@@ -100,18 +119,31 @@ misc. system log files
 system information files describing various info about
 system since it was booted
 .El
+.Pp
+.It Pa www/
+files to be served by a http server
+.Pp
+.Bl -tag -width "cgi-bin/" -compact
+.It Pa cgi-bin/
+directory for cgi executables
 .El
-.It Pa /Applications/DarwinPorts/
+.El
+.It Pa /Applications/MacPorts/
 Native Mac OS X applications
-.It Pa /Library/Frameworks/
-Native Mac OS X Library Frameworks
 .Pp
 .El
+.El
 .Sh SEE ALSO
+.Xr port 1 ,
+.Xr macports.conf 5 ,
+.Xr portfile 7 ,
+.Xr portgroup 7 ,
+.Xr portstyle 7 ,
 .Xr hier 7
 .Sh HISTORY
 The
 .Nm
-manual page appeared first in DarwinPorts. Lots of it is based on hier(7).
+manual page appeared first in MacPorts. Lots of it is based on hier(7).
 .Sh AUTHORS
 .An "Felix Kronlage" Aq fkr@opendarwin.org
+.An "Juan Manuel Palacios" Aq jmpp@macports.org

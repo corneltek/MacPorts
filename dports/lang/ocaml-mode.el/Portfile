@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.2 2004/02/18 19:30:02 pguyot Exp $
+# $Id$
 
 PortSystem			1.0
 name				ocaml-mode.el
 version				3.05
-categories			lang editors
-maintainers			pguyot@kallisys.net
+categories			lang editors ml
+maintainers			nomaintainer
 description			An EMACS major mode for editing OCaml programs.
 long_description	${description}
 homepage			http://wwwfun.kurims.kyoto-u.ac.jp/soft/olabl/ocaml.html
@@ -13,7 +13,7 @@ distname			ocaml-mode-${version}
 master_sites		http://wwwfun.kurims.kyoto-u.ac.jp/soft/olabl/dist/
 checksums			md5 ace102dfb75a20e15a60d962cc3a5edb
 
-# We want emacs from DP since this will install stuff in emacs' site-lisp and we want
+# We want emacs from MacPorts since this will install stuff in emacs' site-lisp and we want
 # it to go into ${prefix}'s site-lisp.
 depends_lib			path:${prefix}/bin/emacs:emacs
 depends_run			bin:ocaml:ocaml
@@ -36,3 +36,6 @@ post-install {
 	ui_msg "(autoload 'caml-mode \"caml\" \"Major mode for editing Caml code.\" t)"
 	ui_msg "(autoload 'run-caml \"inf-caml\" \"Run an inferior Caml process.\" t)"
 }
+
+livecheck.type		regex
+livecheck.regex		{<A HREF="dist/ocaml-mode-(.*).tar.gz">Ocaml-mode \1</A>}

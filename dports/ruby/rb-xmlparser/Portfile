@@ -1,34 +1,26 @@
-# $Id: Portfile,v 1.2 2004/03/01 03:07:50 rshaw Exp $
-PortSystem 1.0
+# $Id$
+PortSystem		1.0
+PortGroup		ruby 1.0
 
-name			rb-xmlparser
-version			0.6.5
-categories		ruby
-maintainers		rshaw@opendarwin.org
+ruby.setup		xmlparser 0.6.8 extconf.rb {README samples}
+revision		2
+maintainers		nomaintainer
 description		Ruby extension allowing use of James Clark's XML Parser (expat).
+long_description	This is a module to access to James Clark's XML \
+					Parser Toolkit "expat" \
+					(http://www.jclark.com/xml/expat.html) from Ruby. \
+					Supported versions of expat are 1.95.0 or later \
+					(http://sourceforge.net/projects/expat/).
+categories-append	textproc
 homepage		http://www.yoshidam.net/Ruby.html
-platforms		darwin
 master_sites	http://www.yoshidam.net/
-dist_subdir		ruby
-distname		xmlparser-${version}
-worksrcdir		xmlparser
-checksums		md5 ead5d1fd5f57b99a40445b66f1be1551
+checksums		md5 6f056117683cea19244ff1c1c0fc5c65
+platforms		darwin
 
-set ruby ${prefix}/bin/ruby
-depends_build	path:${ruby}:ruby
-depends_lib		lib:libexpat:expat
+depends_lib-append		port:expat
 
-configure.cmd	${ruby} extconf.rb
-configure.args	--with-expat-lib=${prefix}/lib \
-				--with-expat-include=${prefix}/include
-post-configure	{
-	reinplace "s|^\\(RUBYCOMMONDIR.*\\)sitedir.*$|\\1rubylibdir)|" \
-		${worksrcpath}/Makefile
-	reinplace "s|^\\(RUBYLIBDIR.*\\)sitelibdir|\\1rubylibdir|" \
-		${worksrcpath}/Makefile
-	reinplace "s|^\\(RUBYARCHDIR.*\\)sitearchdir|\\1archdir|" \
-		${worksrcpath}/Makefile
-}
+worksrcdir		${ruby.module}
 
-destroot.args	RUBY=${ruby}
+configure.args-append	--with-expat-lib=${prefix}/lib \
+						--with-expat-include=${prefix}/include
 

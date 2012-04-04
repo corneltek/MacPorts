@@ -1,11 +1,11 @@
-# $Id: Portfile,v 1.1 2003/09/02 11:35:01 olegb Exp $
+# $Id$
 
 PortSystem 1.0
 name		whatmask
-version		1.1
+version		1.2
 platforms	darwin
 categories	net
-maintainers     mich@freebsdcluster.org
+maintainers     freebsdcluster.org:mich
 description	Easily convert between three common subnet mask notations
 long_description   \
 		Notations supported: \
@@ -28,7 +28,7 @@ long_description   \
 		This notation is used by a number of popular routers.
 homepage        http://www.laffeycomputer.com/whatmask.html
 master_sites	http://downloads.laffeycomputer.com/current_builds/whatmask/
-checksums	md5 2fa6b1bb18f037d0f9c3c8b2eed19277
+checksums	md5 26aeff74dbba70262ccd426e681dcf4a
 use_configure   yes
 destroot 	{
  	        system "cd ${worksrcpath} && \

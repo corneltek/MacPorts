@@ -1,10 +1,12 @@
-# $Id: Portfile,v 1.7 2004/01/16 20:22:40 fkr Exp $
+# $Id$
 
 PortSystem 1.0
+
 name		cadaver
-version		0.22.0
+version		0.23.2
+revision        1
 categories	www
-maintainers	darwinports@opendarwin.org
+maintainers	landonf
 description	Commandline client for DAV
 long_description	\
 	cadaver is a command-line WebDAV client for Unix.  It supports \
@@ -15,18 +17,8 @@ homepage	http://www.webdav.org/cadaver/
 platforms	darwin
 master_sites	\
 	http://www.webdav.org/cadaver/
-checksums	md5 a46235f79b54f12c241d271edbc8be06
-depends_lib	lib:libexpat.0:expat
-configure.env \
-	LDFLAGS="-L${prefix}/lib" \
-	CPPFLAGS="-I${prefix}/include -no-cpp-precomp"
-configure.args	--with-expat --without-ssl
+checksums	md5 5ac79e41f3b7b4f68bf4003beed5dc26
+depends_lib	port:expat port:openssl port:neon
+configure.cppflags-append "-no-cpp-precomp"
+configure.args	--with-expat --with-ssl --with-force-ssl
 destroot.destdir prefix=${destroot}${prefix}
-
-variant darwin {
-	depends_lib-append lib:dlcompat:dlcompat
-}
-variant ssl {
-	depends_lib-append	lib:libssl.0.9:openssl
-	configure.args-append	--with-ssl --with-force-ssl
-}

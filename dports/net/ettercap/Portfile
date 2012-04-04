@@ -1,11 +1,12 @@
-# $Id: Portfile,v 1.15 2004/01/16 22:37:07 toby Exp $
+# $Id$
 
 PortSystem 1.0
 
 name             ettercap
 version          0.6.b
+revision         2
 categories       net security
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      multipurpose sniffer/interceptor/logger for switched LAN
 long_description \
     Ettercap is a multi-functional packet sniffer/interceptor/logger \
@@ -18,14 +19,16 @@ homepage         http://ettercap.sourceforge.net/
 platforms        darwin freebsd
 master_sites     sourceforge
 checksums        md5 f665cf82347a91f216184537f8f2c4bd
+patchfiles       patch-ec_dissector_ssh.c
 configure.args   --enable-ncurses \
                  --disable-gtk \
                  --enable-https \
-                 --disable-devel
+                 --disable-devel \
+                 --mandir=${prefix}/share/man
 
-variant darwin {
-    depends_lib-append lib:libdl:dlcompat
-}
+# the new generation lives in port "ettercap-ng"
+livecheck.url    http://ettercap.sourceforge.net/download.php
+livecheck.regex  ettercap-(\[0-9a-z.\]+)\\.tar\\.gz
 
 variant gtk {
     depends_lib-append    lib:libgtk.1:gtk1
@@ -33,7 +36,7 @@ variant gtk {
     configure.args-append --enable-gtk
 }
 
-variant devel {
+variant enable_devel {
     configure.args-delete --disable-devel
     configure.args-append --enable-devel
 }

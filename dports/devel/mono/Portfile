@@ -1,38 +1,77 @@
-# $Id: Portfile,v 1.2 2004/02/04 22:12:34 olegb Exp $
+# $Id$
 
 PortSystem 1.0
 
-name		mono
-version		0.30
-categories	devel
-platforms	darwin
-maintainers	mww@opendarwin.org
-description	Implementation of the .NET Development Framework
-long_description	Mono is an effort to create an open source \
-			implementation of the .NET Development Framework \
-			including a C# compiler.
+name             mono
+version          2.10.6
+categories       devel lang mono
+platforms        darwin
+license          {GPL-2 LGPL-2 MIT}
+maintainers      nomaintainer
+description      Implementation of the .NET Development Framework
+long_description Mono is an effort to create an open source \
+                 implementation of the .NET Development Framework \
+                 including a C# compiler.
 
-homepage	http://www.go-mono.com
-master_sites	${homepage}/archive/
-checksums	md5 84bc49f39c905936d594042fd29cd07c
-patchfiles	patch_ltmain.sh
+homepage         http://www.go-mono.com/
+master_sites     http://download.mono-project.com/sources/mono/
+use_bzip2        yes
+universal_variant no
 
-depends_lib	bin:pkg-config:pkgconfig \
-		lib:libglib.2:glib2
+checksums           sha1    c17d211475a321680b4772dd3b8cadde7eaa60aa \
+                    rmd160  ca4037531046f60348350e7ab5a760ddbc152bc4
 
-configure.env	CPPFLAGS="-I${prefix}/include" \
-		LDFLAGS="-L${prefix}/lib"
+depends_build    port:pkgconfig port:gawk
+depends_lib      port:gettext path:lib/pkgconfig/glib-2.0.pc:glib2 \
+                 port:libiconv port:zlib port:libgdiplus port:xorg-libX11
 
-destroot.destdir	DESTDIR=${destroot}
+# Do NOT pick up external boehmgc (prefixing CPPFLAGS or CFLAGS does not suffice -- ugly++)
+configure.cc-append	"-I${worksrcpath}/libgc/include"
 
-post-destroot	{
-	set doc	${worksrcpath}/docs
-	file mkdir ${destroot}${prefix}/share/doc/${name}
-	file copy ${doc}/assembly-bundle ${doc}/embedded-api ${doc}/exceptions \
-		${doc}/gc-issues ${doc}/jit-thoughts ${doc}/jit-trampolines \
-		${doc}/object-layout ${doc}/stack-alignment \
-		${doc}/unmanaged-calls ${worksrcpath}/AUTHORS \
-		${worksrcpath}/COPYING.LIB ${worksrcpath}/ChangeLog \
-		${worksrcpath}/NEWS ${worksrcpath}/README \
-		${destroot}${prefix}/share/doc/${name}
+configure.args   --with-gc=included \
+                 --with-preview=yes \
+                 --without-sigaltstack \
+                 --with-libgdiplus=${prefix} \
+                 --disable-dtrace
+configure.ldflags-append -lintl -lcharset
+
+use_parallel_build no
+
+test.run         yes
+test.target      check
+
+post-patch {
+    reinplace "s/-pthread/-lpthread/g" ${worksrcpath}/configure
+    reinplace s|@PREFIX@|$prefix|g $worksrcpath/data/config.in
 }
+
+post-destroot {
+    set docdir ${prefix}/share/doc/${name}-${version}
+
+    xinstall -d ${destroot}${docdir}
+    xinstall -m 0644 -W ${worksrcpath} AUTHORS COPYING.LIB ChangeLog NEWS README \
+        ${destroot}${docdir}
+
+    xinstall -m 0644 -W ${worksrcpath}/docs assembly-bundle embedded-api exceptions \
+        gc-issues jit-thoughts jit-trampolines object-layout stack-alignment unmanaged-calls \
+        ${destroot}${docdir}
+
+    set libgc_docdir ${prefix}/share/doc/ligbc-mono-6.6
+
+    eval move ${destroot}${prefix}/share/libgc-mono \
+        ${destroot}${libgc_docdir}
+
+    xinstall -d ${destroot}${libgc_docdir}/html
+
+    eval move [glob ${destroot}${libgc_docdir}/*.html] \
+        ${destroot}${libgc_docdir}/html
+}
+
+platform darwin 9 {
+    # is this still needed?
+    patchfiles-append patch-interp.h.diff
+}
+
+livecheck.type  regex
+livecheck.url   ${homepage}mono-downloads/release_data.js
+livecheck.regex {stable_version = "(.+)"}

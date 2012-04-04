@@ -1,11 +1,12 @@
-# $Id: Portfile,v 1.1 2003/12/08 22:33:18 mww Exp $
+# $Id$
 
 PortSystem 1.0
+PortGroup python24 1.0
 
 name			py-xml
-version			0.8.3
-categories		python devel textproc
-maintainers		ryanwilcox@mac.com
+version			0.8.4
+categories-append	devel textproc
+maintainers		mac.com:ryanwilcox
 description		XML Tools for Python
 long_description 	A package of all the tools required for writing basic \
 			XML applications in Python.
@@ -13,19 +14,11 @@ platforms		darwin
 homepage 		http://pyxml.sourceforge.net/
 master_sites        	sourceforge:pyxml
 distname		PyXML-${version}
-checksums		md5 7083d950064ce90840d9ed48c818dc85
+checksums		md5 1f7655050cebbb664db976405fdba209
 
-depends_lib		bin:python:python \
-			lib:libexpat.0:expat 
-
-use_configure		no
+depends_lib-append	port:expat 
 
 build.args		--with-libexpat=${prefix}
-build.cmd		python setup.py
-build.target		build
-
-destroot.destdir	--prefix=${destroot}${prefix}
-destroot.cmd		python setup.py
 
 post-destroot {
 	file mkdir ${destroot}${prefix}/share/doc

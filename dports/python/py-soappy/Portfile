@@ -1,30 +1,30 @@
-# $Id: Portfile,v 1.2 2004/02/27 08:11:31 blb Exp $
+# $Id$
 
 PortSystem 1.0
+PortGroup python24 1.0
 
-name		py-soappy
-version		0.11.3
-categories	python net
-platforms	darwin
-maintainers	mww@opendarwin.org
-description	SOAP library for Python
+name			py-soappy
+version			0.11.3
+revision		1
+categories		python net
+platforms		darwin
+maintainers		nomaintainer
+description		SOAP library for Python
 long_description	The goal of the SOAPpy team is to provide a \
-			full-featured SOAP library for Python that is very \
-			simple to use and that fully supports dynamic \
-			interaction between clients and servers.
+				full-featured SOAP library for Python that is very \
+				simple to use and that fully supports dynamic \
+				interaction between clients and servers.
 
-homepage	http://pywebsvcs.sourceforge.net/
+homepage		http://pywebsvcs.sourceforge.net/
 master_sites	sourceforge:pywebsvcs
-distname	SOAPpy-${version}
-checksums	md5 dbdcafe76f73dffaa6948b026607d51b
+distname		SOAPpy-${version}
+checksums		md5 dbdcafe76f73dffaa6948b026607d51b
 
-depends_lib	lib:XXX:py-fpconst \
-		lib:XXX:py-xml
+depends_lib-append	port:py-fpconst \
+				port:py-xml
 
-use_configure	no
-
-build.cmd	python setup.py
-build.target	build
-
-destroot.cmd	${build.cmd}
-destroot.destdir	--prefix=${destroot}${prefix}
+post-destroot	{
+	xinstall -m 644 -W ${worksrcpath}/docs GettingStarted.txt attrs.txt \
+		GlobusSupport.txt MethodParameterNaming.txt complexTypes.txt \
+		simpleTypes.txt WSDL.txt ${destroot}${prefix}/share/doc/${name}
+}

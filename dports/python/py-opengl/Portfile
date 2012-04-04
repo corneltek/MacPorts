@@ -1,35 +1,45 @@
-# $Id: Portfile,v 1.2 2004/02/04 00:21:41 mww Exp $
+# $Id$
 
-PortSystem 1.0
+PortSystem          1.0
+PortGroup           python 1.0
 
-name		py-opengl
-version		2.0.1.07
-categories	python graphics
-maintainers	mww@opendarwin.org
-description	PyOpenGL is a Python binding to OpenGL
-long_description	PyOpenGL is the cross platform Python binding to \
-			OpenGL and related APIs. The binding is created using \
-			the SWIG wrapper generator, and is provided under an \
-			extremely liberal BSD-style Open-Source licenses.
+name                py-opengl
+version             3.0.1
+categories          python graphics
+platforms           darwin
+supported_archs     noarch
+license             BSD
+maintainers         jmr openmaintainer
 
-homepage	http://pyopengl.sourceforge.net/
-master_sites	sourceforge:pyopengl
-distname	PyOpenGL-${version}
-checksums	md5 02e4331778fad4da7549ff1585a7a4a4
+description         Python binding to OpenGL
+long_description    PyOpenGL is the cross platform Python binding to OpenGL \
+                    and related APIs. The binding is created using the \
+                    standard ctypes library and is provided under an \
+                    extremely liberal BSD-style Open-Source licenses.
 
-depends_lib	bin:python:python \
-		lib:XXX:py-numeric
+homepage            http://pyopengl.sourceforge.net/
 
-use_configure	no
+master_sites        http://pypi.python.org/packages/source/P/PyOpenGL/
+distname            PyOpenGL-${version}
 
-build.cmd	python setup.py
-build.target	build
+checksums           md5     cdf03284f24279b8d9914bb680a37b5e \
+                    sha1    3a5b4888b0c9f73513c9e41629c32e1279907524 \
+                    rmd160  cd9c3f20ae7154cc4fcb810dea3a24bd469d3c05
 
-destroot.cmd	python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
+python.versions     24 25 26 27
 
-post-destroot	{
-	xinstall -d -m 755 ${destroot}${prefix}/share/doc/${name}
-	xinstall -m 644 ${worksrcpath}/README \
-		${destroot}${prefix}/share/doc/${name}
+if {$subport != $name} {
+    depends_build   port:py${python.version}-distribute
+    depends_lib     port:py${python.version}-pil \
+                    port:py${python.version}-opengl-accelerate \
+                    port:py${python.version}-tkinter
+    if {${python.version} == 24} {
+        depends_lib-append port:py-ctypes
+    }
+    test.run        yes
+    livecheck.type  none
+} else {
+    livecheck.type  regex
+    livecheck.url   http://pypi.python.org/pypi/PyOpenGL
+    livecheck.regex {PyOpenGL/([0-9.]+)"}
 }

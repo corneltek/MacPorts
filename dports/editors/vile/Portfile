@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.4 2003/11/17 21:19:56 jkh Exp $
+# $Id$
 
 PortSystem    	1.0
 name      	vile
-version       	9.4
+version       	9.8
 categories    	editors
-maintainers   	waqar@opendarwin.org
+maintainers   	waqar openmaintainer
 description   	Vi Like Emacs
 long_description   \
 	vile is a text editor which is extremely compatible \
@@ -16,8 +16,13 @@ long_description   \
 homepage	http://invisible-island.net/vile/
 platforms	darwin
 extract.suffix	.tgz
-master_sites	ftp://invisible-island.net/${name}/ \
-             	ftp://ftp.phred.org/pub/${name}/ \
-              	http://gd.tuwien.ac.at/editors/${name}/
-checksums	md5 1c69045467b7c48be99fa7ac2052a95f
-configure.args  --with-perl --with-ncurses
+master_sites	ftp://invisible-island.net/${name}/
+
+checksums       sha1    d99f41479fa9726147301193a0e10e4282e4779c \
+                rmd160  83a0a76be2e2914a193de9c61b7f1a7d159068df
+
+depends_build	port:flex
+
+depends_lib	port:ncurses port:libiconv
+
+configure.args  --with-perl --with-ncurses --mandir=${prefix}/share/man

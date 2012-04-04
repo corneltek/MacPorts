@@ -1,26 +1,43 @@
-# $Id: Portfile,v 1.6 2004/01/18 04:54:46 toby Exp $
+# $Id$
 
-PortSystem 1.0
-name		ddd
-version		3.3.1
-categories	devel
-maintainers	jkh@opendarwin.org
-description	Data Display Debugger
-long_description DDD is a graphical front-end for GDB and other command-line debuggers.
-homepage	http://www.gnu.org/software/ddd/
-platforms	darwin
-master_sites	gnu
-checksums	md5 38589618d7cd02a03d062bb116bbf1d2
-depends_lib	lib:libXm.3:openMotif
-patchfiles	patch-combo patch-logplayer.C
+PortSystem      1.0
 
-# Use darwin variant.  Other OSes with gcc > 3.2 will need to come up with
-# their own hack since this code doesn't compile with gcc 3.3.
-variant darwin {
-	configure.env CC=gcc3 CXX=c++3 CFLAGS=-no-cpp-precomp
+name            ddd
+version         3.3.12
+revision        2
+categories      devel
+platforms       darwin
+maintainers     nomaintainer
+description     Data Display Debugger
+long_description \
+    DDD is a graphical front-end for GDB and other command-line debuggers.
+homepage        http://www.gnu.org/software/ddd/
+master_sites    gnu
+
+checksums       md5 c50396db7bac3862a6d2555b3b22c34e \
+                sha1 b91d2dfb1145af409138bd34517a898341724e56 \
+                rmd160 fcc71b2b57f4d7a2c17ac817739674c89e1dd7a0
+
+depends_lib \
+	port:ncurses \
+	lib:libXm:openmotif \
+	port:xorg-libXaw \
+	port:xorg-libXp
+
+configure.args  --infodir=${prefix}/share/info \
+                --mandir=${prefix}/share/man \
+                --enable-builtin-manual \
+                --enable-builtin-app-defaults
+
+# make will build the executable "ddd" and the X resource file "Ddd" in the same directory,
+# as HFS+ is case-insensitive by default, this will loosely FAIL.
+build.args      EXEEXT=.exe
+destroot.args   ${build.args}
+
+post-destroot {
+    move ${destroot}${prefix}/bin/ddd.exe ${destroot}${prefix}/bin/ddd
 }
 
-post-configure {
-	system "for i in `grep -rl '^#pragma implementation' ${worksrcpath}` ; do sed -e 's:^#pragma implementation:// #pragma implementation:' < \$i > \$i.new && mv \$i.new \$i; done"
-	system "for i in `grep -rl '^#pragma interface' ${worksrcpath}` ; do sed -e 's:^#pragma interface:// #pragma interface:' < \$i > \$i.new && mv \$i.new \$i; done"
-}
+livecheck.type  regex
+livecheck.url   http://ftp.gnu.org/gnu/${name}/?C=M&O=D
+livecheck.regex ${name}-(\\d+(?:\\.\\d+)*)

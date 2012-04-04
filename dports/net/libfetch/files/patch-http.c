@@ -1,20 +1,17 @@
---- http.c.orig	Tue Aug 20 19:47:22 2002
-+++ http.c	Tue Aug 20 19:47:43 2002
-@@ -80,8 +80,6 @@
- #include "common.h"
- #include "httperr.h"
+--- http.c.orig	2010-02-10 01:26:20.000000000 +0100
++++ http.c	2010-10-14 09:37:39.000000000 +0200
+@@ -76,7 +76,14 @@
+ #include <string.h>
+ #include <time.h>
+ #include <unistd.h>
++#ifndef WITH_SSL_MD5
+ #include <md5.h>
++#else
++#include <openssl/md5.h>
++#define MD5Init(c) MD5_Init(c)
++#define MD5Update(c,data,len) MD5_Update(c,data,(unsigned)len)
++#define MD5Final(d,c) MD5_Final((unsigned char *)d,c)
++#endif
  
--extern char *__progname; /* XXX not portable */
--
- /* Maximum number of redirects to follow */
- #define MAX_REDIRECT 5
- 
-@@ -834,7 +832,7 @@
- 	if ((p = getenv("HTTP_USER_AGENT")) != NULL && *p != '\0')
- 	    _http_cmd(fd, "User-Agent: %s", p);
- 	else
--	    _http_cmd(fd, "User-Agent: %s " _LIBFETCH_VER, __progname);
-+	    _http_cmd(fd, "User-Agent: %s " _LIBFETCH_VER, "libfetch");
- 	if (url->offset)
- 	    _http_cmd(fd, "Range: bytes=%lld-", (long long)url->offset);
- 	_http_cmd(fd, "Connection: close");
+ #include <netinet/in.h>
+ #include <netinet/tcp.h>

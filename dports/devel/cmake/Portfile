@@ -1,22 +1,72 @@
-# $Id: Portfile,v 1.1 2003/03/31 11:33:49 jkh Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
 PortSystem 1.0
-name		cmake
-version		1.6.6
-categories	devel
-maintainers	jkh@opendarwin.org
-description	Cross-platform make
-long_description An extensible, open-source system that manages the build process in an operating system and compiler independent manner. Unlike many cross-platform systems, CMake is designed to be used in conjunction with the native build environment.
-homepage	http://www.cmake.org/
-platforms	darwin freebsd
-master_sites	http://www.cmake.org/files/
-checksums	md5 ffd88487ca4a26fcbaa4a68bc83c0d69
+PortGroup	muniversal 1.0
 
-variant devel {
-	version 1.7
-	fetch.type	cvs
-	cvs.root	:pserver:anonymous@www.cmake.org:/cvsroot/CMake
-	cvs.module	CMake
-	cvs.password	cmake
-	worksrcdir	CMake
+name		cmake
+version		2.8.7
+set branch	[join [lrange [split ${version} .] 0 1] .]
+categories	devel
+license		BSD
+installs_libs no
+maintainers css
+description Cross-platform make
+long_description	\
+	An extensible, open-source system that manages the build	\
+	process in an operating system and compiler independent manner. \
+	Unlike many cross-platform systems, CMake is designed to be		\
+	used in conjunction with the native build environment.
+homepage	http://www.cmake.org/
+master_sites	http://www.cmake.org/files/v${branch}/
+platforms	darwin freebsd
+
+checksums           md5     e1b237aeaed880f65dec9c20602452f6 \
+                    sha1    d206182b454f4d1ddeb0f11d7d1be8a66e5c2464 \
+                    rmd160  13b188e75152feef4e5692807e3a9e7c34b26fe3
+
+depends_lib-append port:libidn port:openssl
+
+configure.env-append CMAKE_PREFIX_PATH=${prefix} \
+				CMAKE_INCLUDE_PATH=${prefix}/include/ncurses \
+				CMAKE_LIBRARY_PATH=${prefix}/lib
+
+configure.args	--mandir=/share/man --docdir=/share/doc/cmake \
+				--parallel=${build.jobs} \
+				--init=${worksrcpath}/macports.cmake
+configure.universal_args
+configure.post_args
+
+patchfiles	patch-CMakeFindFrameworks.cmake.diff \
+			patch-Modules-FindQt4.cmake.diff \
+			patch-Xcode_4.3.diff
+
+post-patch {
+	# copy cmake init file, ready to be patched below
+	copy ${filespath}/macports.cmake ${worksrcpath}
+
+	# patch PREFIX
+	reinplace "s|__PREFIX__|${prefix}|g" ${worksrcpath}/macports.cmake
+	reinplace "s|__PREFIX__|${prefix}|g" ${worksrcpath}/Modules/CMakeFindFrameworks.cmake
 }
+
+post-destroot {
+	xinstall -d -m 0755 ${destroot}${prefix}/share/emacs/site-lisp
+	xinstall -m 0644 ${worksrcpath}/Docs/cmake-mode.el \
+		${destroot}${prefix}/share/emacs/site-lisp
+	foreach type {syntax indent} {
+		xinstall -d -m 0755 ${destroot}${prefix}/share/vim/vimfiles/${type}
+		xinstall -m 0644 -W ${worksrcpath}/Docs cmake-${type}.vim \
+			${destroot}${prefix}/share/vim/vimfiles/${type}
+	}
+}
+
+variant gui description {Qt4 based cmake-gui} {
+	PortGroup qt4 1.0
+	patchfiles-append patch-CMakeLists.txt.diff
+	configure.args-append --qt-gui --qt-qmake=${qt_qmake_cmd}
+}
+
+livecheck.type	regex
+livecheck.regex {Latest Release \((\d(?:\.\d+)*)\)}
+livecheck.url	${homepage}cmake/resources/software.html

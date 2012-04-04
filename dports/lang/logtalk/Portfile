@@ -1,168 +1,90 @@
-# $Id: Portfile,v 1.5 2004/03/03 11:06:27 gwright Exp $
+# $Id$
 
 PortSystem	1.0
 name		logtalk
-version		2.16.0
+version 	2.44.0
 
 categories	lang
-maintainers	pmoura@mac.com
+maintainers	logtalk.org:pmoura
+license		Artistic-2.0
 platforms	darwin freebsd linux
-description	Logtalk - Open source object-oriented extension to Prolog
+supported_archs	noarch
+
+description	Logtalk - Open source object-oriented logic programming language
 
 long_description	\
-		Logtalk is an open source object-oriented extension to the 	\
-		Prolog programming language. Integrating logic programming 	\
-		with object-oriented and event-driven programming, it is 	\
-		compatible with most Prolog compilers. It supports both 	\
-		prototypes and classes. In addition, it supports component-	\
-		based programming through category-based composition.
-		
+	Logtalk is an object-oriented logic programming language that can use most		\
+	Prolog implementations as a back-end compiler. As a multi-paradigm language,	\
+	it includes support for both prototypes and classes, protocols (interfaces),	\
+	component-based programming through category-based composition, event-driven	\
+	programming, and high-level multi-threading programming.
 
-homepage        http://www.logtalk.org/
-master_sites	${homepage}/files/
+homepage		http://logtalk.org/
+master_sites	${homepage}files/
 
-checksums	md5 3bb5f03a21e19f5a44e333dbbf7d826f
+checksums       \
+	sha1 ce97392f910ab680b5e6936c9e8fce56184dd5bf  \
+	rmd160 93253af91d5416ad86e460f50c9363ba76b59f60 
 
-distname	lgt2160
+distname		lgt[strsed ${version} {g/\.//}]
 
-configure	{}
+use_bzip2		yes
 
-build		{}
+depends_lib		port:shared-mime-info
 
-destroot	{
-	system "mkdir ${destroot}${prefix}/share/${distname}"
-	cd ${destroot}${prefix}/share/${distname}
+use_configure	no
 
-	system "cp ${workpath}/${worksrcdir}/LICENSE ."
-	system "cp ${workpath}/${worksrcdir}/QUICK_START ."
-	system "cp ${workpath}/${worksrcdir}/README ."
-	system "cp ${workpath}/${worksrcdir}/RELEASE_NOTES ."
-	system "cp ${workpath}/${worksrcdir}/UPGRADING ."
-	system "cp -R ${workpath}/${worksrcdir}/manuals ."
-	system "cp -R ${workpath}/${worksrcdir}/examples ."
-	system "chmod -R g+w examples"
+build			{}
 
-	system "mkdir ${destroot}${prefix}/lib/${distname}"
-	cd ${destroot}${prefix}/lib/${distname}
-
-	system "cp -R ${workpath}/${worksrcdir}/compiler ."
-	system "cp -R ${workpath}/${worksrcdir}/configs ."
-	system "cp -R ${workpath}/${worksrcdir}/library ."
-	system "cp -R ${workpath}/${worksrcdir}/wenv ."
-	system "cp -R ${workpath}/${worksrcdir}/xml ."
-	system "chmod -R g+w library"
-
-	if {[variant_isset gprolog]} {
-		system "mkdir -p ${destroot}${prefix}/lib/${distname}/bin"
-		cd ${destroot}${prefix}/lib/${distname}/bin
-		system "cp ${workpath}/${worksrcdir}/gplgt ."
-	}
-
-	if {[variant_isset swi-prolog]} {
-		system "mkdir -p ${destroot}${prefix}/lib/${distname}/bin"
-		cd ${destroot}${prefix}/lib/${distname}/bin
-		system "cp ${workpath}/${worksrcdir}/logtalkswi.rc ."
-		system "cp ${workpath}/${worksrcdir}/swilgt ."
-		system "mv ${workpath}/${worksrcdir}/logtalkswi.pl ."
-	}
-
-	if {[variant_isset yap]} {
-		system "mkdir -p ${destroot}${prefix}/lib/${distname}/bin"
-		cd ${destroot}${prefix}/lib/${distname}/bin
-		system "cp ${workpath}/${worksrcdir}/logtalkyap.rc ."
-		system "cp ${workpath}/${worksrcdir}/yaplgt ."
-	}
+destroot {
+	system "cd ${worksrcpath}/scripts && ./install.sh ${destroot}${prefix}"
 }
 
-post-destroot	{
-	cd ${destroot}/${prefix}/lib
-	system "ln -sf ${distname} logtalk"
-
-	cd ../share
-	system "ln -sf ${distname} logtalk"
-
-	if {[variant_isset gprolog]} {
-		cd ../bin
-		system "ln -sf ../lib/${distname}/bin/gplgt gplgt"
-	}
-
-	if {[variant_isset swi-prolog]} {
-		cd ../bin
-		system "ln -sf ../lib/${distname}/bin/swilgt swilgt"
-	}
-
-	if {[variant_isset yap]} {
-		cd ../bin
-		system "ln -sf ../lib/${distname}/bin/yaplgt yaplgt"
-	}
+post-destroot {
+	delete ${destroot}${prefix}/share/mime
 }
 
-variant	gprolog	{
-	depends_lib-append bin:gplc:gprolog
-	
-	post-build {
-		cd ${workpath}/${worksrcdir}
-
-		system "cp configs/gnu.config configs/gnu.pl"
-		system "echo ':- built_in.' > compiler/logtalkgp.pl"
-		system "cat compiler/logtalk.pl >> compiler/logtalkgp.pl"
-		system "gplc -o gplgt configs/gnu.pl compiler/logtalkgp.pl"
-		system "rm configs/gnu.pl"
-		system "rm compiler/logtalkgp.pl"
-
-		ui_msg "*******************************************************"
-		ui_msg "*  In order to run Logtalk using GNU-Prolog as the    *"
-		ui_msg "*  back-end Prolog compiler simply call the program   *"
-		ui_msg "*  gplgt from the command line.                       *"
-		ui_msg "*******************************************************"
-	}
+post-pkg {
+	set resources ${workpath}/${name}-${version}.pkg/Contents/Resources/
+	file copy -force -- ${workpath}/${worksrcdir}/scripts/macosx/License.html ${resources}
+	file copy -force -- ${workpath}/${worksrcdir}/scripts/macosx/ReadMe.html ${resources}
+	file copy -force -- ${workpath}/${worksrcdir}/scripts/macosx/Welcome.html ${resources}
+	file copy -force -- ${workpath}/${worksrcdir}/scripts/macosx/postflight ${resources}
 }
 
-variant	swi-prolog	{
-	depends_lib-append bin:swipl:swi-prolog
-	
-	post-build {
-		cd ${workpath}/${worksrcdir}
-
-		system "echo ':- system_module.' > logtalkswi.pl"
-		system "cat compiler/logtalk.pl >> logtalkswi.pl"
-		system "echo ':- consult(${prefix}/lib/logtalk/configs/swi.config).' > logtalkswi.rc"
-		system "echo ':- consult(${prefix}/lib/logtalk/configs/swihook.pl).' >> logtalkswi.rc"
-		system "echo ':- consult(${prefix}/lib/logtalk/bin/logtalkswi.pl).' >> logtalkswi.rc"
-		reinplace "s|\(|('|g" logtalkswi.rc
-		reinplace "s|\)|')|g" logtalkswi.rc
-
-		system "echo '#/bin/sh' > swilgt"
-		system "echo 'swipl -f ${prefix}/lib/logtalk/bin/logtalkswi.rc' >> swilgt"
-		system "chmod a+x swilgt"
-
-		ui_msg "*******************************************************"
-		ui_msg "*  In order to run Logtalk using SWI-Prolog as the    *"
-		ui_msg "*  back-end Prolog compiler simply run the script     *"
-		ui_msg "*  swilgt from the command line.                      *"
-		ui_msg "*******************************************************"
+post-activate {
+	ui_msg "****************************************************************************"
+	ui_msg "* Integration scripts have been created for running Logtalk with selected"
+	ui_msg "* back-end Prolog compilers (which must be properly installed for running"
+	ui_msg "* the scripts!):"
+	ui_msg "*"
+	ui_msg "* B-Prolog (version 7.5#8 or later):     bplgt"
+	ui_msg "* CxProlog (version 0.97.5 or later):    cxlgt"
+	ui_msg "* ECLiPSe (version 6.0#141 or later):    eclipselgt"
+	ui_msg "* GNU Prolog (version 1.4.0 or later):   gplgt"
+	ui_msg "* Lean Prolog (version 2.19.0 or later): lplgt"
+	ui_msg "* Qu-Prolog (version 8.12 or later):     qplgt"
+	ui_msg "* SICStus Prolog (versions 3.12.x, 4.x): sicstuslgt"
+	ui_msg "* SWI-Prolog (version 5.8.0 or later):   swilgt"
+	ui_msg "* XSB (version 3.3 or later):            xsblgt     (first run must use sudo)"
+	ui_msg "* XSB 64 bits (version 3.3 or later):    xsb64lgt   (first run must use sudo)"
+	ui_msg "* XSB MT (version 3.3 or later):         xsbmtlgt   (first run must use sudo)"
+	ui_msg "* XSB MT 64 bits (version 3.3 or later): xsbmt64lgt (first run must use sudo)"
+	ui_msg "* YAP (version 6.0.2 or later):          yaplgt"
+	ui_msg "*"
+	ui_msg "* Remember to set the environment variable LOGTALKHOME to the path to"
+	ui_msg "* the Logtalk distribution: ${prefix}/share/logtalk"
+	ui_msg "* and the environment variable LOGTALKUSER to your local configuration"
+	ui_msg "* directory (usually ~/logtalk), which you must create by running the"
+	ui_msg "* command logtalk_user_setup. See the file \$LOGTALKHOME/CUSTOMIZE.txt"
+	ui_msg "* for details on how to customize your working environment."
+	ui_msg "*"
+	if {[file exists ${prefix}/share/mime/packages/logtalk.xml]} {
+	    delete ${prefix}/share/mime/packages/logtalk.xml
 	}
-}
-
-variant	yap	{
-	depends_lib-append bin:yap:yap
-	
-	post-build {
-		cd ${workpath}/${worksrcdir}
-
-		system "echo ':- reconsult(${prefix}/lib/logtalk/configs/yap430.config).' > logtalkyap.rc"
-		system "echo ':- reconsult(${prefix}/lib/logtalk/compiler/logtalk.pl).' >> logtalkyap.rc"
-		reinplace "s|\(|('|g" logtalkyap.rc
-		reinplace "s|\)|')|g" logtalkyap.rc
-
-		system "echo '#/bin/sh' > yaplgt"
-		system "echo 'yap -l ${prefix}/lib/logtalk/bin/logtalkyap.rc' >> yaplgt"
-		system "chmod a+x yaplgt"
-
-		ui_msg "*******************************************************"
-		ui_msg "*  In order to run Logtalk using YAP as the back-end  *"
-		ui_msg "*  Prolog compiler simply run the script yaplgt from  *"
-		ui_msg "*  the command line.                                  *"
-		ui_msg "*******************************************************"
-	}
+	xinstall -d ${prefix}/share/mime/packages
+	xinstall -m 644 ${prefix}/share/${distname}/scripts/freedesktop/logtalk.xml ${prefix}/share/mime/packages
+	system "${prefix}/bin/update-mime-database ${prefix}/share/mime; true"
+	ui_msg "* Added the Logtalk mime-type to the Shared MIME-info Database."
+	ui_msg "****************************************************************************"
 }

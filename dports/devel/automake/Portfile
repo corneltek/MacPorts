@@ -1,38 +1,47 @@
-# $Id: Portfile,v 1.4 2003/11/27 09:24:08 mww Exp $
+# $Id$
 
 PortSystem 1.0
 
-name		automake
-version		1.7.9
-categories	devel
-maintainers	mww@opendarwin.org
-description	the gnu automake utility for generating Makefile.in
-platforms	darwin freebsd
-long_description	Automake is a tool for automatically generating \
-		Makefile.in files from files called Makefile.am. Each \
-		Makefile.am is basically a series of make variable \
-		definitions, with rules being thrown in occasionally. The \
-		generated Makefile.in files are compliant with the GNU \
-		Makefile standards. 
+name                automake
+version             1.11.4
+categories          devel
+license             {GPL-2+ Permissive}
+installs_libs       no
+maintainers         mww
+description         the gnu automake utility for generating Makefile.in
+platforms           darwin freebsd
+supported_archs     noarch
+long_description    Automake is a tool for automatically generating \
+        Makefile.in files from files called Makefile.am. Each \
+        Makefile.am is basically a series of make variable \
+        definitions, with rules being thrown in occasionally. The \
+        generated Makefile.in files are compliant with the GNU \
+        Makefile standards.
 
-homepage	http://www.gnu.org/software/automake/
-master_sites	gnu
-checksums	md5 571fd0b0598eb2a27dcf68adcfddfacb
-use_bzip2	yes
+homepage            http://www.gnu.org/software/automake/
+master_sites        gnu
+checksums           md5     f4c545f01252089d2c3837e1d1d3e21b \
+                    sha1    6223b9a507fc33e30b7291dfbcc7c9fc9ee0b133 \
+                    rmd160  e84a568b5c667925c312fe291a756032dd05f364
 
-depends_lib	bin:perl:perl5.8
+depends_build       port:autoconf
+depends_lib         path:bin/perl:perl5
 
-configure.args	--infodir=${prefix}/share/info
+configure.args      --infodir=${prefix}/share/info
+configure.perl      ${prefix}/bin/perl
 
-test.run	yes
-test.target	check
+test.run            yes
+test.target         check
 
-post-destroot	{
-	file mkdir ${destroot}${prefix}/share/doc/${name}
-	file copy ${worksrcpath}/AUTHORS ${worksrcpath}/COPYING \
-		${worksrcpath}/ChangeLog ${worksrcpath}/ChangeLog.00 \
-		${worksrcpath}/ChangeLog.01 ${worksrcpath}/ChangeLog.96 \
-		${worksrcpath}/ChangeLog.98 ${worksrcpath}/INSTALL \
-		${worksrcpath}/NEWS ${worksrcpath}/README ${worksrcpath}/TODO \
-		${worksrcpath}/THANKS ${destroot}${prefix}/share/doc/${name}
+post-destroot    {
+    xinstall -m 755 -d ${destroot}${prefix}/share/doc/${name}
+    xinstall -m 644 -W ${worksrcpath} AUTHORS COPYING ChangeLog ChangeLog.00 \
+        ChangeLog.01 ChangeLog.02 ChangeLog.03 ChangeLog.04 ChangeLog.09 \
+        ChangeLog.96 ChangeLog.98 INSTALL NEWS README TODO THANKS \
+        ${destroot}${prefix}/share/doc/${name}
 }
+
+livecheck.type      regex
+livecheck.url       http://ftp.gnu.org/gnu/${name}/?C=M&O=D
+livecheck.regex     automake-(\[0-9\\\.]+\[0-9\])\\.
+

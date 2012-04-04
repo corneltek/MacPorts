@@ -2,12 +2,15 @@
 
 PREFIX="$1"; shift
 DESTROOT="$1"; shift
+FRAMEWORKS_DIR="$1"; shift
 LIBS="libqt-mt.3.dylib libqui.1.dylib"
 
-if [ -z "$PREFIX" ] || [ -z "$DESTROOT" ]; then
-	echo "usage: $0 <prefix> <destroot>"
+if [ -z "$PREFIX" ] || [ -z "$DESTROOT" ] || [ -z "$FRAMEWORKS_DIR" ]; then
+	echo "usage: $0 <prefix> <destroot> <frameworks_dir>"
 	exit 1
 fi
+
+(set -x; install_name_tool -id "/Library/Frameworks/Qt.framework/Qt" "${DESTROOT}${FRAMEWORKS_DIR}/Qt.framework/Qt")
 
 for lib in $LIBS; do
 	(set -x; install_name_tool -id "${PREFIX}/lib/${lib}" "${DESTROOT}${PREFIX}/lib/${lib}")
@@ -30,5 +33,4 @@ for lib in $LIBS; do
 			(set -x; install_name_tool -change "${lib}" "${PREFIX}/lib/${lib}" "${DESTROOT}${PREFIX}/bin/${app}")
 		fi
 	done
-
 done

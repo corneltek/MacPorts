@@ -1,23 +1,38 @@
-# $Id: Portfile,v 1.5 2004/01/15 07:53:04 toby Exp $
+# $Id$
 
-PortSystem 1.0
+PortSystem              1.0
 
-name           fondu
-version        030428
-description    A set of programs to interconvert between mac font formats and pfb, ttf, otf and bdf files on unix.  
-categories     print 
-homepage       http://fondu.sourceforge.net/
-master_sites   http://fondu.sourceforge.net/
-checksums      md5 f4edb5fbadc8bdbf3bfbd05f9e66c1c4	
-maintainers    michaelm@opendarwin.org
-distname       fondu_src-${version}
-extract.suffix   .tgz
-worksrcdir     fondu
-post-configure { reinplace s|/usr/local|${prefix}|g ${worksrcpath}/Makefile }
-pre-destroot   { reinplace s|${prefix}|${destroot}${prefix}|g ${worksrcpath}/Makefile }
+name                    fondu
+version                 060102
+revision                1
+platforms               darwin
+categories              print
+license                 BSD
+maintainers             nomaintainer
+homepage                http://fondu.sourceforge.net/
+master_sites            http://fondu.sourceforge.net/
 
-long_description \
-Dealing with mac fonts is hard on other operating systems because mac fonts are stored \
-in the resource fork, and other operating systems do not support this concept. Fondu \
-will extract the resource fork from either a macbinary file or a binhex file. Ufond will \
-create a resource fork inside a macbinary file. 
+description             A set of programs to interconvert between Mac font \
+                        formats and pfb, ttf, otf and bdf files on UNIX.
+
+long_description        Dealing with Mac fonts is hard on other operating \
+                        systems because Mac fonts are stored in the resource \
+                        fork, and other operating systems do not support \
+                        this concept. Fondu will extract the resource fork \
+                        from either a MacBinary file or a BinHex file. Ufond \
+                        will create a resource fork inside a MacBinary file.
+
+checksums               md5 e20861beacddc1ab392bef7813641bf8
+extract.suffix          .tgz
+distfiles               [suffix ${name}_src-${version}]
+
+post-patch {
+    reinplace "s|^CFLAGS = -g \$(WFLAGS)|CFLAGS = -g \$(WFLAGS) ${configure.cppflags} ${configure.cflags} ${configure.ldflags} [get_canonical_archflags]|g" ${worksrcpath}/Makefile.in
+}
+
+configure.args          --bindir=${prefix}/bin \
+                        --mandir=${prefix}/share/man
+
+post-destroot {
+    eval xinstall -m 644 [glob ${worksrcpath}/*.1] ${destroot}${prefix}/share/man/man1/
+}

@@ -1,47 +1,60 @@
-# $Id: Portfile,v 1.3 2004/01/18 19:25:41 mww Exp $
+# $Id$
 
-PortSystem 1.0
+PortSystem              1.0
+PortGroup               app 1.0
 
-name		digger
-version		20020314
-categories	games
-platforms	darwin
-maintainers	mww@opendarwin.org
-description	the Digger game
-long_description	${description}
+name                    digger
+version                 20020314
+revision                2
+categories              games
+platforms               darwin
+maintainers             nomaintainer
 
-homepage	http://www.digger.org
-master_sites	${homepage}
-checksums	md5 76c1e8ae3c4566dad65e91adbfe29570
-patchfiles	patch-alpha.c.diff \
-		patch-def.h.diff \
-		patch-digger.c.diff \
-		patch-input.c.diff \
-		patch-scores.c.diff \
-		patch-input.h.diff \
-		patch-main.c.diff
+description             the Digger game
+long_description        ${description}
 
-depends_lib	bin:sdl-config:libsdl
+homepage                http://www.digger.org/
+master_sites            ${homepage}
+checksums               md5 a16e90a49ed8ea90099b254d3ef5edfa
+patchfiles              patch-def.h.diff \
+                        patch-digger.c.diff \
+                        patch-input.c.diff \
+                        patch-scores.c.diff \
+                        patch-input.h.diff \
+                        patch-main.c.diff
 
-post-extract	{
-	file copy ${filespath}/Makefile.darwin ${worksrcpath}/Makefile
+depends_lib             path:lib/pkgconfig/sdl.pc:libsdl
+
+platform darwin {
+    patchfiles-append   patch-Makefile.sdl.diff
 }
 
-use_configure	no
+use_configure           no
 
-destroot	{
-	xinstall -d  ${destroot}${prefix}/share/doc/${name}
-	xinstall -m 644 ${worksrcpath}/digger.txt \
-		${destroot}${prefix}/share/doc/${name}
-	xinstall -mode 755 -s ${worksrcpath}/digger \
-		${destroot}${prefix}/bin
+variant universal {}
+
+build.args              -f Makefile.sdl \
+                        CC="${configure.cc} [get_canonical_archflags]"
+
+destroot {
+    xinstall -d  ${destroot}${prefix}/share/doc/${name}
+    xinstall -m 644 ${worksrcpath}/digger.txt \
+        ${destroot}${prefix}/share/doc/${name}
+    xinstall -m 755 -s ${worksrcpath}/digger ${destroot}${prefix}/bin
 }
 
-variant darwin	{
-	post-destroot	{
-		file mkdir ${destroot}/Applications/DarwinPorts/Digger.app/Contents/MacOS
-		xinstall -mode 755 ${filespath}/Digger.darwin \
-			${destroot}/Applications/DarwinPorts/Digger.app/Contents/MacOS/Digger
-		reinplace "s|_PREFIX_|${prefix}|g" ${destroot}/Applications/DarwinPorts/Digger.app/Contents/MacOS/Digger
-	}
+app.executable          ${workpath}/${name}
+app.icon                ${filespath}/icon.png
+
+platform macosx {
+    post-extract {
+        xinstall ${filespath}/Digger.darwin ${workpath}/${name}
+    }
+    post-patch {
+        reinplace "s|_PREFIX_|${prefix}|g" ${workpath}/${name}
+    }
 }
+
+livecheck.type          regex
+livecheck.url           ${homepage}download.html
+livecheck.regex         ${name}-(\[0-9.\]+)\\.tar

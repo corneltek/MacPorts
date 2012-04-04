@@ -1,5 +1,6 @@
 /*
  * Strsed.c
+ * $Id$
  *
  *     ed(1)/tr(1)-like search, replace, transliterate. See the
  *     manpage for details. See the README for copyright information.
@@ -128,6 +129,8 @@
 
 #define HS_REGEX	1
 
+#include "strsed.h"
+
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
@@ -211,6 +214,21 @@ static struct {
 #define EMPTY_REGISTER ((regoff_t) 0)
 #endif
 
+/* ------------------------------------------------------------------------- **
+ * Prototypes
+ * ------------------------------------------------------------------------- */
+static char *mem(int, int);
+static void mem_init(void);
+static void mem_free(char *);
+static char *build_map(char *, char *);
+static char nextch(char *, int);
+static void mem_save(int);
+static int mem_find(int);
+char *backslash_eliminate(char *, int, int);
+
+/* ------------------------------------------------------------------------- **
+ * strsed
+ * ------------------------------------------------------------------------- */
 char *
 strsed(string, pattern, range)
 register char *string;
@@ -230,11 +248,6 @@ int *range;
     static regmatch_t *exp_regs = NULL;
     static regex_t exp;
 #endif
-
-    char *backslash_eliminate();
-    static char *mem();
-    static void mem_init();
-    static void mem_free();
     
     char *from;
     char *new_str;
@@ -579,6 +592,12 @@ int *range;
      */
 
     do {
+#ifdef HS_REGEX
+	    /* XXX Not even trying to use custom memory routines */
+	    if (!(exp_regs = calloc(str_len, sizeof(regmatch_t)))) {
+		return 0;
+	    }
+#endif
 	if (match_all){
 	    /* Fake a match instead of calling re_search() or regexec(). */
 	    match = 1;
@@ -592,10 +611,6 @@ int *range;
 	    match = re_search(&re_comp_buf, str, str_len, 0, str_len, &regs);
 #endif
 #ifdef HS_REGEX
-	    /* XXX Not even trying to use custom memory routines */
-	    if (!(exp_regs = calloc(str_len, sizeof(regmatch_t)))) {
-		return 0;
-	    }
 	    match = regexec(&exp, str, str_len, exp_regs, 0) ? NO_MATCH : 1;
 #endif
 	}
@@ -678,7 +693,6 @@ int *range;
                      */
 		    if (*(tmp + 2) == '{'){
 			/* A transliteration table. Build the map. */
-			static char *build_map();
 			if (!(tmp = build_map(tmp + 2, map))){
 			    RETURN(0);
 			}
@@ -799,7 +813,6 @@ int who;
      *
      */
 
-    static char *mem();
     char *new_str;
     int extra = 100;
     int seenlb = 0;
@@ -1099,13 +1112,13 @@ char *map;
     char *str;
     char *tmp;
     char c;
-    static char *mem();
-    static char nextch();
     int i = 0;
     int range_count = 0;
     int seenbs = 0;
     static char *last = 0;
     static int last_len;
+
+    out = 0;
 
     if (!s){
         return 0;
@@ -1212,7 +1225,7 @@ char *map;
      */
 
     while ((c = nextch((char *)0, 0))){
-        map[c] = nextch((char *)0, 1);
+        map[(int) c] = nextch((char *)0, 1);
     }
 
     return tmp;
@@ -1354,8 +1367,6 @@ int size;
      * not too clear. Seems to works fine though.
      */
     
-    static void mem_save();
-
     if (who < 0 || who >= MEM_SLOTS){
 	return 0;
     }
@@ -1391,7 +1402,6 @@ int size;
 	    mem_save(who);
 	}
 	else{
-	    static int mem_find();
 	    int x = mem_find(size);
 	    if (x != -1){
 		mem_slots[who].s = mem_slots[x].s;

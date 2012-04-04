@@ -1,4 +1,4 @@
-# $Id: Portfile,v 1.5 2004/01/16 11:59:21 toby Exp $
+# $Id$
 
 PortSystem       1.0
 name             cursive
@@ -7,7 +7,7 @@ revision         1
 distname         ${name}
 extract.suffix   .tgz
 categories       games textproc
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      Create ASCII character cursive handwriting
 long_description \
     Cursive is a program for generating cursive signatures and text like \

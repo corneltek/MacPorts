@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.1 2004/01/15 13:11:45 toby Exp $
+# $Id$
 
 PortSystem       1.0
 name             galaxis
 version          1.7
 categories       games
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      UNIX clone of the Mac game Galaxis
 long_description \
     UNIX-hosted, curses-based clone of the nifty little Macintosh \

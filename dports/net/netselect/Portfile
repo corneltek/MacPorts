@@ -1,18 +1,19 @@
-# $Id: Portfile,v 1.3 2004/01/19 01:13:29 fenner Exp $
+# $Id$
 PortSystem 1.0
 
 name		netselect
 version		0.3
 categories	net
-maintainers	fenner@research.att.com
+platforms	darwin
+maintainers	fenner
 description	an ultrafast intelligent parallelizing binary-search implementation of "ping."
 long_description	${description}
-homepage	http://www.worldvisions.ca/~apenwarr/netselect/
+homepage	http://alumnit.ca/~apenwarr/netselect/
 master_sites	${homepage}
 checksums	md5 3a3714946db2458e5db3d55373057ef2
 worksrcdir	${name}
 patchfiles	netselect.c.diff Makefile.diff
 
-configure	{}
+use_configure   no
 
 destroot.destdir	DESTDIR="${destroot}" PREFIX="${prefix}"

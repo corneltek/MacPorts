@@ -1,44 +1,82 @@
-# $Id: Portfile,v 1.8 2004/02/02 23:51:45 mww Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
+PortSystem      1.0
+PortGroup       python 1.0
 
-name		py-numeric
-version		23.1
-categories	python devel math
-maintainers	mww@opendarwin.org
-platforms	darwin
-description	fast numerical array language for python
-long_description	Numerical Python adds a fast, compact, \
-			multidimensional array language facility to Python.
+name            py-numeric
+version         24.2
+revision        2
+categories-append   devel math
+license         PSF
+platforms       darwin
+maintainers     jmr openmaintainer
+description     fast numerical array language for python
 
-homepage	http://www.pfdubois.com/numpy/
-master_sites	sourceforge:numpy
-distname	Numeric-${version}
-checksums	md5 5cd24ed20627f5cbc822a2bed8ff27e9
+long_description \
+    Numerical Python adds a fast, compact, \
+    multidimensional array language facility to Python.
 
-depends_lib	bin:python:python
+homepage        http://numpy.scipy.org/
+master_sites    sourceforge:project/numpy/Old%20Numeric/${version}/ \
+                freebsd
+distname        Numeric-${version}
 
-use_configure	no
+checksums       md5 2ae672656e06716a149acb048cca3093 \
+                sha1 72869ef80c12630a9a125ba10c96093b6ae16aff \
+                rmd160 c9502db28663558c535e236392c9beddec9743bb
 
-variant darwin	{
-	build.env	LDFLAGS="-framework vecLib"
+python.versions 24 25 26 27
+
+if {$name != $subport} {
+    patchfiles      patch-ranf.c.diff \
+                    patch-Src-arrayobject.c.diff \
+                    patch-Packages-dotblas-_dotblas.c.diff \
+                    patch-changes.txt.diff
+    
+    build.env       CC=${configure.cc}
+    
+    platform macosx {
+        post-patch {
+            copy -force ${filespath}/customize.py-macosx ${worksrcpath}/customize.py
+        }
+    }
+    
+    platform puredarwin {
+        post-patch {
+            copy -force ${filespath}/customize.py-puredarwin ${worksrcpath}/customize.py
+        }
+    }
+    
+    test.run        yes
+    test.env        PYTHONPATH=[glob -nocomplain ${worksrcpath}/build/lib*]
+    test.cmd        ${python.bin} Test/test.py
+    test.target
+    
+    
+    post-destroot {
+        set docdir ${prefix}/share/doc/${subport}
+    
+        eval xinstall -d \
+            ${destroot}${docdir}/dotblas \
+            ${destroot}${docdir}/MA \
+            ${destroot}${docdir}/RNG
+    
+        xinstall -W ${worksrcpath} README changes.txt \
+            ${destroot}${docdir}
+    
+        xinstall -m 0644 ${worksrcpath}/Packages/dotblas/doc/README.html \
+            ${destroot}${docdir}/dotblas
+    
+        xinstall -m 0644 -W ${worksrcpath}/Packages/MA Legal.htm changes.txt \
+            ${destroot}${docdir}/MA
+    
+        xinstall -m 0644 ${worksrcpath}/Packages/RNG/Legal.htm \
+            ${destroot}${docdir}/RNG
+    
+        copy ${worksrcpath}/Demo ${destroot}${docdir}
+        copy ${worksrcpath}/Packages/MA/Demo ${destroot}${docdir}/MA
+    }
 }
 
-build.cmd	python setup.py
-build.target	build
-
-destroot.cmd	python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
-
-set doc		${destroot}${prefix}/share/doc/${name}
-post-destroot	{
-	xinstall -d -m 755 ${doc}/dotblas ${doc}/MA ${doc}/RNG
-	xinstall -W ${worksrcpath} README changes.txt ${doc}
-	xinstall -m 644 ${worksrcpath}/Packages/dotblas/doc/README.html \
-		${doc}/dotblas
-	xinstall -m 644 -W ${worksrcpath}/Packages/MA Legal.htm changes.txt \
-		${doc}/MA
-	xinstall -m 644 ${worksrcpath}/Packages/RNG/Legal.htm ${doc}/RNG
-	file copy ${worksrcpath}/Demo ${doc}
-	file copy ${worksrcpath}/Packages/MA/Demo ${doc}/MA
-}
+livecheck.type   none

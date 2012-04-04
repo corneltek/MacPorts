@@ -1,6 +1,6 @@
-# $Id: Makefile,v 1.9 2004/01/12 21:18:11 wbb4 Exp $
+# $Id$
 
-# To build DarwinPorts  guide files from the source docbook xml.
+# To build MacPorts  guide files from the source docbook xml.
 # michaelm@opendarwin.org
 
 ## Targets
@@ -36,7 +36,7 @@ XML_CATALOG_FILES?=    ${prefix}/etc/xml/catalog
 XML_DEBUG_CATALOG?=
 CSS_STYLESHEET?=	docbook.css
 RESOURCES?=		resources/
-STRINGPARAMS?=		--stringparam html.stylesheet ${CSS_STYLESHEET}
+STRINGPARAMS?=		--stringparam html.stylesheet ${CSS_STYLESHEET} --stringparam chunk.section.depth 0
 
 .PHONY : all
 .PHONY : clean
@@ -52,7 +52,7 @@ check:
 html:
 	mkdir -p ${HTMLDIR}
 	xsltproc --xinclude -o "${HTMLDIR}/" "${STYLESHEET}" "${SOURCEDIR}/guide.xml"
-	
+
 xhtml: 
 	mkdir -p ${XHTMLDIR}
 	cp ${RESOURCES}${CSS_STYLESHEET} ${XHTMLDIR}
@@ -70,5 +70,5 @@ tidy:
 
 clean:
 	rm -fr ${HTMLDIR} ${XHTMLDIR}
-	
-include ../../base/Mk/dports.autoconf.mk
+
+include ../../base/Mk/macports.autoconf.mk

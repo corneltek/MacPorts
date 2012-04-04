@@ -1,25 +1,47 @@
-# $Id: Portfile,v 1.5 2004/02/07 12:05:33 olegb Exp $
-PortSystem 1.0
-name		intltool
-version		0.30
-description	a string tool
-long_description       	The intltool collection can be used to do these \
-			things: \
- 			Extract translatable strings from various source \
-			files (.xml.in, .glade, .desktop.in, .server.in, \
-			.oaf.in). \
- 			Collect the extracted strings together with messages \
-			from traditional source files (.c, .h) in \
-			po/PACKAGE.pot. \
- 			Merge back the translations from .po files into \
-			.xml, .desktop and .oaf files. This merge step will \
-			happen at build resp. installation time.
-maintainers	olegb@opendarwin.org
-categories	textproc gnome
-platforms	darwin 
-homepage	http://www.gnome.org/
-master_sites    gnome:sources/intltool/0.30/
-checksums	md5 7285d5f792966b563519996ea3af58d5
-depends_lib	lib:libexpat:expat lib:libintl:gettext lib:libiconv:libiconv 
-use_bzip2 	yes
-configure.args  --mandir=${prefix}/share/man
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem      1.0
+
+name            intltool
+version         0.50.2
+maintainers     nomaintainer
+categories      textproc gnome
+license         GPL-2+
+installs_libs   no
+platforms       darwin
+supported_archs noarch
+
+description     a string tool
+
+long_description \
+    The intltool collection can be used to extract translatable \
+    strings from various source files (.xml.in, .glade, .desktop.in, \
+    .server.in, .oaf.in), collect the extracted strings together with \
+    messages from traditional source files (.c, .h) in po/PACKAGE.pot \
+    and merge back the translations from .po files into .xml, .desktop \
+    and .oaf files. This merge step will happen at build or \
+    installation time.
+
+homepage        https://launchpad.net/intltool
+master_sites    ${homepage}/trunk/${version}/+download
+
+checksums       rmd160  52b1c6aae5f5f0069d09cef8d709ab267c460319 \
+                sha256  67f25c5c6fb71d095793a7f895b245e65e829e8bde68c6c8b4c912144ff34406
+
+depends_build   port:gnome-common
+depends_lib     port:expat \
+                port:perl5.12 \
+                port:p5.12-xml-parser \
+                port:p5.12-getopt-long \
+                port:p5.12-pathtools \
+                port:p5.12-scalar-list-utils
+
+configure.perl  ${prefix}/bin/perl5.12
+
+test.run        yes
+test.target     check
+
+livecheck.type  regex
+livecheck.url   ${homepage}/+download
+livecheck.regex ${name}-(\[0-9.\]+)${extract.suffix}

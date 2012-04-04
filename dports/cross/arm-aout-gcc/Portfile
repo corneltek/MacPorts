@@ -1,12 +1,11 @@
-# $Id: Portfile,v 1.4 2004/02/14 05:34:17 pguyot Exp $
+# $Id$
 
 PortSystem			1.0
 name            	arm-aout-gcc
-version         	3.3.2
-revision			1
+version         	3.3.6
 
 # Parameters for this port.
-set newlibversion	1.11.0
+set newlibversion	1.14.0
 set crossgcc-target arm-aout
 
 description     	gcc cross-compilers for arm-aout, with newlib runtime library.
@@ -15,22 +14,33 @@ long_description	gnu compilers collection (including c++, fortran and java) for 
 homepage			http://gcc.gnu.org/
 platforms       	darwin
 categories      	cross devel
-maintainers     	pguyot@kallisys.net
+maintainers     	nomaintainer
 master_sites		gnu:gcc/gcc-${version}/:gcc \
 					ftp://sources.redhat.com/pub/newlib/:newlib \
 					ftp://ftp.mirror.ac.uk/sites/sources.redhat.com/pub/newlib/:newlib
 distfiles			gcc-${version}.tar.gz:gcc newlib-${newlibversion}.tar.gz:newlib
 worksrcdir			gcc-${version}
-checksums			gcc-${version}.tar.gz md5 60ab4d3431786a81be6522cc04bc1827 \
-					newlib-${newlibversion}.tar.gz md5 74de7de0c9624cd757df63f2ed17a9b4
+checksums			gcc-${version}.tar.gz \
+						md5 22c911f0a10275a0035d6004b9d68b63 \
+						sha1 7c713380dc7eed4bf95e158118b555fc68031c73 \
+						rmd160 aa9bdc4d7549fc586684c4e6da90df68a1c191ff \
+					newlib-${newlibversion}.tar.gz \
+						md5 3fa663f131b355d3adb24ead4df678f2 \
+						sha1 edc50f5cda734b50c5431a2b8d1e579ac82ce3f9 \
+						rmd160 6f2b3f32759925142421ddc069229eff857dd106
+
+# All cross ports violate the mtree layout.
+destroot.violate_mtree	yes
 
 # Download everything to gcc/
 dist_subdir			gcc
 
-# Patches for info's dir
+# Patches for info's dir and bugs that gcc 4.x doesn't like.
 patchfiles			patch-gcc-Makefile.in \
+					patch-gcc-f-com.h \
 					patch-gcc-f-Make-lang.in \
 					patch-gcc-java-Make-lang.in \
+					patch-gcc-java-gjavah.c \
 					patch-fastjar-Makefile.in
 
 depends_lib			bin:${crossgcc-target}-ar:${crossgcc-target}-binutils \
@@ -48,7 +58,6 @@ post-extract	{
 pre-configure   { system "cd ${workpath} && mkdir -p build"}
 configure.dir   ${workpath}/build
 configure.cmd   ${workpath}/gcc-${version}/configure
-configure.env   CC="cc -no-cpp-precomp"
 configure.args  --infodir='${prefix}/share/info' \
 				--mandir='${prefix}/share/man' \
 				--target=${crossgcc-target} \
@@ -58,9 +67,13 @@ configure.args  --infodir='${prefix}/share/info' \
 				--with-gnu-as --with-gnu-ld \
 				--with-newlib \
 				--with-gxx-include-dir=${prefix}/${crossgcc-target}/include/c++/${version}/
+configure.cc_archflags
+configure.cxx_archflags
+configure.objc_archflags
+configure.ld_archflags
 build.dir       ${workpath}/build
 destroot.args	\
-	--with-gxx-include-dir=${destroot}/${prefix}/${crossgcc-target}/include/c++/${version}/
+	--with-gxx-include-dir=${destroot}${prefix}/${crossgcc-target}/include/c++/${version}/
 
 # Since we don't build gcc and binutils at the same time, gcc's Makefile will try to transform
 # program names as gcc's name (add -${version} with ${version} being the version of gcc).
@@ -168,33 +181,39 @@ post-destroot {
 	# (it's easier for maintainability purposes to fix things here)
 
 	# aliases for locales (should be on the system)
-	file delete "${destroot}/${prefix}/share/locale/locale.alias"
+	file delete "${destroot}${prefix}/share/locale/locale.alias"
 	
 	# FSF propaganda (should already be there or would conflict)
-	file delete -force "${destroot}/${prefix}/share/man/man7"
+	file delete -force "${destroot}${prefix}/share/man/man7"
 
 	# (host) libiberty
-	file delete "${destroot}/${prefix}/lib/libiberty.a"
+	foreach f [glob -directory "${destroot}${prefix}/lib" libiberty.a */libiberty.a] {
+        file delete $f
+    }
 
 	# aliases for charsets (should already be there)
-	file delete "${destroot}/${prefix}/lib/charset.alias"
+	file delete "${destroot}${prefix}/lib/charset.alias"
 	
 	# Remove man pages for tools that are not built as part of cross-gcc
-	file delete "${destroot}/${prefix}/share/man/man1/rmic.1"
-	file delete "${destroot}/${prefix}/share/man/man1/rmiregistry.1"
-	file delete "${destroot}/${prefix}/share/man/man1/jv-convert.1"
-	file delete "${destroot}/${prefix}/share/man/man1/gij.1"
+	file delete "${destroot}${prefix}/share/man/man1/rmic.1"
+	file delete "${destroot}${prefix}/share/man/man1/rmiregistry.1"
+	file delete "${destroot}${prefix}/share/man/man1/jv-convert.1"
+	file delete "${destroot}${prefix}/share/man/man1/gij.1"
 	
 	# For some reason, some man pages are not prefixed while they should have been
 	# (to avoid conflicting).
-	file rename "${destroot}/${prefix}/share/man/man1/cpp.1" \
-		"${destroot}/${prefix}/share/man/man1/${crossgcc-target}-cpp.1"
-	file rename "${destroot}/${prefix}/share/man/man1/gcjh.1" \
-		"${destroot}/${prefix}/share/man/man1/${crossgcc-target}-gcjh.1"
-	file rename "${destroot}/${prefix}/share/man/man1/gcov.1" \
-		"${destroot}/${prefix}/share/man/man1/${crossgcc-target}-gcov.1"
-	file rename "${destroot}/${prefix}/share/man/man1/jcf-dump.1" \
-		"${destroot}/${prefix}/share/man/man1/${crossgcc-target}-jcf-dump.1"
-	file rename "${destroot}/${prefix}/share/man/man1/jv-scan.1" \
-		"${destroot}/${prefix}/share/man/man1/${crossgcc-target}-jv-scan.1"
+	file rename "${destroot}${prefix}/share/man/man1/cpp.1" \
+		"${destroot}${prefix}/share/man/man1/${crossgcc-target}-cpp.1"
+	file rename "${destroot}${prefix}/share/man/man1/gcjh.1" \
+		"${destroot}${prefix}/share/man/man1/${crossgcc-target}-gcjh.1"
+	file rename "${destroot}${prefix}/share/man/man1/gcov.1" \
+		"${destroot}${prefix}/share/man/man1/${crossgcc-target}-gcov.1"
+	file rename "${destroot}${prefix}/share/man/man1/jcf-dump.1" \
+		"${destroot}${prefix}/share/man/man1/${crossgcc-target}-jcf-dump.1"
+	file rename "${destroot}${prefix}/share/man/man1/jv-scan.1" \
+		"${destroot}${prefix}/share/man/man1/${crossgcc-target}-jv-scan.1"
 }
+
+livecheck.type	regex
+livecheck.url	http://gcc.gnu.org/releases.html
+livecheck.regex	{<tr><td><a href="gcc-.*/">GCC (.*)</a></td>   <td>.*</td></tr>}

@@ -1,10 +1,14 @@
-# $Id: Portfile,v 1.19 2004/02/25 01:57:30 gwright Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
 PortSystem 1.0
+
 name			teTeX
-version			3.14159
+version			3.0
+revision		7
+epoch			20080130
 categories		print textproc
-maintainers		gwright@comcast.net
+maintainers		nomaintainer
 description		TeX and METAFONT
 long_description	teTeX is a TeX distribution for UNIX compatible	\
 			systems.  It contains the latest versions of	\
@@ -12,64 +16,17 @@ long_description	teTeX is a TeX distribution for UNIX compatible	\
 			for happy TeX'ing.  For more information have	\
 			a look at the lengthy FEATURES file of the	\
 			distribution.
-platforms		darwin
+homepage		http://www.tug.org/teTeX/
+platforms               darwin
 
-set tetex_src		tetex-src-2.0.2.tar.gz
-set tetex_texmf		tetex-texmf-2.0.2.tar.gz
-set tetex_top		${prefix}/share/texmf
-set tetex_texmftree	${destroot}/${tetex_top}
+distfiles
 
-master_sites		ftp://tug.ctan.org/tex-archive/systems/unix/teTeX/current/distrib/ \
-			ftp://cam.ctan.org/tex-archive/systems/unix/teTeX/current/distrib/ \
-			ftp://dante.ctan.org/tex-archive/systems/unix/teTeX/current/distrib/ 
+replaced_by     texlive
 
-distfiles		${tetex_src} ${tetex_texmf}
+pre-configure {
+    ui_error "${name} has been replaced by ${replaced_by}; please install that port instead"
+    return -code error "obsolete port"
+}
 
-checksums		${tetex_src}   md5 a16f6bba227d55e79aeee46fbbd82d28 \
-			${tetex_texmf} md5 d3bdb96f9077e43b2115d3cc471743b3
-
-extract.only		${tetex_src}
-worksrcdir		tetex-src-2.0.2
-
-patchfiles		patch-fmtutil
-
-depends_lib		lib:libX11.6:XFree86
-
-pre-configure		{ reinplace "s|fmtutil --all|fmtutil --all --cnffile ${destroot}/${tetex_top}/web2c/fmtutil.cnf|" ${workpath}/${worksrcdir}/Makefile.in
-
-			  reinplace "s|    \$(scriptdir)/texlinks|    \$(scriptdir)/texlinks --cnffile ${destroot}/${tetex_top}/web2c/fmtutil.cnf|" ${workpath}/${worksrcdir}/Makefile.in
-			}
-
-configure.args		--prefix=${tetex_top}				\
-			--infodir=${destroot}/${prefix}/share/info	\
-			--mandir=${destroot}/${prefix}/share/man	\
-			--disable-multiplatform
-
-variant nox11	{ depends_lib-delete lib:libX11.6:XFree86
-		  configure.args-append --without-x11 \
-					--without-oxdvik \
-					--without-xdvik \
-					--with-mfw=no
-		}
-
-pre-destroot	{ file mkdir ${tetex_texmftree}
-		  cd ${tetex_texmftree}
-		  system "tar vxfz ${distpath}/${tetex_texmf}"
-		}
-
-post-destroot	{ # Modify mktex.opt to force use of varfonts
-		  reinplace "s|MT_FEATURES=appendonlydir|MT_FEATURES=appendonlydir:varfonts|g" ${destroot}/${tetex_top}/web2c/mktex.cnf
-
-		  # Repair infelicities in texmf.cnf
-		  reinplace "s|${prefix}/share/texmf/share/texmf|${prefix}/share/texmf|g" ${destroot}/${tetex_top}/web2c/texmf.cnf
-
-		  # happiness is ranlib.
-		  system "ranlib ${destroot}${prefix}/lib/libkpathsea.a"
-		}
-
-destroot.env		TEXMFCNF=${destroot}/${prefix}/share/texmf/web2c
-destroot.target		install strip
-destroot.destdir	prefix=${destroot}/${prefix}/ texmf=${destroot}/${tetex_top}/
-
-post-install	{ system "fmtutil --all" }
+livecheck.type  none
 

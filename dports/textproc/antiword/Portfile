@@ -1,30 +1,56 @@
-# $Id: Portfile,v 1.10 2003/10/28 22:40:13 fkr Exp $
+# $Id$
 
-PortSystem 1.0
-name		antiword
-version		0.33
-revision	1
-categories	textproc
-maintainers	mij@opendarwin.org
-description	Utility to read Microsoft Word (.doc) files
-homepage	http://www.winfield.demon.nl/index.html
-platforms	darwin
+PortSystem          1.0
 
-long_description Antiword is a utility that can read binary files from \
-		 Microsoft Word 6, 7, 97, and 2000.
+name                antiword
+version             0.37
+revision            1
+categories          textproc
+platforms           darwin
+maintainers         nomaintainer
+license             GPL-2+
 
-master_sites	http://www.winfield.demon.nl/linux/
+description         Utility to read Microsoft Word (.doc) files
 
-checksums	md5 e2178402066bbb1f5b3a49d47316a1fc
+long_description    Antiword is a utility that can read binary files from \
+                    Microsoft Word 6, 7, 97, and 2000.
 
-configure	{}
-post-configure	{ reinplace "s|\/usr|${prefix}|g" \
-		    ${worksrcpath}/antiword.h
-		  reinplace "s|-pedantic||g" ${worksrcpath}/Makefile.Linux }
+homepage            http://www.winfield.demon.nl/index.html
+master_sites        http://www.winfield.demon.nl/linux/
 
-patchfiles	patch-Makefile.Linux
+checksums           md5     f868e2a269edcbc06bf77e89a55898d1
 
-destroot.target	global_install
-destroot.args	prefix=${destroot}${prefix}
+patchfiles          patch-Makefile.Linux
 
-post-destroot	{ system "install -m 644 ${worksrcpath}/Docs/antiword.1 ${destroot}${prefix}/share/man/man1" }
+post-patch {
+    reinplace "s|/usr|${prefix}|g" ${worksrcpath}/antiword.h
+}
+
+use_configure       no
+
+variant universal {}
+if {[variant_isset universal]} {
+    set archflags ${configure.universal_cflags}
+} else {
+    set archflags ${configure.cc_archflags}
+}
+
+build.args          CC="${configure.cc} ${archflags}"
+
+destroot.args       prefix=${destroot}${prefix}
+
+post-destroot {
+    set docdir ${destroot}${prefix}/share/doc/${name}
+    xinstall -d ${docdir}
+    xinstall -m 644 -W ${worksrcpath}/Docs \
+        ChangeLog \
+        COPYING \
+        Emacs \
+        Exmh \
+        FAQ \
+        History \
+        Mutt \
+        QandA \
+        ReadMe \
+        ${docdir}
+}

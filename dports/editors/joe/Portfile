@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.6 2004/01/14 11:21:12 jkh Exp $
+# $Id$
 
-PortSystem 1.0
+PortSystem  1.0
+
 name		joe
-version		2.9.8-pre1
+version		3.7
 categories	editors
-maintainers	noses@noses.com
+maintainers	noses.com:noses
 description	Joe's Own Editor
 long_description	JOE is the professional freeware ASCII text screen editor for UNIX. \
 			It makes full use of the power and versatility of UNIX, but lacks the steep \
@@ -17,6 +18,13 @@ long_description	JOE is the professional freeware ASCII text screen editor for U
 			UNIX-integration features of VI.
 homepage	http://sourceforge.net/projects/joe-editor/
 platforms	darwin freebsd
-extract.suffix	.tgz
 master_sites	sourceforge:joe-editor
-checksums	md5 ea66378192b194ebb565a927c86bacb2
+
+master_sites	sourceforge:joe-editor
+checksums       md5     66de1b073e869ba12abbfcde3885c577 \
+                sha1    54398578886d4a3d325aece52c308a939d31101d \
+                rmd160  7e2c72a750c6aac4732cf4369bceee5333460f15
+configure.args  --mandir=${prefix}/share/man
+
+livecheck.distname JOE sources
+livecheck.version  ${name}-${version}

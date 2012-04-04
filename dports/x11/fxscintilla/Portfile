@@ -1,20 +1,22 @@
-# $Id: Portfile,v 1.2 2004/01/07 09:15:54 toby Exp $
+# $Id$
 
-PortSystem 1.0
+PortSystem          1.0
+
 name                fxscintilla
-version             1.57
+version             1.78.0
+revision            0
 description         FOX wrapper for the Scintilla source code library
 long_description    fxscintilla is a FOX wrapper for the Scintilla \
                     source code widget library.
-maintainers         darwin@otierney.net
+maintainers         lylejohnson.name:lyle
 categories          x11
-platforms           darwin 
+platforms           darwin
 homepage            http://www.nongnu.org/fxscintilla
-master_sites        http://pini.free.fr/fxscintilla/
-checksums           md5 68aa25d2b8d626b6455736e611a3993f
-depends_lib         lib:libFOX-1:fox
-configure.env       CPPFLAGS=-I${prefix}/include CXX=g++ \
-                    LDFLAGS=-L${prefix}/lib
+master_sites        http://savannah.nongnu.org/download/fxscintilla/
+checksums           md5 22d4134ac76c470c165c6db758ae6b42
+depends_build       port:pkgconfig
+depends_lib         port:fox
 configure.pre_args  --prefix=${prefix}
-configure.args      --with-foxinclude=${prefix}/include \
+configure.args      --enable-shared \
+                    --with-foxinclude=${prefix}/include \
                     --with-foxlib=${prefix}/lib

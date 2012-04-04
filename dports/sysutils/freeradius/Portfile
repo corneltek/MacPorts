@@ -1,28 +1,60 @@
-# $Id: Portfile,v 1.6 2004/01/23 22:43:29 jkh Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
-name    	freeradius
-version 	0.9.3
-categories      sysutils
-maintainers     sef@apple.com
-description     Free Radius Implementation
-long_description	The FreeRADIUS Server Project is an attempt \
-       			to create a high-performance and highly-configurable GPLd free \
-       			RADIUS server.  The server is similar to Livongston's 2.0 server. \
-       			FreeRADIUS is a variant of the Cistron RADIUS server, but they \
-       			don't share a lot in common any more.
-homepage	http://www.freeradius.org/
-platforms       darwin freebsd
-master_sites    ftp://ftp.freeradius.org/pub/radius/
-checksums       md5 36f33d9dd305a2c9f1089c30a9fff0b8
+PortSystem              1.0
 
-patchfiles     	patch-radiusd.conf patch-sysutmp.h 
-patch.pre_args  -p1
+name                    freeradius
+version                 2.1.9
+revision            1
+categories              sysutils
+maintainers             nomaintainer
+homepage                http://www.freeradius.org/
+platforms               darwin freebsd
+use_bzip2               yes
+distname                ${name}-server-${version}
 
-configure.args  --disable-shared
+description             Free Radius Implementation
 
-post-configure {
-        system "mv ${worksrcpath}/INSTALL ${worksrcpath}/INSTALL.TXT"
+long_description        The FreeRADIUS Server Project is an attempt to create \
+                        a high-performance and highly-configurable GPLd free \
+                        RADIUS server. The server is similar to Livingston's \
+                        2.0 server. FreeRADIUS is a variant of the Cistron \
+                        RADIUS server, but they don't share a lot in common \
+                        anymore.
+
+master_sites            ftp://ftp.freeradius.org/pub/freeradius/ \
+                        ftp://ftp.freeradius.org/pub/freeradius/old
+
+checksums           rmd160  5c51cf7483ad5c912cec7eb78342c2f7e1a1c32f \
+                    sha256  b0b7c5fe334e826e2f643569485ce203520ecb1d058d42b8df2a94a73acb05b1
+
+depends_lib             port:libtool \
+                        port:libpcap \
+                        port:openldap \
+                        port:openssl \
+                        port:unixODBC \
+                        port:gdbm
+
+patchfiles              patch-configure.in.diff
+
+use_autoconf            yes
+
+configure.args          --with-openssl-includes=${prefix}/include/openssl \
+                        --with-openssl-libraries=${prefix}/lib \
+                        --with-system-libtool \
+                        --without-rlm_krb5
+
+configure.cflags-append -I${prefix}/include
+
+use_parallel_build      no
+
+destroot.env-append     R=${destroot}
+
+variant kerberos description { Use Kerberos } {
+     depends_lib-append port:kerberos5
+     configure.args-delete --without-rlm_krb5
 }
 
-destroot.destdir        prefix=${destroot}/${prefix}
+livecheck.type          regex
+livecheck.url           [lindex ${master_sites} 0]
+livecheck.regex         ${name}-server-(\[0-9.\]+)\\.tar

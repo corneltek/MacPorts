@@ -1,7 +1,8 @@
 # et:ts=4
 # port.tcl
+# $Id$
 #
-# Copyright (c) 2002 Apple Computer, Inc.
+# Copyright (c) 2002 Apple Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -12,7 +13,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of Apple Computer, Inc. nor the names of its contributors
+# 3. Neither the name of Apple Inc. nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
 # 
@@ -31,6 +32,7 @@
 # standard package load
 package provide port 1.0
 
+package require mp_package 1.0
 package require portmain 1.0
 package require portdepends 1.0
 package require portfetch 1.0
@@ -42,9 +44,17 @@ package require portbuild 1.0
 package require portdestroot 1.0
 package require portinstall 1.0
 package require portuninstall 1.0
+package require portactivate 1.0
+package require portdeactivate 1.0
 package require portclean 1.0
-package require portpackage 1.0
-package require portrpmpackage 1.0
-package require portmpkg 1.0
-package require portdmg 1.0
 package require porttest 1.0
+package require portlint 1.0
+package require portsubmit 1.0
+package require porttrace 1.0
+package require portdistcheck 1.0
+package require portlivecheck 1.0
+package require portmirror 1.0
+package require portload 1.0
+package require portunload 1.0
+
+package require portdistfiles 1.0

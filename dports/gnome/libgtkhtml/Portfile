@@ -1,17 +1,31 @@
-# $Id: Portfile,v 1.6 2004/02/23 13:59:07 olegb Exp $
+# $Id$
+
 PortSystem 1.0
-name		libgtkhtml
-version		2.4.1
-description	Lightweight HTML rendering/printing/editing engine
-long_description        This is GtkHTML, a lightweight HTML rendering/\
-			printing/editing engine. It was originally based \
-			on KHTMLW, but is now being developed independently.
-maintainers	gnome-darwinports@opendarwin.org
-categories	gnome www
-platforms	darwin 
-homepage	http://www.gnome.org/
-master_sites    gnome:sources/libgtkhtml/2.4/
-checksums	md5 31f9476871517a82aafad3cdda43ac1e
-depends_lib	lib:libgnomeprintui-2-2:libgnomeprintui
-use_bzip2 	yes
-configure.args  --mandir=${prefix}/share/man
+
+name                    libgtkhtml
+version                 2.11.1
+revision                1
+description             Lightweight HTML rendering/printing/editing engine
+long_description        This is GtkHTML version 2, a lightweight HTML \
+                        rendering/printing/editing engine. It was \
+                        originally based on KHTMLW, but is now being \
+                        developed independently.
+maintainers             nomaintainer
+categories              gnome www
+license                 LGPL
+platforms               darwin
+homepage                http://www.gnome.org/
+master_sites            gnome:sources/libgtkhtml/2.11/
+checksums               md5 a1d1a197dcff8c4571659deef5495e24 \
+                        sha1 1325c1540091b89cc03d99a1e594285d2e846e50 \
+                        rmd160 4f3a65b616c0fbfaaa487d11c8749718708deb2a
+depends_build           port:pkgconfig
+depends_lib             port:gtk2 port:libxml2 port:gnome-vfs
+use_bzip2               yes
+
+configure.args          --mandir=${prefix}/share/man
+
+livecheck.type          regex
+livecheck.url \
+    http://ftp.gnome.org/pub/GNOME/sources/libgtkhtml/2.11/?C=M\;O=D
+livecheck.regex         ${name}-(\[0-9.a-s\]+)\\.tar

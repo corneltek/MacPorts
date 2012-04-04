@@ -1,16 +1,16 @@
-# $Id: Portfile,v 1.3 2003/12/10 22:20:10 mww Exp $
+# $Id$
 
 PortSystem 1.0
 name		rtf2html
 version		1.1beta
 categories	textproc
-maintainers	mww@opendarwin.org
+maintainers	nomaintainer
 platforms	darwin freebsd
 description	rtf to html converter
 long_description	this is a tool for converting from the rtf-format to \
 			the html format.
 homepage	http://www.45.free.net/~vitus/ice/catdoc
-master_sites	${homepage}/../misc/
+master_sites	http://critical.ch/distfiles
 distname	${name}
 checksums	md5 823949bf2e1a7fc9d090fd2035b2e828
 

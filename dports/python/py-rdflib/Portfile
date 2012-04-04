@@ -1,48 +1,36 @@
-# $Id: Portfile,v 1.3 2004/02/12 20:44:42 mww Exp $
+# $Id$
 
 PortSystem 1.0
+PortGroup python24 1.0
 
-name		py-rdflib
-version		1.2.4
-categories	python textproc
-platforms	darwin freebsd
-maintainers	mww@opendarwin.org
-description	Python library for working with RDF
+name			py-rdflib
+version			2.4.0
+categories		python textproc
+platforms		darwin
+maintainers		eikeon.com:eikeon openmaintainer
+description		Python library for working with RDF
 long_description	RDFLib is a Python library for working with RDF, a \
-			simple yet powerful language for representing \
-			information. The library contains an RDF/XML \
-			parser/serializer, a TripleStore, an InformationStore \
-			and various store backends (InMemory, SleepyCat BTree, \
-			ZODB BTree).
+				simple yet powerful language for representing \
+				information. The library contains an RDF/XML \
+				parser/serializer, a TripleStore, an InformationStore \
+				and various store backends (InMemory, SleepyCat BTree, \
+				ZODB BTree).
 
-homepage	http://rdflib.net
-master_sites	${homepage}/2003/03/05/
-distname	rdflib-${version}
-checksums	md5 32b361bc4b4ad01c773f7e83fb5a52a6
-extract.suffix	.tgz
+homepage		http://rdflib.net/
+master_sites	${homepage}
+distname		rdflib-${version}
+checksums		md5     ce7c73ffd2fe8a4a527143168bc91058 \
+				sha1    89e47b38ddd6c3386db21cc4f433762287e334e2 \
+				rmd160  0d0ce273d11fc4fc06313c76691186f2be1588a2
+depends_lib-append	port:py24-distribute
 
-depends_lib	bin:python:python
-
-use_configure	no
-
-build.cmd	python setup.py
-build.target	build
-
-test.run	no
-test.cmd	python run_tests.py
+test.run		yes
+test.cmd		${python.bin} run_tests.py
 test.target
 
-destroot.cmd	python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
-
-post-destroot	{
-	xinstall -d -m 755 ${destroot}${prefix}/share/doc/${name}/examples
-	xinstall -m 644 -W ${worksrcpath}/doc BNode.html InformationStore.html \
-		Literal.html Resource.html SIR.html URIRef.html examples.html \
-		index.html installing.html rdflib.css redload.html \
-		triple_store.html ${destroot}${prefix}/share/doc/${name}
-	xinstall -m 644 -W ${worksrcpath} CHANGELOG CONTRIBUTORS LICENSE \
-		README credits.html ${destroot}${prefix}/share/doc/${name}
-	xinstall -m 644 -W ${worksrcpath} example_crawler.py example_btree.py \
-		example.py ${destroot}${prefix}/share/doc/${name}/examples
+post-destroot {
+	xinstall -m 644 -W ${worksrcpath} CHANGELOG LICENSE \
+		README ${destroot}${prefix}/share/doc/${name}
+	xinstall -m 644 ${worksrcpath}/examples/example.py \
+		${destroot}${prefix}/share/doc/${name}/examples
 }

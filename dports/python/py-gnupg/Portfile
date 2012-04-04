@@ -1,45 +1,61 @@
-# $Id: Portfile,v 1.2 2004/02/08 17:41:21 mww Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
+PortSystem          1.0
+PortGroup           python 1.0
 
-name		py-gnupg
-version		0.3.2
-categories	python
-platforms	darwin
-maintainers	mww@opendarwin.org
-description	GnuPGInterface is a Python module to interface with GnuPG
-long_description	GnuPGInterface is a Python module to interface with \
-			GnuPG. It concentrates on interacting with GnuPG via \
-			filehandles, providing access to control GnuPG via \
-			versatile and extensible means.
+name                py-gnupg
+version             0.3.2
+python.versions     25 26 27
+python.default_version 27
+categories          python
+platforms           darwin
+maintainers         snc openmaintainer
+license             LGPL-2.1
 
-homepage	http://py-gnupg.sourceforge.net/
-master_sites	sourceforge
-distname	GnuPGInterface-${version}
-checksums	md5 d4627d83446f96bd8c22f8d15db3f7c2
-patchfiles	patch-setup.py.diff
+description         GnuPGInterface is a Python module to interface with GnuPG
+long_description    GnuPGInterface is a Python module to interface with \
+                    GnuPG. It concentrates on interacting with GnuPG via filehandles, \
+                    providing access to control GnuPG via versatile and extensible means.
 
-depends_lib	bin:python:python \
-		lib:gnupg:gnupg
+homepage            http://py-gnupg.sourceforge.net/
+master_sites        sourceforge:py-gnupg
+distname            GnuPGInterface-${version}
 
-post-patch	{
-	reinplace "s|VERSION|${version}|g" ${worksrcpath}/setup.py
-}
+checksums           rmd160  7bc5ae75bf17203442cfda8bbdb430b2f02fdd75 \
+                    sha256  0ea672251e2e3f71b62fef0c01539519d500f6b338f803af6b57e67a73cca8e6
 
-use_configure	no
+universal_variant   no
 
-build.cmd	python setup.py
-build.target	build
+if {$subport != $name} {
+    patchfiles          patch-setup.py.diff
 
-test.run	yes
-test.cmd	python unittests.py
-test.target
+    depends_lib-append  port:gnupg
 
-destroot.cmd	python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
+    post-extract {
+        fs-traverse dir ${workpath} {
+            if {[file isdirectory ${dir}]} {
+                file attributes ${dir} -permissions 0755
+            } elseif {[file isfile ${dir}]} {
+                file attributes ${dir} -permissions 0644
+            }
+        }
+    }
 
-post-destroot	{
-	xinstall -d -m 755 ${destroot}${prefix}/share/doc/${name}
-	xinstall -m 644 -W ${worksrcpath} COPYING ChangeLog NEWS README THANKS \
-		${destroot}${prefix}/share/doc/${name}
+    post-patch {
+        reinplace "s|VERSION|${version}|g" ${worksrcpath}/setup.py
+    }
+
+    test.run            yes
+    test.cmd            ${python.bin} unittests.py
+    test.target
+
+    post-destroot {
+        xinstall -m 644 -W ${worksrcpath} COPYING ChangeLog NEWS README \
+            THANKS ${destroot}${prefix}/share/doc/${subport}
+    }
+
+    livecheck.type      none
+} else {
+    livecheck.distname  GnuPGInterface
 }

@@ -1,6 +1,7 @@
 /*
  * CFLib.c
  * CFLib.dylib
+ * $Id$
  *
  * Copyright (c) 2003 Kevin Van Vechten <kevin@opendarwin.org>
  * All rights reserved.
@@ -1345,7 +1346,7 @@ int Cflib_Init(Tcl_Interp *interp)
 		}
 	};
 
-	if(Tcl_InitStubs(interp, "8.3", 0) == NULL)
+	if(Tcl_InitStubs(interp, "8.4", 0) == NULL)
 		return TCL_ERROR;
 
 	for (i = 0; sig[i].name != NULL; ++i) {

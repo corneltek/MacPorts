@@ -1,35 +1,40 @@
-MAN1=		port.1
 INSTALLDIR=	${DESTDIR}${prefix}
 TOPSRCDIR=	../..
-SCRIPTS=	portindex portall port
+SCRIPTS=	portmirror portindex port
 
 edit = sed \
-	-e 's,@TCLSH\@,$(TCLSH),g'
+	-e 's,@TCLSH\@,$(TCLSH),g' \
+	-e 's,@macports_tcl_dir\@,$(macports_tcl_dir),g'
 
-include ../../Mk/dports.autoconf.mk
+include ../../Mk/macports.autoconf.mk
+
+.PHONY: mkdirs
 
 all: ${SCRIPTS}
 
-portindex: portindex.tcl
+portmirror: portmirror.tcl ../../Mk/macports.autoconf.mk
+	${edit} portmirror.tcl > $@
+
+portindex: portindex.tcl ../../Mk/macports.autoconf.mk
 	${edit} portindex.tcl > $@
 
-portall: portall.tcl
-	${edit} portall.tcl > $@
-
-port: port.tcl
+port: port.tcl ../../Mk/macports.autoconf.mk
 	${edit} port.tcl > $@
 
 mkdirs:
-	cat ../../doc/prefix.mtree | $(MTREE) -U -d -e -p ${INSTALLDIR} > /dev/null
+	< ../../doc/prefix.mtree $(MTREE) -U -d -e -p ${INSTALLDIR} > /dev/null
+	< ../../doc/base.mtree $(MTREE) -U -d -e -p ${INSTALLDIR} > /dev/null
 
 clean:
 	rm -f ${SCRIPTS}
 
+test:
+
 distclean: clean
 
-install: mkdirs
-	$(INSTALL) -o ${DSTUSR} -g ${DSTGRP} -m 444 port.1 ${INSTALLDIR}/share/man/man1
-	$(INSTALL) -d -o ${DSTUSR} -g ${DSTGRP} -m 775 ${INSTALLDIR}/bin
-	$(INSTALL) -o ${DSTUSR} -g ${DSTGRP} -m 555 port ${INSTALLDIR}/bin/port
-	$(INSTALL) -o ${DSTUSR} -g ${DSTGRP} -m 555 portall ${INSTALLDIR}/bin/portall
-	$(INSTALL) -o ${DSTUSR} -g ${DSTGRP} -m 555 portindex ${INSTALLDIR}/bin/portindex
+install: all mkdirs
+	$(INSTALL) -d -o ${DSTUSR} -g ${DSTGRP} -m ${DSTMODE} ${INSTALLDIR}/bin
+	$(INSTALL) -d -o ${DSTUSR} -g ${DSTGRP} -m ${DSTMODE} ${INSTALLDIR}/var/macports
+	$(INSTALL) -o ${DSTUSR} -g ${DSTGRP} -m 555 port portindex portmirror ${INSTALLDIR}/bin/
+	$(INSTALL) -o ${DSTUSR} -g ${DSTGRP} -m 444 port-help.tcl  ${INSTALLDIR}/var/macports/
+	cd ${INSTALLDIR}/bin && $(LN_S) -f port portf

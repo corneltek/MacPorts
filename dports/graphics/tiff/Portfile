@@ -1,65 +1,86 @@
-# $Id: Portfile,v 1.17 2004/02/03 00:42:13 waqar Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
 PortSystem 1.0
+PortGroup  xcodeversion 1.0
+
 name		tiff
-version		3.6.1
-set libver	3
+version		3.9.5
 categories	graphics
-maintainers	waqar@opendarwin.org
+license		BSD
+maintainers	waqar openmaintainer
 description	Library and tools for dealing with Tag Image File Format
 long_description \
-	This software provides support for the Tag Image File \
-	Format (TIFF), a widely used format for storing image \
-	data.  Included in this software distribution is a \
-	library, libtiff, for reading and writing TIFF, a small \
-	collection of tools for doing simple manipulations of \
-	TIFF images on UNIX systems, documentation on the library \
-	and tools.  A small assortment of TIFF-related software \
-	for UNIX that has been contributed by others is also \
-	included.  The library is capable of dealing with images \
-	that are written to follow the 5.0 or 6.0 TIFF spec. \
-	There is also considerable support for some of the more \
+	This software provides support for the Tag Image File 		\
+	Format (TIFF), a widely used format for storing image 		\
+	data.  Included in this software distribution is a 		\
+	library, libtiff, for reading and writing TIFF, a small 	\
+	collection of tools for doing simple manipulations of 		\
+	TIFF images on UNIX systems, documentation on the library 	\
+	and tools.  A small assortment of TIFF-related software 	\
+	for UNIX that has been contributed by others is also 		\
+	included.  The library is capable of dealing with images 	\
+	that are written to follow the 5.0 or 6.0 TIFF spec. 		\
+	There is also considerable support for some of the more 	\
 	esoteric portions of the 6.0 TIFF spec.
-homepage	http://www.libtiff.org/
+homepage	http://www.remotesensing.org/libtiff
 platforms	darwin
-master_sites	ftp://ftp.remotesensing.org/pub/libtiff/
-distname	${name}-v${version}
-checksums	md5 b3f0ee7617593c2703755672fb1bfed3
+master_sites	http://download.osgeo.org/libtiff/ \
+		ftp://ftp.remotesensing.org/pub/libtiff/ \
+		http://dl.maptools.org/dl/libtiff/ \
+		freebsd
 
-depends_lib	lib:libjpeg.62:jpeg
+checksums       sha1    f40aab20fb2f609b5cbc1171c40b66a1445e3773 \
+                rmd160  c67742bf6b9b10ca0700e69ce575007d40c4f89c
 
-configure.env	MANPATH=${prefix}/share/man
+depends_lib	port:jpeg port:zlib
 
-configure.args	--with-ZIP --with-JPEG --with-DIR_GZLIB=/usr/lib \
-		--with-DIR_JPEGLIB=${prefix}/lib \
-		--with-DIRS_LIBINC=${prefix}/include \
-		--with-LIBGL=no --with-LIBIMAGE=no \
-		--with-INSTALL="/bin/sh ${worksrcpath}/port/install.sh" \
-		--noninteractive
+test.run        yes
+test.target     check
 
-destroot.destdir
-build.env	DESTDIR=${destroot}
-destroot.env	DESTDIR=${destroot}
+configure.args	--disable-jbig \
+		--mandir=${prefix}/share/man \
+                --with-docdir=${prefix}/share/doc/${name}-${version} \
+		--with-jpeg-include-dir=${prefix}/include \
+		--with-jpeg-lib-dir=${prefix}/lib \
+		--with-zlib-include-dir=${prefix}/include \
+		--with-zlib-lib-dir=${prefix}/lib
 
-post-build	{
-	cd ${worksrcpath}/libtiff
-	system "cc -dynamiclib -all_load \
-		-install_name ${prefix}/lib/libtiff.${portversion}.dylib \
-		-compatibility_version ${portversion} \
-		-o libtiff.${portversion}.dylib libtiff.a -L${prefix}/lib \
-		-ljpeg -lz"
+post-configure {
+    if {[variant_isset universal]} {
+        system "cd ${worksrcpath}/libtiff \
+                && ed - tif_config.h < ${filespath}/libtiff__tif_config.h.ed \
+                && ed - tiffconf.h < ${filespath}/libtiff__tiffconf.h.ed \
+                && touch stamp-h1 && touch stamp-h2"
+    }
 }
 
-pre-destroot	"file mkdir ${destroot}/${prefix}"
+use_parallel_build  yes
 
-post-destroot	{
-	system "rm ${destroot}/${prefix}/lib/libtiff.a"
-	cd ${worksrcpath}/libtiff
-	system "install -m 755 -d ${destroot}/${prefix}/lib"
-	system "install -m 644 -c \
-		libtiff.${portversion}.dylib ${destroot}${prefix}/lib"
-	system "ln -sf libtiff.${portversion}.dylib \
-		${destroot}/${prefix}/lib/libtiff.${libver}.dylib"
-	system "ln -sf libtiff.${portversion}.dylib \
-		    ${destroot}/${prefix}/lib/libtiff.dylib"
+post-destroot {
+	xinstall -m 755 -d ${destroot}${prefix}/share/doc/${name}
+	file copy ${worksrcpath}/html/images \
+		${destroot}${prefix}/share/doc/${name}
+	eval xinstall -m 644 [glob ${worksrcpath}/html/*.html] \
+		${destroot}${prefix}/share/doc/${name}
 }
+
+platform macosx {
+    # Tiger does not have 64-bit OpenGL.
+    if {${os.major} > 8 || (![variant_isset universal] && ![string match *64* $build_arch])
+        || ([variant_isset universal] && ![string match *64* $universal_archs])} {
+        configure.args-append   --with-apple-opengl-framework
+    }
+}
+
+minimum_xcodeversions {9 3.1}
+
+variant jbig description {Enable JBIG support} {
+    depends_lib-append      port:jbigkit
+    configure.args-delete   --disable-jbig
+    configure.args-append   --enable-jbig
+}
+
+livecheck.type  regex
+livecheck.url   http://www.remotesensing.org/libtiff/
+livecheck.regex {v(\d+(?:\.\d+)*)</a>}

@@ -1,0 +1,44 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=portfile:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem              1.0
+
+name                    msp430mcu-devel
+set name_package        [lindex [split ${name} -] 0]
+version                 20120330
+
+conflicts               ${name_package}
+
+distname                ${name_package}-${version}
+
+maintainers             g5pw
+
+categories              cross devel
+description             Device capabilites database for MSP430 toolchain. This is the development version.
+long_description        ${description}
+
+license                 GPL-3+
+platforms               darwin
+
+homepage                http://mspgcc.sourceforge.net/
+
+master_sites            sourceforge:project/mspgcc/${name_package}/
+
+use_bzip2               yes
+checksums               rmd160  db5d4c54e5b8c2e1dda2e49f5fa9f0b28525fca9 \
+                        sha256  4115f8a644ef4f9e496db0f8a2f04613a7c07f2bffe09d1df7c8d91c9ae38f16
+
+destroot.violate_mtree  yes
+
+use_configure           no
+
+build {}
+
+destroot {
+    system "env MSP430MCU_ROOT=\"${worksrcpath}\" \
+            ${worksrcpath}/scripts/install.sh ${destroot}${prefix}"
+}
+
+livecheck.type          regex
+livecheck.url           http://sourceforge.net/projects/mspgcc/files/msp430mcu/
+livecheck.regex         "${name_package}-((?!.*${name_package}.*|\\${extract.suffix}).*)\\${extract.suffix}"

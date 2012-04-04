@@ -1,32 +1,57 @@
-# $Id: Portfile,v 1.15 2004/02/23 13:58:59 olegb Exp $
-PortSystem 1.0
-name		gconf
-version		2.4.0.1
-description	GConf is a configuration database system.	
-long_description        GConf is a configuration database system, \
-			functionally similar to the Windows registry \
-			but lots better. :-) It's being written for \
-			the GNOME desktop but does not require GNOME.
-maintainers	gnome-darwinports@opendarwin.org
-categories	gnome
-platforms	darwin 
-homepage	http://www.gnome.org/projects/gconf/
-distname        GConf-${version}
-master_sites	gnome:sources/GConf/2.4/
-checksums	md5 2f7548d0bad24d7c4beba54d0ec98a20
-depends_lib	lib:libatk.1:atk lib:libtiff:tiff \
-		lib:libfontconfig:fontconfig \
-		lib:libbonobo:libbonobo lib:libpng:libpng
-use_bzip2 	yes
-configure.args	--mandir=${prefix}/share/man
-configure.env   CPPFLAGS="-I${prefix}/include -L${prefix}/lib" \
-                CFLAGS="-no-cpp-precomp -flat_namespace -undefined suppress" \
-		PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:/usr/lib/pkgconfig"
-pre-destroot	{
-		system "install -m 0755 -d ${destroot}/${prefix}/etc/gconf/gconf.xml.mandatory"
-		system "touch ${destroot}/${prefix}/etc/gconf/gconf.xml.mandatory/.turd"
-		system "install -m 0755 -d ${destroot}/${prefix}/etc/gconf/gconf.xml.defaults"
-		system "touch ${destroot}/${prefix}/etc/gconf/gconf.xml.defaults/.turd"
-		}
-platform darwin 7 { configure.env-append       CFLAGS="-DBIND_8_COMPAT=1" }
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
+PortSystem      1.0
+PortGroup       muniversal 1.0
+
+name            gconf
+set my_name     GConf
+epoch           1
+# Before updating to 2.32.x, examine https://trac.macports.org/ticket/28077
+version         2.28.1
+revision        2
+set branch      [join [lrange [split ${version} .] 0 1] .]
+maintainers     nomaintainer
+categories      gnome
+platforms       darwin
+license         GPL-2+
+description     GConf is a configuration database system.
+
+long_description \
+    GConf is a configuration database system, \
+    functionally similar to the Windows registry \
+    but lots better. :-) It's written for \
+    the GNOME desktop but does not require GNOME.
+
+homepage        http://www.gnome.org/projects/gconf/
+master_sites    gnome:sources/${my_name}/${branch}/
+distname        ${my_name}-${version}
+use_bzip2       yes
+
+checksums       sha1    944e067a85b43e7a778b9ee244f85508931a49a0 \
+                rmd160  9ee3b6e68553997a128ca2b49992ddfbe157609b
+
+depends_build   port:pkgconfig \
+                port:intltool
+
+depends_lib     port:gtk2 \
+                port:dbus-glib \
+                port:policykit \
+                port:orbit2
+
+patchfiles      patch-defaults-Makefile.am.diff
+
+configure.args  --without-openldap
+
+destroot.keepdirs \
+    ${destroot}${prefix}/etc/gconf/gconf.xml.mandatory \
+    ${destroot}${prefix}/etc/gconf/gconf.xml.defaults
+
+variant openldap description {Enable support for openldap} {
+               depends_lib-append port:openldap
+               configure.args-delete --without-openldap
+}
+
+livecheck.type  regex
+livecheck.url   http://ftp.gnome.org/pub/gnome/sources/${my_name}/${branch}/
+livecheck.regex {LATEST-IS-(\d+(?:\.\d+)*)}

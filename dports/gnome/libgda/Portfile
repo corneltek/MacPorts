@@ -1,18 +1,72 @@
-# $Id: Portfile,v 1.2 2004/02/23 13:59:05 olegb Exp $
+# $Id$
 
 PortSystem 1.0
 name		libgda
-version		1.0.0
-description	GDA provides uniform access to diffent kinds of data sources.
+version		1.2.4
+set branch  [join [lrange [split ${version} .] 0 1] .]
+revision	4
+description	GDA provides uniform access to different kinds of data sources.
 long_description	GNU Data Access (GDA) is an attempt to provide \
 			uniform access to different kinds of data sources \
 			(databases, information servers, mail spools, etc).
-maintainers	gnome-darwinports@opendarwin.org
+maintainers	landonf
 categories	gnome 
 platforms	darwin 
 homepage	http://www.gnome-db.org/
-master_sites    ftp://ftp.gnome-db.org/pub/gnome-db/sources/v1.0.0/
-checksums	md5 d4c526c371c1496b012f5b7202f49d47
-depends_lib	lib:libxslt:libxslt lib:libglib-2:glib2
-configure.env   CPPFLAGS="-L${prefix}/lib -I${prefix}/include" \
-                CFLAGS="-no-cpp-precomp -flat_namespace -undefined suppress" 
+master_sites    gnome:sources/${name}/${branch}/
+checksums	md5 512a8ed842ce98eb432e69bd6867f437
+use_bzip2	yes
+
+depends_lib	port:libxslt \
+		path:lib/pkgconfig/glib-2.0.pc:glib2
+
+depends_build	port:gnome-doc-utils \
+		port:intltool \
+		port:pkgconfig
+
+configure.args  --without-bdb \
+                --without-mysql \
+                --without-postgres \
+                --without-sqlite
+
+default_variants +mysql5 +db4 +postgresql8 +sqlite
+
+set mysqldir ${workpath}/mysql
+variant mysql5 {
+	depends_lib-append	path:bin/mysql_config5:mysql5
+    post-patch {
+        file mkdir ${mysqldir}
+        system "ln -s \"[file join ${prefix} include mysql5]\" \"[file join ${mysqldir} include]\""
+        system "ln -s \"[file join ${prefix} lib mysql5]\" \"[file join ${mysqldir} lib]\""
+    }
+	configure.args-delete   --without-mysql
+	configure.args-append	--with-mysql=${mysqldir}
+	configure.env-append    MYSQL_CONFIG=${prefix}/bin/mysql_config5
+}
+
+variant postgresql8 {
+	depends_lib-append	port:postgresql84
+	configure.args-delete   --without-postgres
+	configure.args-append	--with-postgres=yes
+    configure.cppflags-append   -I${prefix}/include/postgresql84
+    configure.ldflags-append    -L${prefix}/lib/postgresql84
+}
+
+variant db4 {
+	depends_lib-append	port:db44
+	configure.args-delete   --without-bdb
+	configure.args-append	--with-bdb=${prefix}
+    build.args-append   BDB_LIBS=-ldb-4
+    configure.cppflags-append   -I${prefix}/include/db44
+    configure.ldflags-append    -L${prefix}/lib/db44
+}
+
+variant sqlite {
+	depends_lib-append	port:sqlite3
+	configure.args-delete   --without-sqlite
+	configure.args-append	--with-sqlite=${prefix}
+}
+
+livecheck.type  regex
+livecheck.url   http://ftp.gnome.org/pub/gnome/sources/${name}/${branch}/?C=M&O=D
+livecheck.regex ${name}-(\\d+(?:\\.\\d+)*)

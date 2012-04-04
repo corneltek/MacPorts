@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.1 2003/12/09 19:58:23 matt Exp $
+# $Id$
 
 PortSystem 1.0
 name		libesmtp
-version		1.0.1
+version		1.0.4
+revision	2
 categories	mail
-maintainers	noses@noses.com
+maintainers	noses.com:noses
 description	ESMTP library
 homepage	http://www.stafford.uklinux.net/libesmtp/
 platforms	darwin
@@ -22,6 +23,14 @@ long_description libESMTP is a library to manage posting (or submission of) \
 		 quality of the resulting code.
 
 master_sites	http://www.stafford.uklinux.net/libesmtp
+use_bzip2	yes
 
-checksums	md5 7cc65dd9eabf74e34f663357855f0409
+checksums	md5 8b4e8a794adc46268f0c6a0b3fb79486
 
+depends_lib	port:openssl
+
+patchfiles	patch-auth-client.c patch-errors.c patch-headers.c patch-htable.c \
+		patch-protocol.c patch-rfc2822date.c patch-smtp-auth.c \
+		patch-smtp-tls.c patch-configure.in.diff
+
+use_autoreconf yes

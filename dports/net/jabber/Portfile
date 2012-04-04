@@ -1,49 +1,57 @@
-# $Id: Portfile,v 1.9 2004/01/16 20:22:37 fkr Exp $
+# $Id$
 
 PortSystem 1.0
 name		jabber
 version		1.4.2
-revision	1
+revision	5
 categories	net
-maintainers	darwinports@opendarwin.org
+maintainers	nomaintainer
+homepage	http://jabberd.org/
 description	Online presence and instant messaging server
 long_description	The Jabber server (jabberd) is a daemon for Jabber clients to connect and communicate with.
 platforms	darwin
-master_sites	http://jabberd.jabberstudio.org/downloads/
+master_sites	http://download.jabberd.org/jabberd14/ \
+		http://download.jabberd.org/jabberd14/old/ \
+		http://download.jabberd.org/jabberd14/old/discontinued/ \
+		netbsd:packages/distfiles/
 checksums	md5 10780dbdb93926ea5bb360e1186b939c
-depends_lib	lib:libiconv:libiconv lib:libexpat.0:expat \
-	lib:libintl.1:gettext lib:libpth.a:pth
-configure.env	CPPFLAGS=-no-cpp-precomp
+depends_lib	port:libiconv port:expat port:gettext lib:libpth.a:pth
 build.type  gnu
+
+platform darwin {
+	configure.cflags-append	"-DBIND_8_COMPAT=1"
+}
+
 destroot {
 	file mkdir ${destroot}${prefix}/etc
 	file mkdir ${destroot}${prefix}/lib
 	file mkdir ${destroot}${prefix}/sbin
-	file mkdir ${destroot}${prefix}/man
-	system "install -o root -m 755 ${worksrcpath}/jabberd/jabberd ${destroot}${prefix}/sbin"
+	file mkdir ${destroot}${prefix}/share/man
+	xinstall -o root -m 755 ${worksrcpath}/jabberd/jabberd ${destroot}${prefix}/sbin
 		
-	system "install -o root -m 755 -d ${destroot}${prefix}/lib/jabber/pthsock"
-	system "install -o root -m 755 ${worksrcpath}/pthsock/pthsock_client.so ${destroot}${prefix}/lib/jabber/pthsock"
+	xinstall -o root -m 755 -d ${destroot}${prefix}/lib/jabber/pthsock
+	xinstall -o root -m 755 ${worksrcpath}/pthsock/pthsock_client.so ${destroot}${prefix}/lib/jabber/pthsock
 	
-	system "install -o root -m 755 -d ${destroot}${prefix}/lib/jabber/dialback"
-	system "install -o root -m 755 ${worksrcpath}/dialback/dialback.so ${destroot}${prefix}/lib/jabber/dialback"
+	xinstall -o root -m 755 -d ${destroot}${prefix}/lib/jabber/dialback
+	xinstall -o root -m 755 ${worksrcpath}/dialback/dialback.so ${destroot}${prefix}/lib/jabber/dialback
 	
-	system "install -o root -m 755 -d ${destroot}${prefix}/lib/jabber/dnsrv"
-	system "install -o root -m 755 ${worksrcpath}/dnsrv/dnsrv.so ${destroot}${prefix}/lib/jabber/dnsrv"
+	xinstall -o root -m 755 -d ${destroot}${prefix}/lib/jabber/dnsrv
+	xinstall -o root -m 755 ${worksrcpath}/dnsrv/dnsrv.so ${destroot}${prefix}/lib/jabber/dnsrv
 	
-	system "install -o root -m 755 -d ${destroot}${prefix}/lib/jabber/xdb_file"
-	system "install -o root -m 755 ${worksrcpath}/xdb_file/xdb_file.so ${destroot}${prefix}/lib/jabber/xdb_file"
+	xinstall -o root -m 755 -d ${destroot}${prefix}/lib/jabber/xdb_file
+	xinstall -o root -m 755 ${worksrcpath}/xdb_file/xdb_file.so ${destroot}${prefix}/lib/jabber/xdb_file
 	
-	system "install -o root -m 755 -d ${destroot}${prefix}/lib/jabber/jsm"
-	system "install -o root -m 755 ${worksrcpath}/jsm/jsm.so ${destroot}${prefix}/lib/jabber/jsm"
+	xinstall -o root -m 755 -d ${destroot}${prefix}/lib/jabber/jsm
+	xinstall -o root -m 755 ${worksrcpath}/jsm/jsm.so ${destroot}${prefix}/lib/jabber/jsm
 		
-	system "install -o root -m 755 -d ${destroot}${prefix}/etc/jabber/"
-	system "install -o root -m 755 ${worksrcpath}/jabber.xml ${destroot}${prefix}/etc/jabber"
+	xinstall -o root -m 755 -d ${destroot}${prefix}/etc/jabber/
+	xinstall -o root -m 755 ${worksrcpath}/jabber.xml ${destroot}${prefix}/etc/jabber
 	
-	system "install -o root -m 755 -d ${destroot}${prefix}/var/lib/jabber/"
-	system "install -o root -m 755 -d ${destroot}${prefix}/var/run/jabber/"
-	system "install -o root -m 755 -d ${destroot}${prefix}/var/log/jabber/"
-	system "install -o root -m 755 -d ${destroot}${prefix}/var/spool/jabber/"	
+	destroot.keepdirs \
+		${destroot}${prefix}/var/lib/jabber \
+		${destroot}${prefix}/var/run/jabber \
+		${destroot}${prefix}/var/log/jabber \
+		${destroot}${prefix}/var/spool/jabber
 
 	file copy -force ${destroot}${prefix}/etc/jabber/jabber.xml ${destroot}${prefix}/etc/jabber/jabber.xml.default
 }

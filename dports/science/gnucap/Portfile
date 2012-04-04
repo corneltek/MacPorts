@@ -1,34 +1,28 @@
-# $Id: Portfile,v 1.4 2004/02/13 06:21:25 toby Exp $
+# $Id$
 
-PortSystem       1.0
-name             gnucap
-version          0.34
-categories       science
-maintainers      toby@opendarwin.org
-description      GNU Circuit Analysis Package
-long_description \
-    Gnucap is the Gnu Circuit Analysis Package. The primary component is a \
-    general purpose circuit simulator. It performs nonlinear dc and \
-    transient analyses, fourier analysis, and ac analysis. It is fully \
-    interactive and command driven. It can also be run in batch mode or as \
-    a server. Spice compatible models for the MOSFET (level 1-7), BJT, and \
-    diode are included in this release.
-homepage         http://www.geda.seul.org/tools/gnucap/
-platforms        darwin
-master_sites     http://www.geda.seul.org/dist/ \
-                 ftp://ftp.geda.seul.org/pub/geda/dist/
-checksums        md5 0d346f02a38c544fda6f8d7ec4f8b45e
-patchfiles       patch-Make2.g++
+PortSystem          1.0
+name                gnucap
+version             2009-12-07
+categories          science
+maintainers         nomaintainer
+description         GNU Circuit Analysis Package
+long_description    Gnucap is the Gnu Circuit Analysis Package. The primary component is a \
+                    general purpose circuit simulator. It performs nonlinear dc and \
+                    transient analyses, fourier analysis, and ac analysis. It is fully \
+                    interactive and command driven. It can also be run in batch mode or as \
+                    a server. Spice compatible models for the MOSFET (level 1-7), BJT, and \
+                    diode are included in this release.
 
-configure.env    CCFLAGS="-I${prefix}/include" LDFLAGS="-L${prefix}/lib"
+homepage            http://gnucap.org
+platforms           darwin
 
-destroot {
-    xinstall -m 555 ${worksrcpath}/src/O/gnucap \
-        ${destroot}${prefix}/bin
-    xinstall -m 555 ${worksrcpath}/ibis/O/gnucap-ibis \
-        ${destroot}${prefix}/bin
-    xinstall -m 444 ${worksrcpath}/doc/gnucap.1 \
-        ${destroot}${prefix}/share/man/man1
-    xinstall -m 444 ${worksrcpath}/doc/gnucap-ibis.1 \
-        ${destroot}${prefix}/share/man/man1
-}
+master_sites        http://www.gnucap.org/devel/
+checksums           md5     30701d110a3e642c5826358c64d2fb1b \
+                    sha1    a64be626b3e971437d677f14bc72eda0df6e7e3a \
+                    rmd160  64438f0f98e625fcbf25d85f23da4c8919bf2ea8
+
+patchfiles          patch-Make2.g++
+
+livecheck.type      regex
+livecheck.url       [lindex ${master_sites} 0]
+livecheck.regex     ${name}-(\[0-9.-\]+)\\.tar

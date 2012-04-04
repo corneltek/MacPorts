@@ -1,11 +1,12 @@
-# $Id: Portfile,v 1.1 2003/09/03 21:37:07 gwright Exp $
+# $Id$
 
-PortSystem	1.0
+PortSystem 1.0
 name		gprolog
-version		1.2.16
+version		1.4.0
+revision	1
 
 categories	lang
-maintainers	pmoura@mac.com
+maintainers	logtalk.org:pmoura
 platforms	darwin
 description	GNU Prolog compiler
 
@@ -24,34 +25,37 @@ long_description	\
 		debugger.
 
 homepage	http://gprolog.inria.fr/
-master_sites	ftp://ftp.inria.fr/INRIA/Projects/contraintes/${name}/
+master_sites	http://www.gprolog.org/
 
-checksums	md5 d7fe87106cd3e7e770375f04dd0d14c2
+# 1.4.0 was stealth-updated; remove this with the next version update
+dist_subdir	${name}/${version}_1
 
-distname	${name}-${version}
+checksums	\
+	sha1    40d99cd3fcb8fa86103ad5692e2cd35b17a90706 \
+	rmd160  82d4008b67b9c99065cfb7df48b1bdb077102a07
+
 worksrcdir 	${name}-${version}/src
 
-configure.args	--prefix=${destroot}/${prefix} \
-		--with-install-dir=${destroot}/${prefix}/lib/${name}-${version} \
-		--with-examples-dir=${destroot}/${prefix}/share/${name}-${version} \
-		--with-doc-dir=${destroot}/${prefix}/share/${name}-${version}
+configure.args \
+	--prefix=${destroot}${prefix} \
+	--with-install-dir=${prefix}/lib/${name}-${version} \
+	--with-examples-dir=${prefix}/share/${name}-${version} \
+	--with-doc-dir=${prefix}/share/${name}-${version}
 
-post-destroot	{ cd ${destroot}/${prefix}/bin
+post-destroot	{
+	foreach cmd {fd2c gplc gprolog hexgplc ma2asm pl2wam wam2ma} {
+		system "ln -fs ../lib/${name}-${version}/bin/${cmd} ${destroot}${prefix}/bin/${cmd}"
+	}
 
-		  file delete fd2c
-		  file delete gplc
-		  file delete gprolog
-		  file delete hexgplc
-		  file delete ma2asm
-		  file delete pl2wam
-		  file delete wam2ma
+	file delete -force ${destroot}${prefix}/var
+}
 
-		  system "ln -s ../lib/${name}-${version}/bin/fd2c fd2c"
-		  system "ln -s ../lib/${name}-${version}/bin/gplc gplc"
-		  system "ln -s ../lib/${name}-${version}/bin/gprolog gprolog"
-		  system "ln -s ../lib/${name}-${version}/bin/hexgplc hexgplc"
-		  system "ln -s ../lib/${name}-${version}/bin/ma2asm ma2asm"
-		  system "ln -s ../lib/${name}-${version}/bin/pl2wam pl2wam"
-		  system "ln -s ../lib/${name}-${version}/bin/wam2ma wam2ma"
-		}
 
+post-pkg {
+	set resources ${workpath}/${name}-${version}.pkg/Contents/Resources/
+	file copy -force -- ${workpath}/${name}-${version}/COPYING ${resources}/License.txt
+	file copy -force -- ${workpath}/${name}-${version}/README ${resources}/ReadMe.txt
+}
+
+# ticket #21172
+supported_archs i386 ppc

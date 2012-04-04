@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.2 2003/11/17 21:20:01 jkh Exp $
+# $Id$
 
 PortSystem 1.0
 name		cdpd
 version		1.0.2.1
 categories	net
-maintainers	andrew@ugh.net.au
+platforms	darwin
+maintainers	ugh.net.au:andrew
 description	Sends Cisco Discovery Protocol announcements
 long_description	cdpd periodically sends Cisco Discovery Protocol \
 			announcements on configured interfaces.

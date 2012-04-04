@@ -1,33 +1,36 @@
-# $Id: Portfile,v 1.7 2004/01/16 20:22:40 fkr Exp $
+# $Id$
 
 PortSystem 1.0
-name		krbafs
-version		1.1
-revision	0
-categories	sysutils security
-maintainers	darwinports@opendarwin.org
-description	AFS library
-long_description	\
-	krbafs provides a set of AFS client utility functions for managing \
-	the AFS client and user's tokens for MIT Kerberos and Kerberos for \
-	Macintosh, the Kerberos implementation included with Mac OS X 10.1. \
-	It also provides afs_string_to_key() and the Kerberos 4 lifetime \
-	functions if they are not available in the local Kerberos \
-	implementation.
-homepage	http://web.mit.edu/openafs/krbafs/
-platforms	darwin
-master_sites	http://web.mit.edu/openafs/krbafs/
-use_autoconf	yes
-checksums	md5 d150416c43532fa35a4a246c972ece07
-distname	${name}-${version}-nocrypto
-worksrcdir	${name}-${version}
-patchfiles	Makefile.in.diff
+name                krbafs
+version             1.2
+revision            0
+categories          sysutils security
+maintainers         nomaintainer
+description         AFS library
+long_description \
+   krbafs provides a set of AFS client utility functions for managing \
+   the AFS client and user's tokens for MIT Kerberos and Kerberos for \
+   Macintosh, the Kerberos implementation included with Mac OS X 10.1. \
+   It also provides afs_string_to_key() and the Kerberos 4 lifetime \
+   functions if they are not available in the local Kerberos \
+   implementation.
+homepage            http://web.mit.edu/openafs/krbafs/
+platforms           darwin
+master_sites        http://web.mit.edu/openafs/krbafs/
+use_autoconf        yes
+checksums           md5 7c08f2ece4a0a7140932e825ee62906a
+distname            ${name}-${version}-nocrypto
+worksrcdir          ${name}-${version}
+patchfiles          patch-Makefile.in.diff
+depends_build       port:libtool
+pre-configure {
+    if {[file exists ${prefix}/share/libtool/config/config.guess]} {
+        copy -force ${prefix}/share/libtool/config/config.guess ${worksrcpath}
+    } else {
+        copy -force ${prefix}/share/libtool/config.guess ${worksrcpath}
+    }
+}
 post-patch {
-	reinplace "s|@install_prefix@|${destroot}|g" "${worksrcpath}/Makefile.in"
+   reinplace "s|@install_prefix@|${destroot}|g" "${worksrcpath}/Makefile.in"
 }
 
-variant strongcrypto {
-	master_sites	http://www.crypto-publish.org/dist/lxs-krbafs/
-	checksums	md5 1e351322db27e170ee5b17b2dad21a3c
-	distname	${name}-${version}
-}

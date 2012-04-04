@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.1 2004/01/29 07:25:11 toby Exp $
+# $Id$
 
 PortSystem 1.0
 name             cupl
 version          1.6
 categories       lang
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      CUPL/CORC interpreter
 long_description \
     Interpreter for the archaic CUPL and CORC programming \
@@ -15,7 +15,10 @@ platforms        darwin
 master_sites     ${homepage}
 checksums        md5 5032ec8df7f90bcb8d491e3898a582e9
 
+patchfiles       patch-cupl.y patch-execute.c patch-monitor.c
+
 use_configure    no
+
 build.target
 
 destroot {

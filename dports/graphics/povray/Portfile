@@ -1,25 +1,69 @@
-# $Id: Portfile,v 1.3 2003/11/17 21:19:58 jkh Exp $
+# $Id$
 
-PortSystem	1.0
-name		povray
-version		3.5
-maintainers	stewartsmith@mac.com
-categories	graphics
-description	Persistence Of Vision RAYtracer
-long_description POVRAY is a 'free' and popular Ray Tracer available for many platforms (including UNIX). This is a port of the UNIX version, not the graphical MacOS X version.
-master_sites	\
-		http://www.povray.org/ftp/pub/povray/Official/Unix/ \
-		ftp://ftp.povray.org/pub/povray/Official/Unix/
-distname	povuni_s
-extract.suffix	.tgz
-checksums	povuni_s.tgz md5 bac59e7a86172a5bd0c63af2516e7045
-worksrcdir	povray-3.50c
+PortSystem 1.0
 
-depends_lib	lib:libX11.6:XFree86 lib:libpng.3:libpng lib:libjpeg:jpeg lib:libz.1:zlib lib:libtiff.3:tiff
-patchfiles	src-Makefile.in.diff
-configure.args	--includedir=${prefix}/include 
-post-configure {
-		reinplace "s|#error You must complete the following DISTRIBUTION_MESSAGE macro||" ${worksrcpath}/src/optout.h
-		reinplace "s|#define DISTRIBUTION_MESSAGE_2 \" FILL IN NAME HERE.........................\"|#define DISTRIBUTION_MESSAGE_2 \" DarwinPorts Build, Portfile maintained by Stewart Smith\"|" ${worksrcpath}/src/optout.h
-		}
+name			povray
+version			3.6.1
+revision                5
+maintainers		nomaintainer
+categories		graphics
+platforms		darwin
+description		Persistence Of Vision RAYtracer
+long_description	POVRAY is a 'free' and popular Ray Tracer available for \
+				many platforms (including UNIX). This is a port of the UNIX \
+				version, not the graphical Mac OS X version.
+homepage		http://www.povray.org/
+master_sites	${homepage}ftp/pub/povray/Official/Unix/ \
+				ftp://ftp.povray.org/pub/povray/Official/Unix/
+checksums		md5 b5789bb7eeaed0809c5c82d0efda571d \
+			sha1 1fab3ccbdedafbf77e3a66087709bbdf60bc643d
+use_bzip2		yes
 
+depends_build \
+    port:pkgconfig
+
+depends_lib \
+	port:xorg-libsm \
+	port:xpm \
+	port:libpng \
+	port:jpeg \
+	port:zlib \
+	port:tiff
+
+patchfiles      patch-configure patch-source_png_pov.cpp \
+                povray-3.6.1-libpng14.patch
+
+# uses its own cflags in addition to the ones we pass anyway
+configure.optflags
+configure.args	--includedir=${prefix}/include \
+				--mandir=${prefix}/share/man \
+				COMPILED_BY="MacPorts"
+
+set branch [join [lrange [split ${version} .] 0 1] .]
+post-destroot {
+    foreach f {povray.conf povray.ini} {
+        move ${destroot}${prefix}/etc/povray/${branch}/${f} \
+             ${destroot}${prefix}/etc/povray/${branch}/${f}.sample
+    }
+}
+post-activate {
+    foreach f {povray.conf povray.ini} {
+        if {![file exists ${prefix}/etc/povray/${branch}/${f}]} {
+            copy ${prefix}/etc/povray/${branch}/${f}.sample \
+                 ${prefix}/etc/povray/${branch}/${f}
+        }
+    } 
+}
+
+test.run		yes
+test.target		check
+
+platform darwin {
+    if {![variant_isset universal]} {
+        configure.args-append --build=${build_arch}-apple-darwin${os.major}
+    }
+}
+
+livecheck.type  regex
+livecheck.url   ${homepage}ftp/pub/povray/Official/Unix/
+livecheck.regex {CURRENT-VERSION-IS-([0-9.]+)}

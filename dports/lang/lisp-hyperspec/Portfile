@@ -1,10 +1,12 @@
-# $Id: Portfile,v 1.4 2003/08/05 09:29:16 jkh Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
 PortSystem 1.0
-name		HyperSpec
-version		6-0
+
+name		lisp-hyperspec
+version		7.0
 categories	lang
-maintainers	gwright@comcast.com
+maintainers	nomaintainer
 platforms	darwin
 description	The Common Lisp HyperSpec
 long_description	\
@@ -34,26 +36,24 @@ long_description	\
 #		document and exclude commercial redistribution. \
 #								\
 #		To view, point your browser to \
-#			<darwinports installation dir>/share/doc/lisp/${name}-${version}/HyperSpec/Front/index.htm \
+#			<MacPorts installation dir>/share/doc/lisp/${name}-${version}/HyperSpec/Front/index.htm \
 #								\
-#		Usually, <darwinports installation dir> is /opt/local. \
+#		<MacPorts installation dir> is ${prefix}. \
 #
 
 homepage	http://www.lispworks.com/reference/HyperSpec/index.html
-master_sites	ftp://ftp.xanalys.com/pub/software_tools/reference/
+master_sites	ftp://ftp.lispworks.com/pub/software_tools/reference/
+regsub -all	"\\." $version "-" distVersion
+distname	HyperSpec-${distVersion}
+extract.mkdir	yes
 
-checksums	md5 31a7148273d1e81d98cc706c86ab7e4b
+checksums	md5 8df440c9f1614e2acfa5e9a360c8969a
 
-# Do nothing for extract, configuration and build:
-
-extract		{ }
-configure	{ }
+use_configure   no
 build		{ }
 
-destroot	{ file mkdir ${destroot}/${prefix}/share/doc/lisp/${name}-${version}
-		  cd ${destroot}/${prefix}/share/doc/lisp/${name}-${version}
-		  system "${extract.cmd} ${extract.pre_args} ${distpath}/${distfile} ${extract.post_args}"
-		  cd ${destroot}/${prefix}/share/doc
-		  system "chown -R root.admin lisp"
-		}
-
+destroot {
+    set lispdir ${destroot}${prefix}/share/doc/lisp/
+    file mkdir ${lispdir}
+    file rename ${worksrcpath} ${lispdir}
+}

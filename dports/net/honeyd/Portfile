@@ -1,26 +1,38 @@
-# $Id: Portfile,v 1.13 2004/01/16 20:22:37 fkr Exp $
+# $Id$
 
-PortSystem 1.0
-name		honeyd
-version		0.4
-revision	2
-categories	net security
-maintainers	darwinports@opendarwin.org
-description	a virtual honey net daemon with personality
-long_description	\
-	Honeyd is a small daemon that creates virtual hosts on a network. \
-	The hosts can be configured to run arbitrary services, and their TCP \
-	personality can be adapted so that they appear to be running certain \
-	versions of operating systems. Honeyd enables a single host to claim \
-	multiple addresses - I have tested up to 65536 - on a LAN for \
-	network simulation.
-homepage	http://www.citi.umich.edu/u/provos/honeyd/
-platforms	darwin
-master_sites	http://niels.xtdnet.nl/honeyd/
-checksums	md5 503c75b42d4147a14c2c5e01febd710c
-depends_lib	\
-	lib:libevent:libevent lib:libdnet:libdnet lib:libpcap:libpcap
+PortSystem        1.0
 
-variant darwin {
-	configure.env	CPPFLAGS=-Dsocklen_t=int
+name              honeyd
+version           1.5c
+revision          1
+categories        net
+maintainers       markd
+
+description       A small daemon that creates virtual hosts appearing to run various \
+		  operating systems and services.
+
+long_description  Honeyd is a small daemon that creates virtual hosts (tested up to \
+		  65,536 ip addresses) that can appear to be running individual operating \
+		  systems and services of your choice.  Honeyd improves cyber security \
+		  by providing mechanisms for threat detection and assessment, and also deters \
+		  adversaries by hiding real systems in the middle of virtual systems.
+
+homepage          http://www.honeyd.org/
+master_sites      http://www.citi.umich.edu/u/provos/honeyd/
+platforms         darwin
+checksums         md5 9887b44333e380a2205f64fa245cb727
+
+depends_lib       port:libevent \
+		  port:libdnet \
+		  port:libpcap \
+		  port:pcre \
+		  port:python25 \
+		  port:py25-libdnet \
+		  port:py25-pylibpcap
+
+configure.args	  --with-python
+
+variant rrdtool {
+	depends_lib-append	port:rrdtool
 }
+

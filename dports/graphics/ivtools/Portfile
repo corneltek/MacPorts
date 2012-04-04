@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.4 2003/11/17 21:19:57 jkh Exp $
+# $Id$
 
 PortSystem 1.0
 name		ivtools
 version		1.0.7
 categories	graphics
-maintainers	fenner@research.att.com
+platforms	darwin
+maintainers	fenner
 description	X11 based drawing editors for PostScript, TeX, web graphics
 long_description 	ivtools (pronounced eye-vee-tools) is a suite of \
 		 	free X Windows drawing editors for PostScript, TeX, and web graphics \
@@ -17,3 +18,5 @@ patchfiles	patch-config.defs.in patch-site.def.DARWIN
 worksrcdir	ivtools-1.0
 build.args	prefix=${prefix}
 destroot.destdir   prefix=${destroot}${prefix}
+
+depends_build   port:imake

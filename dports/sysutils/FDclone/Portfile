@@ -1,0 +1,62 @@
+# $Id$
+
+PortSystem      1.0
+
+name            FDclone
+version         3.00j
+revision        1
+categories      sysutils shells
+maintainers     takanori openmaintainer
+description     File & Directory Maintenance Tool
+long_description \
+                ${description}
+platforms       darwin
+license         Restrictive/Distributable
+homepage        http://hp.vector.co.jp/authors/VA012337/soft/fd/index.html
+master_sites    http://hp.vector.co.jp/authors/VA012337/soft/fd/ \
+                ftp://ftp.unixusers.net/src/fdclone/
+distname        FD-${version}
+patchfiles      patch-Makefile.in.diff \
+                patch-custom.c.diff \
+                patch-fd.h.diff \
+                patch-file.c.diff \
+                patch-tree.c.diff
+checksums       rmd160 b976c68e6facc01bf331959be4b831206c05fef7
+
+depends_lib     port:ncurses
+
+use_configure   no
+
+configure.cppflags-append   -I${prefix}/include/ncurses
+configure.ldflags-append    -lncurses
+
+variant universal {}
+
+use_parallel_build  yes
+build.args      CC="${configure.cc}" CONFDIR=${prefix}/etc PREFIX=${prefix} CFLAGS="${configure.cflags} [get_canonical_archflags cc]" CPPFLAGS="${configure.cppflags}" LDFLAGS="${configure.ldflags} [get_canonical_archflags ld]"
+
+destroot.args   BUILD=${destroot} PREFIX=${prefix}
+post-destroot {
+    xinstall -m 755 -d ${destroot}${prefix}/share/doc/${name}
+    foreach f {FAQ* HISTORY* Install* LICENSES* README* TECHKNOW* ToAdmin* *.cat} {
+        eval xinstall -m 644 [glob ${worksrcpath}/${f}] ${destroot}${prefix}/share/doc/${name}
+    }
+    xinstall -m 644 ${worksrcpath}/_fdrc ${destroot}${prefix}/etc/fd2rc.dist
+}
+
+default_variants +xz
+
+variant xz description {Experimental support for XZ Utils} {
+    patchfiles-append   patch-archive.c.diff
+    depends_run-append  path:bin/xz:xz
+}
+
+variant engmes description {Print messages in English} {
+    patchfiles-append   engmes.diff
+}
+
+variant nojpnmes requires engmes description {Legacy compatibility variant} {}
+
+livecheck.type  regex
+livecheck.url   ${homepage}
+livecheck.regex FD-(\[0-9.a-z\]+)\\.tar

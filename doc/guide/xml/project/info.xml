@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-		"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+		"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="info">
   <chapterinfo>
     <keywordset>
@@ -9,63 +9,71 @@
     </keywordset>
   </chapterinfo>
   
-  <title>DarwinPorts Project Info</title> 
+  <title>MacPorts Project Info</title> 
 
   <sect1>
     <title>About this Chapter</title>
 
-		<para>This chapter contains basic information about the DarwinPorts
+		<para>This chapter contains basic information about the MacPorts
 		project.</para>
   </sect1>
 
   <sect1>
 	  <title>Mailing Lists</title>
-	  <para>The DarwinPorts project is organized through mailing lists,
+	  <para>The MacPorts project is organized through mailing lists,
 		and discussion on those lists ranges from new user help to bugs and
-		fixes to discussions about the future direction of DarwinPorts.
+		fixes to discussions about the future direction of MacPorts.
 	  </para>
 		<variablelist>
-			<varlistentry id='darwinports_at'>
+			<varlistentry id='macports-dev_at'>
 				<term><ulink
-				url="http://www.opendarwin.org/mailman/listinfo/darwinports">darwinports
-				[at] opendarwin DOT org</ulink></term>
+				url="http://lists.macosforge.org/mailman/listinfo/macports-dev">macports-dev
+				[at] lists DOT macosforge DOT org</ulink></term>
 				<listitem>
-					<para>General discussion about DarwinPorts development, new
-					user help, and most all discussion surrounding
-					DarwinPorts.</para>
+					<para>General discussion about MacPorts development.</para>
 				</listitem>
 			</varlistentry>
 
-			<varlistentry id='darwinports_bugs_at'>
+			<varlistentry id='macports-users_at'>
 				<term><ulink
-				url="http://www.opendarwin.org/mailman/listinfo/darwinports-bugs">darwinports-bugs
-				[at] opendarwin DOT org</ulink></term>
+				url="http://lists.macosforge.org/mailman/listinfo/macports-users">macports-users
+				[at] lists DOT macosforge DOT org</ulink></term>
 				<listitem>
-					<para>All bugs entered in Bugzilla at OpenDarwin.org for
-						DarwinPorts... very little real communication goes on on
-						this list, it is used for DarwinPorts developers to view
+					<para>New user help, and most all discussion surrounding
+					MacPorts.</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry id='macports-tickets_at'>
+				<term><ulink
+				url="http://lists.macosforge.org/mailman/listinfo/macports-tickets">macports-tickets
+				[at] lists DOT macosforge DOT org</ulink></term>
+				<listitem>
+					<para>All bugs entered in Trac at macports.org for
+						MacPorts... very little real communication goes on on
+						this list, it is used for MacPorts developers to view
 						new bugs that are automatically assigned to this mailing
 						list.</para>
 				</listitem>
 			</varlistentry>
 
-			<varlistentry id='cvs_darwinports_all_at'>
+			<varlistentry id='macports-changes_at'>
 				<term><ulink
-				url="http://www.opendarwin.org/mailman/listinfo/cvs-darwinports-all">cvs-darwinports-all
-				[at] opendarwin DOT org</ulink></term>
+				url="http://lists.macosforge.org/mailman/listinfo/macports-changes">macports-changes
+				[at] lists DOT macosforge DOT org</ulink></term>
 				<listitem>
-					<para>CVS Commit messages are sent to this list, and
+					<para>Subversion commit messages are sent to this list, and
 					occasionally there is some discussion about a commit.  This is
-					mainly a list for DarwinPorts developers, however if you want
-					to track changes to DarwinPorts, you can subscribe to this
+					mainly a list for MacPorts developers, however if you want
+					to track changes to MacPorts, you can subscribe to this
 					list.</para>
 				</listitem>
 			</varlistentry>
 
-			<varlistentry id='portmgr_at'>
-				<term>portmgr [at] opendarwin DOT org</term>
+			<varlistentry id='macports-mgr_at'>
+				<term>macports-mgr [at] lists DOT macosforge DOT org</term>
 				<listitem>
-					<para>This list is closed and is the home of the DarwinPorts
+					<para>This list is closed and is the home of the MacPorts
 						PortMgr steering group.  If you have an issue that needs to
 						be brought to the attention of PortMgr, send a mail to this
 						list.</para>
@@ -75,46 +83,34 @@
   </sect1>
 
 	<sect1>
-		<title>DarwinPorts PortMgr</title>
+		<title>MacPorts PortMgr</title>
 
-		<para>The DarwinPorts PortMgr Group is responsible for the overall
-			direction of DarwinPorts, as well as managing the DarwinPorts
-			website, approving cvs accounts, maintaining the DarwinPorts
-			mailing lists, and other organizational functions.</para>
+		<para>The MacPorts PortMgr Group is primarily responsible for 
+				the administritive decision making of MacPorts. For 
+				example managing the MacPorts website, approving svn accounts,
+				maintaining the MacPorts mailing lists, and other 
+				organizational functions. Send mail to macports-mgr [at]
+				macports DOT org to get in contact with it.</para>
 
 		<sect2>
 			<title>PortMgr Group</title>
 			
 			<itemizedlist>
 				<listitem>
-					<para><emphasis>Jordan Hubbard</emphasis>, jkh [at] opendarwin
+					<para><emphasis>Markus W. Weissmann</emphasis>, mww [at] macports
 					DOT org</para>
 				</listitem>
 
 				<listitem>
-					<para><emphasis>Landon Fuller</emphasis>, landonf [at]
-					opendarwin DOT org</para>
+					<para><emphasis>Juan M. Palacios</emphasis>, jmpp [at] macports
+                    DOT org</para>
 				</listitem>
 
 				<listitem>
-					<para><emphasis>Kevin Van Vechten</emphasis>, kevin [at]
-					opendarwin DOT org</para>
-				</listitem>
-
-				<listitem>
-					<para><emphasis>Felix Kronlage</emphasis>, fkr [at] opendarwin
+					<para><emphasis>James D. Berry</emphasis>, jberry [at] macports
 					DOT org</para>
 				</listitem>
 
-				<listitem>
-					<para><emphasis>Jim Mock</emphasis>, mij [at] opendarwin DOT
-					org</para>
-				</listitem>
-
-				<listitem>
-					<para><emphasis>Will Barton</emphasis>, wbb4 [at] opendarwin
-					DOT org</para>
-				</listitem>
 			</itemizedlist>
 		</sect2>
   </sect1>

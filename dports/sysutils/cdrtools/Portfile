@@ -1,19 +1,55 @@
-# $Id: Portfile,v 1.9 2004/01/03 00:39:27 fkr Exp $
+# $Id$
 
 PortSystem 1.0
-name	    	cdrtools	
-version		2.00.3
-categories  	sysutils	
-description     ISO 9660 filesystem and CD creation tools	
+
+name	    	cdrtools
+version		3.00
+revision	1
+categories  	sysutils
+platforms		darwin
+description     ISO 9660 filesystem and CD creation tools
 long_description	The cdrtools software includes programs to create \
 		 	and/or extract ISO 9660 filesystems, verify their \
-			integrity, and write them to a disc.
-homepage	http://www.fokus.gmd.de/research/cc/glone/employees/joerg.schilling/private/cdrecord.html
-maintainers	fkr@opendarwin.org
-master_sites    ftp://ftp.berlios.de/pub/cdrecord/
-checksums	md5 c0cdfa2dbe9f4c977b0a71fb08ddff0e
-build.type      gnu
-configure 	{ cd ${worksrcpath}
-                  system "rm INSTALL" }
+			integrity, and write them to a disc. \
+			Note, this port conflicts with the dvdrtools port.
+homepage	http://cdrecord.berlios.de/old/private/cdrecord.html
+maintainers	gmail.com:bytestorm openmaintainer
+master_sites    ftp://ftp.berlios.de/pub/cdrecord/ \
+		ftp://ftp.cs.tu-berlin.de/pub/misc/cdrecord/alpha/
 
-destroot.args    DEFINSUSR=root DEFINSGRP=wheel INS_BASE=${destroot}/${prefix}
+checksums	md5     f9fbab08fbd458b0d2312976d8c5f558 \
+		sha1    6464844d6b936d4f43ee98a04d637cd91131de4e \
+		rmd160  210684ab5e286ef59b788b49bd0b74d88f6435f4
+
+use_bzip2	yes
+
+depends_build	port:smake
+
+depends_lib	port:gettext
+
+post-patch {
+	reinplace "s|/opt/schily|${prefix}|g" \
+		${worksrcpath}/DEFAULTS/Defaults.darwin \
+		${worksrcpath}/DEFAULTS/Defaults.mac-os10 \
+		${worksrcpath}/DEFAULTS_ENG/Defaults.darwin \
+		${worksrcpath}/DEFAULTS_ENG/Defaults.mac-os10 \
+		${worksrcpath}/libfind/find.c \
+		${worksrcpath}/libfind/find_main.c \
+		${worksrcpath}/librscg/scsi-remote.c \
+		${worksrcpath}/TEMPLATES/Defaults.gcc
+}
+
+use_configure	no
+
+build.cmd	smake
+
+use_parallel_build no
+
+destroot.args   DEFINSUSR=root DEFINSGRP=wheel INS_BASE=${prefix}
+
+post-destroot {
+    move ${destroot}/etc/default ${destroot}${prefix}/etc/
+}
+
+livecheck.url	[lindex ${master_sites} 0]
+livecheck.regex	${name}-(\[0-9.\]+)\\.tar

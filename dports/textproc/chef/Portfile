@@ -1,20 +1,20 @@
-# $Id: Portfile,v 1.11 2003/11/17 21:20:04 jkh Exp $
+# $Id$
 
 PortSystem 1.0
 name		chef
 version		19930426
 categories	textproc amusements
 platforms	darwin freebsd
-maintainers	darwinports@opendarwin.org
+maintainers	nomaintainer
 description	trunsletes inpoot text intu sveedeesh
+long_description	${description}
 
-master_sites	ftp://tbrowne.best.vwh.net/swedish_chef/
+master_sites	freebsd
 distname	bork
 extract.suffix	.tar.Z
 
 checksums	md5 5194b5a69436b0f90137f957d19d684d
 
-configure	{}
-build		{ system "cd $worksrcpath && lex chef.x && cc lex.yy.c -ll -o chef" }
-destroot	{ file mkdir ${destroot}${prefix}/bin
-                  system "cd $worksrcpath && install chef ${destroot}${prefix}/bin" }
+use_configure	no
+build		{ system "cd $worksrcpath && lex chef.x && ${configure.cc} lex.yy.c -ll -o chef" }
+destroot	{ xinstall ${worksrcpath}/chef ${destroot}${prefix}/bin }

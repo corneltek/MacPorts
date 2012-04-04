@@ -1,10 +1,13 @@
-# $Id: Portfile,v 1.1 2004/01/16 11:22:33 toby Exp $
+# $Id$
 
 PortSystem       1.0
+
 name             xephem
-version          3.5.2
+version          3.7.4
+revision         1
 categories       science
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
+license          Restrictive/Distributable
 description      interactive astronomical ephemeris program
 long_description \
     Xephem is an interactive astronomical ephemeris program for X Windows \
@@ -15,27 +18,30 @@ long_description \
     meridian longitude\; Saturn's rings\; and Jupiter's Great Red Spot
 homepage         http://www.clearskyinstitute.com/xephem/
 platforms        darwin
-master_sites     http://www.clearskyinstitute.com/cgi-bin/download/
-checksums        md5 5820b51667531743d0db0e7f712a9fae
-depends_lib      lib:libXm:lesstif
+master_sites     http://97.74.56.125/free/
+checksums        md5 4e9290609f36df469a2ba5a1b4fffd46 \
+                 sha1 ea5859614381099ca3e9bc28930fd913dfd44926 \
+                 rmd160 96684e4b3afc445389ace82cbb200a0b7095852a
+depends_lib      lib:libXm:openmotif
 worksrcdir       ${distname}/GUI/xephem
-use_xmkmf        yes
+
+patchfiles       patch-Makefile.diff
+
+use_configure    no
+build.args       MOTIFI=${prefix}/include MOTIFL=${prefix}/lib \
+                 CC=${configure.cc}
 build.target
 
-pre-configure {
-    cd ${worksrcpath}/../../libastro
-    system "make"
-    cd ${worksrcpath}/../../libip
-    system "make"
-}
-
-destroot.destdir-append BINDIR=${prefix}/bin INSTALLFLAGS= \
-    DOCHTMLDIR=${prefix}/share/doc MANDIR=${prefix}/share/man/man1
-destroot.target-append  install.man
-
-post-destroot {
+destroot {
     set share ${prefix}/share/xephem
-    set appdefaults /usr/X11R6/lib/X11/app-defaults
+    set appdefaults ${prefix}/lib/X11/app-defaults
+    set bin ${prefix}/bin
+    set man1 ${prefix}/share/man/man1
+
+    xinstall -m 755 ${worksrcpath}/xephem ${destroot}${bin}
+
+    xinstall -m 755 -d ${destroot}${man1}
+    xinstall -m 644 ${worksrcpath}/xephem.man ${destroot}${man1}/xephem.1
 
     file mkdir ${destroot}${share}
     file copy \
@@ -43,6 +49,9 @@ post-destroot {
         ${worksrcpath}/catalogs \
         ${worksrcpath}/fifos \
         ${worksrcpath}/fits \
+        ${worksrcpath}/gallery \
+        ${worksrcpath}/help \
+        ${worksrcpath}/lo \
         ${destroot}${share}
 
     file mkdir ${destroot}${appdefaults}

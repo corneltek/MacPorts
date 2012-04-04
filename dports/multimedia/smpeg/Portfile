@@ -1,11 +1,15 @@
-# $Id: Portfile,v 1.1 2004/01/21 20:21:32 matt Exp $
+# $Id$
 
 PortSystem 1.0
+
 name		smpeg
 version		0.4.4
-revision	2
+revision	9
 categories	multimedia
-maintainers	mww@opendarwin.org
+# libs are LGPL, executables are GPL
+# the readme says LGPLv2 but the actual source files say "or any later version"
+license		{GPL-2+ LGPL} BSD IJG
+maintainers	mww
 platforms	darwin
 description	a general purpose MPEG video/audio player/library
 long_description	smpeg is a general purpose MPEG video/audio player and \
@@ -13,31 +17,36 @@ long_description	smpeg is a general purpose MPEG video/audio player and \
 
 homepage	http://www.lokigames.com/development/smpeg.php3
 master_sites	ftp://ftp.lokigames.com/pub/open-source/smpeg/ \
-		opendarwin::lt
-distfiles-append	ltconfig13:lt \
-			ltmain13:lt
-extract.only	${distname}${extract.suffix}
+		macports freebsd
 
-checksums	${distname}${extract.suffix} \
-			md5 59c76ac704088ef5539210190c4e1fe3 \
-		ltconfig13 md5 ea53f42a550c9f9e653758a8ed91574e \
-		ltmain13 md5 e094ae92724c4015dbab97de151c2525
+checksums	md5 59c76ac704088ef5539210190c4e1fe3
 
-depends_lib	lib:libSDL:libsdl
+depends_lib	path:lib/pkgconfig/sdl.pc:libsdl
+
+patchfiles	patch-smpeg.h.diff patch-glmovie-tile.c.diff \
+		patch-glmovie.c.diff \
+		patch-smpeg.m4.diff patch-MPEGaudio.h.diff patch-video.h.diff \
+		patch-MPEG.cpp.diff patch-smpeg-gtkm4.diff patch-automake-as.diff \
+		patch-configure-flags.diff patch-Makefile.am.diff
 
 post-patch {
-	file copy -force ${distpath}/ltconfig13 ${worksrcpath}/ltconfig
-	file copy -force ${distpath}/ltmain13 ${worksrcpath}/ltmain.sh
+	file delete ${worksrcpath}/acinclude.m4
+	touch ${worksrcpath}/NEWS
+	touch ${worksrcpath}/AUTHORS
+	touch ${worksrcpath}/ChangeLog
 }
+
+use_autoreconf  yes
+autoreconf.args --include=${worksrcpath}/m4
 
 configure.args	--without-x \
 		--disable-gtktest \
 		--disable-gtk-player \
-		--disable-static \
+		--enable-static \
+		--enable-shared \
+		--disable-sdltest \
 		--mandir=${prefix}/share/man
 
-post-configure	{
-	reinplace "s|gcc|g++|g" ${worksrcpath}/Makefile
-}
+configure.ldflags-append -framework OpenGL
 
-build.target
+use_parallel_build	no

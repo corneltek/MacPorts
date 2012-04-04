@@ -1,0 +1,31 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem          1.0
+PortGroup           github 1.0
+
+github.setup        mde jake 0.2.28 v
+platforms           darwin
+categories          devel
+maintainers         ryandesign openmaintainer
+license             Apache-2.0
+supported_archs     noarch
+
+description         JavaScript build tool for Node.js, similar to make or rake
+
+long_description    ${name} is a ${description}.
+
+checksums           rmd160  6f966646177797372104c924318be965bf74b6ee \
+                    sha256  b2a6c3993d773e7c5cf57349d8eb50750c7d105d210c4a2fa201fa68e4b76bd0
+
+depends_lib         path:bin/node:nodejs
+
+use_configure       no
+
+destroot.args       PREFIX=${prefix}
+
+post-destroot {
+    set docdir ${destroot}${prefix}/share/doc/${name}
+    xinstall -d ${docdir}
+    ln -s ../../../lib/node_modules/jake/README.md ${docdir}
+}

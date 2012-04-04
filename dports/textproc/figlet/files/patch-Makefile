@@ -1,40 +1,29 @@
---- Makefile.orig	Tue Feb 18 15:02:28 1997
-+++ Makefile	Fri Apr  5 18:59:04 2002
-@@ -9,19 +9,19 @@
- # Don't change this even if your shell is different. The only reason
- # for changing this is if sh is not in the same place.
+--- Makefile.orig	2011-03-22 11:30:01.000000000 -0700
++++ Makefile	2011-03-22 11:30:46.000000000 -0700
+@@ -19,8 +19,8 @@
  SHELL = /bin/sh
--CC = gcc
--CFLAGS = -g
-+CC ?= cc
-+#CFLAGS = -g
+ 
+ # The C compiler and linker to use
+-CC	= gcc
+-CFLAGS	= -g -O2 -Wall
++CC	= __CC__
++CFLAGS	= -g __CFLAGS__ -Wall
+ LD	= gcc
+ LDFLAGS =
+ 
+@@ -29,13 +29,13 @@
+ XCFLAGS	= -DTLF_FONTS
+ 
+ # Where to install files
+-prefix	= /usr/local
++prefix	= __PREFIX__
  
  # Where the executables should be put
--DESTDIR = /usr/games
-+DESTDIR = $(PREFIX)/bin
+ BINDIR	= $(prefix)/bin
  
  # Where the man page should be put
--MANDIR = /usr/man/man6
-+MANDIR = $(PREFIX)/man/man6
+-MANDIR	= $(prefix)/man
++MANDIR	= $(prefix)/share/man
  
  # Where figlet will search first for fonts (the ".flf" files).
--DEFAULTFONTDIR = $(DESTDIR)/lib/figlet.dir
-+#DEFAULTFONTDIR = $(DESTDIR)/lib/figlet.dir
- # Use this definition if you can't put things in /usr/games
--DEFAULTFONTDIR = fonts
-+DEFAULTFONTDIR = $(PREFIX)/share/figlet
- 
- # The filename of the font to be used if no other is specified
- #   (standard.flf is recommended, but any other can be used).
-@@ -50,8 +50,10 @@
-	rm -f *.o figlet chkfont
- 
- install: figlet chkfont
--	mkdir $(DEFAULTFONTDIR)
-+	mkdir -p $(DEFAULTFONTDIR)
-+	strip figlet
-	cp figlet $(DESTDIR)
-+	strip chkfont
-	cp chkfont $(DESTDIR)
-	cp figlist $(DESTDIR)
-	cp showfigfonts $(DESTDIR)
+ DEFAULTFONTDIR = $(prefix)/share/figlet

@@ -1,24 +1,43 @@
-# $Id: Portfile,v 1.2 2004/02/23 13:59:03 olegb Exp $
-PortSystem 1.0
-name		gnomeicu
-version		0.99
-description	GnomeICU is one of the most popular ICQ programs in the world.
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem              1.0
+
+name                    gnomeicu
+version                 0.99.14
+revision                1
+categories              gnome
+platforms               darwin
+maintainers             nomaintainer
+
+description             GnomeICU is one of the most popular ICQ programs in the world.
+
 long_description        GnomeICU is one of the most popular UN*X-based \
-			ICQ programs in the world. Internet chatting has \
-			quickly become one of the most popular uses of the \
-			Internet - second only to Email. Instant messaging \
-			allows users to communicate in real time with friends, \
-			family members, and coworkers in an efficient, \
-			unobtrusive manner.
-maintainers	gnome-darwinports@opendarwin.org
-categories	gnome
-platforms	darwin 
-homepage	http://gnomeicu.sourceforge.net/
-master_sites	sourceforge
-checksums	md5 d5e49557a3ed3545b98c3749257e58ef
-use_bzip2	yes
-patchfiles	patch_userserver.c patch_icu_db.c
-depends_lib     lib:libgnet:gnet lib:libgdbm:gdbm bin:gnome-session:gnome-session
-configure.env   CPPFLAGS="-L${prefix}/lib -I${prefix}/include" \
-                CFLAGS="-no-cpp-precomp -flat_namespace -undefined suppress -DHAVE_NDBM=0"
-configure.args	 --with-ndbm=no --with-gdbm=yes
+                        ICQ programs in the world. Internet chatting has \
+                        quickly become one of the most popular uses of the \
+                        Internet - second only to Email. Instant messaging \
+                        allows users to communicate in real time with friends, \
+                        family members, and coworkers in an efficient, \
+                        unobtrusive manner.
+
+homepage                http://gnomeicu.sourceforge.net/
+master_sites            sourceforge
+use_bzip2               yes
+
+checksums           rmd160  a5201dcbf4a1cd961243798d48a529497013a209 \
+                    sha256  0cb2ce38f4814ad5e2270c87d29b79db15421b555108c4c6c58e0e82e362e550
+
+depends_build           port:intltool \
+                        port:pkgconfig
+depends_lib             port:gnet \
+                        port:gdbm \
+                        port:gnome-session \
+                        port:libgnomeui \
+                        port:rarian
+
+patchfiles              patch_icu_db.c
+
+configure.cflags-append -DHAVE_NDBM=0
+
+configure.args          --with-ndbm=no \
+                        --with-gdbm=yes

@@ -1,46 +1,48 @@
-# $Id: Portfile,v 1.2 2004/02/08 13:55:50 mww Exp $
+# $Id$
 
 PortSystem 1.0
+PortGroup python24 1.0
 
-name		py-ctypes
-version		0.6.2
-categories	python
-platforms	darwin
-maintainers	mww@opendarwin.org
-description	create and manipulate C data types in Python
+name			py-ctypes
+version			1.0.2
+revision		1
+categories		python
+platforms		darwin
+maintainers		nomaintainer
+license			MIT
+
+description		create and manipulate C data types in Python
 long_description	ctypes is a Python package to create and manipulate C \
-			data types in Python, and to call functions in dynamic \
-			link libraries/shared dlls. It allows wrapping these \
-			libraries in pure Python.
+				data types in Python, and to call functions in dynamic \
+				link libraries/shared dlls. It allows wrapping these \
+				libraries in pure Python.
 
-homepage	http://starship.python.net/crew/theller/ctypes/
+homepage		http://starship.python.net/crew/theller/ctypes/
 master_sites	sourceforge:ctypes
-distname	ctypes-${version}
-checksums	md5 6abeef042e407a062a8698dd37f3b5c8
 
-depends_lib	lib:libffi:libffi \
-		bin:python:python
+checksums		md5     94ff7aa7f7f71b23bac8a98065d77743 \
+				sha1    7f77f2b507a50f292297831ee50e310037398e14 \
+				rmd160  f8b74c2f9b5646edc916565dd22c51d8819cd6b8
 
-use_configure	no
+distname		ctypes-${version}
 
-build.env	CFLAGS=-I${prefix}/include \
-		LDFLAGS=-L${prefix}/lib
-build.cmd	python setup.py
-build.target	build
+depends_build-append	port:pkgconfig
 
-test.run	no
-test.dir	${worksrcpath}
-test.cmd	${build.cmd}
-test.target	test
+depends_lib-append	port:libffi
 
-destroot.cmd	${build.cmd}
-destroot.destdir	--prefix=${destroot}${prefix}
+patchfiles		patch-setup.py.diff
 
-post-destroot	{
-	xinstall -d -m 755 ${destroot}${prefix}/share/doc/${name}
-	xinstall -m 644 -W ${worksrcpath}/docs changes.html changes.stx \
-		com.stx ctypes.html default.css faq.html faq.stx index.stx \
-		internals.html internals.stx reference.html reference.stx \
-		sum_sample.stx tutorial.html tutorial.stx \
-		${destroot}${prefix}/share/doc/${name}
+build.env		CC=${configure.cc} CPP=${configure.cpp} CFLAGS="-D_DARWIN_C_SOURCE"
+
+pre-build {
+	build.env-append	CPPFLAGS="[exec ${prefix}/bin/pkg-config libffi --cflags]"
+}
+
+test.run		yes
+test.cmd		${build.cmd}
+test.target		test
+
+post-destroot {
+	xinstall -m 644 -W ${worksrcpath} LICENSE.txt README.CVS \
+		README.txt ${destroot}${prefix}/share/doc/${name}
 }

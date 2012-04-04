@@ -1,11 +1,11 @@
-# $Id: Portfile,v 1.1 2004/01/15 19:17:30 gwright Exp $
+# $Id$
 
 PortSystem 1.0
 name		djbfft
 version		0.76
 categories	math
 platforms	darwin
-maintainers	gwright@comcast.net
+maintainers	nomaintainer
 
 description	D.J. Bernstein's fast fourier transform library
 long_description	\
@@ -24,11 +24,13 @@ master_sites	http://cr.yp.to/djbfft/
 
 checksums	md5 9349eff24c1f9fdfb98cfb51bece8efb
 
-configure	{ reinplace s|/usr/local/djbfft|${destroot}/${prefix}| \
+configure	{ reinplace s|/usr/local/djbfft|${destroot}${prefix}| \
 		  ${worksrcpath}/conf-home }
 
 build.target
 
 destroot.target	setup check
 
-
+livecheck.type	regex
+livecheck.url	http://cr.yp.to/djbfft/install.html
+livecheck.regex	${name}-(\[0-9.\]+)\\.tar

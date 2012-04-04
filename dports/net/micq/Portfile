@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.17 2004/01/17 14:25:53 fkr Exp $
+# $Id$
 
 PortSystem 1.0
 name            micq	
-version         0.4.11
+version         0.5.4.2
 categories      net
-maintainers     fkr@opendarwin.org
+maintainers     nomaintainer
 description     portable text-mode ICQ clone	
 long_description	mICQ is a very portable text-mode ICQ clone. \
                     	Originally written by Matthew D. Smith, a great \
@@ -12,14 +12,17 @@ long_description	mICQ is a very portable text-mode ICQ clone. \
                     	in particular the support for the new version 8 of the \
                     	ICQ protocol that became necessary, the internationalization, \
                     	the file transfer and some restructuring of the code.
-homepage        http://www.micq.org/
+homepage        http://micq.ausics.net/
 platforms       darwin freebsd
 extract.suffix  .tgz
-master_sites    ${homepage}source/
-checksums	md5 0b65627e488dd24803e16f060c880734
-configure.args  --prefix=${destroot}${prefix}
-destroot.destdir	prefix=${destroot}${prefix}
+master_sites    ${homepage}archives/
+checksums	md5 ce6f44a335dcc03877e357689ca35489 \
+		sha1 e9f90e8c2b9c99a9b8863aca0329bed72da127b7 \
+		rmd160 bc387467c64047198520fb65985343bd4ce6befb
 
-post-destroot {  cd ${worksrcpath}
-                system "cp doc/*png ${destroot}${prefix}/share/micq"
-                system "cp doc/*xpm ${destroot}${prefix}/share/micq" }
+post-destroot { system "cp ${worksrcpath}/doc/*png ${destroot}${prefix}/share/micq"
+                system "cp ${worksrcpath}/doc/*xpm ${destroot}${prefix}/share/micq" }
+
+livecheck.type  regex
+livecheck.url   [lindex ${master_sites} 0]?C=M&O=D
+livecheck.regex ${name}-(\[0-9.\]+)\\.tgz

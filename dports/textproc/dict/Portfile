@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.30 2003/11/30 01:54:09 landonf Exp $
+# $Id$
 
 PortSystem 1.0
 name			dict
 version			1.9.7
+revision		1
 categories		textproc spelling
-maintainers		landonf@opendarwin.org
+maintainers		landonf
 description		Dictionary Server Protocol (RFC2229) client
 long_description	The Dictionary Server Protocol (DICT) is a TCP \
 			transaction based query/response protocol that \
@@ -16,23 +17,22 @@ homepage		http://www.dict.org/
 platforms		darwin freebsd
 
 master_sites		ftp://ftp.dict.org/pub/dict/
-distname		${portname}d-${portversion}
+distname		${name}d-${version}
 checksums		md5 baa8f18dd0373e7053658be99d40d5db
-depends_lib		lib:ltdl.3:libtool
+depends_build		lib:ltdl.3:libtool
 
 patchfiles		patch-configure
 
-configure.args		--without-local-zlib --with-etcdir=${prefix}/etc
-configure.env		CPPFLAGS=-I${prefix}/include LDFLAGS=-L${prefix}/lib
+configure.args		--without-local-zlib --with-etcdir=${prefix}/etc --mandir=${prefix}/share/man
 build.type		gnu
 build.target		dict
 destroot.target		install.dict
 
-variant darwin {
-	patchfiles-append	patch-libmaa-config.guess patch-libmaa-config.sub patch-regex-ranlib
+platform darwin {
+	patchfiles-append	patch-libmaa-config.guess patch-libmaa-config.sub patch-libmaa_parse.c patch-regex-ranlib
 }
 
-variant freebsd {
+platform freebsd {
 	patchfiles-append	freebsd-T_USER.diff
 }
 

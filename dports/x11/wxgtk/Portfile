@@ -1,47 +1,50 @@
-# $Id: Portfile,v 1.7 2004/02/07 08:05:14 blb Exp $
+# $Id$
 
-PortSystem		1.0
-name			wxgtk
-version			2.4.2
-categories		x11
-maintainers		blb@pobox.com
-description		The wxWindows GUI toolkit with GTK+ bindings
-long_description	\
-	A C++ package for platform independent software development
+PortSystem      1.0
 
-homepage		http://wxwindows.org/
-platforms		darwin
-master_sites	sourceforge:wxwindows
-distname		wxGTK-${version}
-checksums		md5 cdadfe82fc93f8a65a2ae18a95b0b0e3
-use_bzip2		yes
+name            wxgtk
+conflicts       wxWidgets wxWidgets-python
+version         2.8.12
+categories      x11
+platforms       darwin
+maintainers     nomaintainer
 
-depends_lib		lib:libgtk.1:gtk1 lib:libtiff:tiff lib:libjpeg:jpeg \
-				lib:libpng:libpng lib:libfreetype.6:freetype \
-				lib:libz:zlib
+description     The wxWidgets GUI toolkit with GTK+ bindings
+long_description    \
+    A C++ package for platform independent software development
 
-configure.env	LDFLAGS="-L${prefix}/lib" \
-				CPPFLAGS="-I${prefix}/include -I${x11prefix}/include"
-configure.args	--with-gtk --with-libpng --with-libjpeg --with-libtiff \
-				--with-freetype --with-zlib
+homepage        http://wxwidgets.org/
+master_sites    sourceforge:wxwindows
+distname        wxGTK-${version}
 
-destroot.destdir	prefix=${destroot}/${prefix}
+checksums       sha1    a8d31ef924ae49e97690646b13d5a2a7be7dda10 \
+                rmd160  c401f141ed9fb085c7b79a2f0db788ce6ae9309f
+
+use_bzip2       yes
+
+depends_build   port:pkgconfig
+depends_lib     port:gtk2 \
+                port:tiff \
+                port:jpeg \
+                port:libpng \
+                port:freetype \
+                port:zlib
+
+patchfiles      patch-Makefile.in configure.patch
+
+# g++-4.2: -E, -S, -save-temps and -M options are not allowed with multiple -arch flags
+universal_variant no
+
+configure.args  --with-gtk --with-libpng --with-libjpeg --with-libtiff \
+                --with-freetype --with-zlib --enable-unicode
 
 post-destroot {
-	xinstall -m 755 -d ${destroot}/${prefix}/share/doc/${name}
-	eval xinstall -m 644 [glob ${worksrcpath}/*.txt] \
-		${destroot}/${prefix}/share/doc/${name}
+    xinstall -m 755 -d ${destroot}${prefix}/share/doc/${name}
+    eval xinstall -m 644 [glob ${worksrcpath}/*.txt] \
+        ${destroot}${prefix}/share/doc/${name}
 }
 
 variant opengl {
-	depends_lib-append		lib:libGL:XFree86
-	configure.args-append	--with-opengl
+    depends_lib-append      port:mesa
+    configure.args-append   --with-opengl
 }
-
-variant darwin {
-	patchfiles	darwin-shared-ld-sh
-	post-patch {
-		system "chmod 755 distrib/mac/shared-ld-sh"
-	}
-}
-

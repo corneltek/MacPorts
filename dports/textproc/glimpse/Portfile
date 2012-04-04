@@ -1,19 +1,22 @@
-# $Id: Portfile,v 1.10 2004/01/15 07:53:05 toby Exp $
+# $Id$
 
-PortSystem 1.0
-name            glimpse
-version         4.17.4
-categories      textproc
-maintainers     lomion@mac.com
-description     A text search engine.  Free for personal use.
-long_description	A text search engine.  Free for personal use. \
-			Required for use with Webglimpse.
-checksums       md5 c005f3ca3f3ab64473405a1d5901dd3f
-master_sites    http://webglimpse.net/trial/
-build.args	LDFLAGS=-L${prefix}/lib
+PortSystem              1.0
 
-destroot.destdir 	bindir=${destroot}${prefix}/bin \
-			libdir=${destroot}${prefix}/lib \
-			mandir=${destroot}${prefix}/share/man/man1
+name                    glimpse
+version                 4.18.5
+set distfile_date       20070118051535
+dist_subdir             ${name}/${version}-${distfile_date}
+categories              textproc
+platforms               darwin
+maintainers             nomaintainer
+description             A text search engine.  Free for personal use.
+long_description        A text search engine.  Free for personal use. \
+                        Required for use with Webglimpse.
+checksums               md5 10204ab813f3bbb558e22dedf19d1dfb
+homepage                http://webglimpse.net/
+master_sites            ${homepage}trial/
+build.args              LDFLAGS=-L${prefix}/lib
 
-platform darwin 6 { depends_lib     lib:libdl:dlcompat  }
+destroot.destdir        bindir=${destroot}${prefix}/bin \
+                        libdir=${destroot}${prefix}/lib \
+                        mandir=${destroot}${prefix}/share/man/man1

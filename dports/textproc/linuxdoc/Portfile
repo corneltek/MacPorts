@@ -1,16 +1,19 @@
-# $Id: Portfile,v 1.3 2003/08/05 09:29:38 jkh Exp $
+# $Id$
 
 PortSystem 1.0
+
 name		linuxdoc
 version		1.1
 categories	textproc
-maintainers	mij@opendarwin.org
+maintainers	nomaintainer
 description	Linuxdoc SGML DTD
 platforms	darwin
 
-long_description $description
+long_description ${description}
 
-master_sites	http://fallout.campusview.indiana.edu/ports/distfiles/
+master_sites	http://fallout.campusview.indiana.edu/ports/distfiles/ \
+		http://dist.bsdlab.org/ \
+		freebsd
 
 checksums	md5 7b322f63448a8fd093132d74d3e545b6
 
@@ -18,16 +21,15 @@ set isocat	${prefix}/share/sgml/iso8879/catalog
 
 depends_run	bin:mkcatalog:mkcatalog bin:$isocat:iso8879
 
-configure	{}
+use_configure	no
 build		{}
 
 set instdir	share/sgml/linuxdoc
 
-destroot	{ system "install -o root -m 755 -d \
-		    ${destroot}${prefix}/${instdir}"
-		  system "install -o root -m 644 ${workdir}/catalog \
-		    ${destroot}${prefix}/${instdir}"
-		  system "install -o root -m 644 ${workdir}/*.* \
-		    ${destroot}${prefix}/${instdir}" }
+destroot	{
+	xinstall -m 755 -d ${destroot}${prefix}/${instdir}
+	xinstall -m 644 ${workpath}/catalog ${destroot}${prefix}/${instdir}
+	eval xinstall -m 644 [glob ${workpath}/*.*] ${destroot}${prefix}/${instdir}
+}
 
 destroot.args	prefix=${destroot}${prefix}

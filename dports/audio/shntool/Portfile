@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.11 2004/01/16 20:22:32 fkr Exp $
+# $Id$
 
 PortSystem 1.0
 name		shntool
-version		1.2.3
+version		3.0.10
 categories	audio
-maintainers	darwinports@opendarwin.org
+maintainers	nomaintainer
 description	Multi-purpose .wav/.shn processing utility
 long_description	\
 	shntool is a multi-purpose .wav/.shn processing tool.  Input and \
@@ -12,17 +12,22 @@ long_description	\
 	its functions upon both .wav and .shn data.
 homepage	http://www.etree.org/shnutils/shntool/
 platforms	darwin
-master_sites	http://etree.org/shnutils/shntool/source/
-checksums	md5 3efbb71b94f5e285daecfe137114873d
-depends_lib	lib:libexpat.0:expat lib:libintl.1:gettext \
-		lib:libiconv.2:libiconv bin:shorten:shorten
+master_sites	${homepage}dist/src/
+checksums \
+	md5 5d41f8f42c3c15e3145a7a43539c3eae \
+	sha1 7a2bc8801e180cf582f0e39775603582e35d50d2 \
+	rmd160 3c41c5da4ee11127dae02609052d1f1a355aef4a
+	
+depends_lib	\
+	port:expat \
+	port:gettext \
+	port:libiconv \
+	port:shorten
+	
 configure.args	--mandir=${prefix}/share/man
 
-post-patch { 	reinplace "s|$\(bindir)/shn|${destroot}${prefix}/bin/shn|g" \
-				"${worksrcpath}/src/Makefile.in"
-		reinplace "s|$\(bindir)/shn|${destroot}${prefix}/bin/shn|g" \
-				"${worksrcpath}/src/Makefile.am" }
-
-post-destroot { system "install -m 755 -d ${destroot}${prefix}/share/doc/${portname}"
-		system "install -m 644 ${worksrcpath}/doc/* \
-				${destroot}${prefix}/share/doc/${portname}/" }
+post-destroot {
+	system "install -m 755 -d ${destroot}${prefix}/share/doc/${name}"
+	system "install -m 644 ${worksrcpath}/doc/* \
+		${destroot}${prefix}/share/doc/${name}/"
+}

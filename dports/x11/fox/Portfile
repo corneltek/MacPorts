@@ -1,28 +1,37 @@
-# $Id: Portfile,v 1.2 2004/01/30 07:15:07 toby Exp $
+# $Id$
 
-PortSystem 1.0
+PortSystem          1.0
+
 name                fox
-version             1.0.48
-revision            1
+version             1.6.36
+revision            3
 description         The FOX GUI toolkit
 long_description    FOX is a C++ based Toolkit for developing Graphical \
                     User Interfaces easily and effectively.
-maintainers         darwin@otierney.net
+maintainers         lylejohnson.name:lyle
 categories          x11
-platforms           darwin 
+platforms           darwin
+distname            fox-${version}
 homepage            http://www.fox-toolkit.org/
-master_sites        ftp://ftp.fox-toolkit.org/pub/ \
-                    http://www.fox-toolkit.org/ftp/
-checksums           md5 55b37dce548d650099b59a52fb7b5d06
-depends_lib         lib:libtiff.3:tiff  lib:libpng12.0:libpng \
-                    lib:libjpeg.62:jpeg lib:libX11.6:XFree86
-configure.env       CPPFLAGS=-I${prefix}/include CC=g++ CXX=g++ \
-                    LDFLAGS=-L${prefix}/lib
-configure.pre_args  --prefix=${prefix}
-configure.args      --with-opengl=no --enable-cups
-post-configure      {
-                        reinplace "s;fox/html;share/fox/html;" ${worksrcpath}/doc/Makefile
-                        reinplace "s;fox/html;share/fox/html;" ${worksrcpath}/doc/art/Makefile
-                        reinplace "s;fox/html;share/fox/html;" ${worksrcpath}/doc/screenshots/Makefile
-                    }
+master_sites        http://www.fox-toolkit.org/ftp/
+checksums           md5 5fdc89446185fbbf024cec44eb50a239 \
+                    sha1 28ad1823033027fb05887cb625301c2eae56c08e \
+                    rmd160 da615f1c036272294510e981b2d73037969f2570
 
+depends_build \
+	port:pkgconfig
+
+depends_lib \
+	port:tiff \
+	port:libpng \
+	port:jpeg \
+	port:xorg-libXcursor \
+	port:Xft2 \
+	port:xorg-libXrandr \
+	port:freetype \
+	port:mesa
+
+configure.pre_args  --prefix=${prefix} --mandir=${prefix}/share/man
+configure.args      --with-x --with-xft --with-opengl --enable-cups
+
+use_parallel_build	yes

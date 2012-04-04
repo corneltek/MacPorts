@@ -1,139 +1,94 @@
-# $Id: Portfile,v 1.39 2004/03/08 14:35:16 michaelm Exp $
+# $Id$
 
 PortSystem 1.0
+
 name                apache
-version             1.3.29
-revision            2
+version             1.3.41
 categories          www
+license             Apache-2
 platforms           darwin freebsd
-maintainers         michaelm@opendarwin.org
+maintainers         ryandesign openmaintainer
+use_parallel_build  yes
 description         The extremely popular Apache http server
-homepage            http://httpd.apache.org/
-master_sites        apache:httpd/ \
-                    http://archive.apache.org/dist/httpd/old/
-                      
-
-distname            ${name}_${version}
-checksums           ${distname}${extract.suffix} md5 e97fe9bf51dc2c9c233d53f63b1347e3
-
-variant darwin {
-	if { ![variant_isset apache_layout] } {
-		configure.args-append	--with-layout=FreeBSD  --logfiledir=${prefix}/var/log/httpd --runtimedir=${prefix}/var/run
-	} 
-}
-
-variant freebsd {
-        if { ![variant_isset apache_layout] } {
-                configure.args-append   --with-layout=FreeBSD --logfiledir=${prefix}/var/log/httpd --runtimedir=${prefix}/var/run
-        }
-}
-
-
-variant apache_layout {
-	configure.pre_args	--prefix=${prefix}/apache
-	configure.args-append   --with-layout=Apache --logfiledir=${prefix}/apache/var/log/httpd --runtimedir=${prefix}/apache/var/run
-}
-
-set stdargs "--server-uid=www --server-gid=www  --enable-module=most --enable-shared=max --disable-rule=expat"
-
-#configure.pre_args  --prefix=${prefix}/${name}
-
-configure.args		${stdargs}
-
-destroot.args		root=${destroot}
-
-variant activate_server {
-        depends_run path:/Library/StartupItems/DarwinPortsStartup:DarwinPortsStartup
-	post-patch        {
-		if { [variant_isset apache_layout] } { 
-			system "sed -e \"s=%%PREFIX%%=${prefix}/apache=g\" \
- 	                    	${filespath}/apache.sh >${workpath}/apache.sh"
-		} else {
-			system "sed -e \"s=%%PREFIX%%=${prefix}=g\" \
-                                ${filespath}/apache.sh >${workpath}/apache.sh"
-		}	
-        }
-}                 
-
-variant mod_perl {
-				
-        master_sites-append        apache:perl:perl \
-				   http://archive.apache.org/dist/perl/old:perl
-#http://mirror.telentente.com/pub/apache/dist/perl:perl/ \
-
-#                                   http://apache.mirror.digitalspace.net/perl/:perl \
-
-#                                   http://www.apache.inetcosmos.org/dist/perl/:perl \
-
-#                                   http://www.rge.com/pub/infosystems/apache/perl/:perl \
-
-#                                   http://mirrors.ccs.neu.edu/Apache/dist/perl/:perl 
-	
-        distname            ${name}_${version}
-        distfiles-append    mod_perl-1.29${extract.suffix}:perl
-        extract.only        ${distname}${extract.suffix} mod_perl-1.29${extract.suffix}
-	
-        checksums-append    mod_perl-1.29${extract.suffix} md5 1491931790509b9af06fc037d02b0e7a
-	
-        depends_lib         bin:${prefix}/perl5\.8\.3:perl5.8
-        worksrcdir          mod_perl-1.29
-	
-	configure.pre_args 
-
-
-        #APACI_ARGS all on one line because otherwise apache gets upset if the shell is csh/tcsh
-        configure         {
-		if { [variant_isset apache_layout] } {
-			set APACI_ARGS "APACI_ARGS='--prefix=${prefix}/apache --with-layout=Apache ${stdargs} --disable-shared=perl --logfiledir=${prefix}/apache/var/log --runtimedir=${prefix}/apache/var/run'"
-		} else {
-			set APACI_ARGS "APACI_ARGS='--prefix=${prefix} --with-layout=FreeBSD ${stdargs} --disable-shared=perl --logfiledir=${prefix}/var/log/httpd --runtimedir=${prefix}/var/run'"
-		}
- 
-		system "cd ${workpath}/${worksrcdir} && \
-			 			 perl Makefile.PL USE_APACI=1 EVERYTHING=1 \
-						 DO_HTTPD=1 APACHE_PREFIX=${prefix} \
-						 APACHE_SRC=../${distname}/src \
-						 ${APACI_ARGS}"	
-	}
-
-
-}
-
-post-destroot      {
-	
-	if { [variant_isset apache_layout] } { 
-		 file mkdir  ${destroot}${prefix}/apache/log
- 		 file mkdir  ${destroot}${prefix}/apache/run
-
-        	system "touch ${destroot}${prefix}/apache/run/.turd \
-			${destroot}${prefix}/apache/log/.turd"
-	} else {
-
-        	file mkdir  ${destroot}${prefix}/var/log/httpd
-        	file mkdir  ${destroot}${prefix}/var/run
-
- 	       	system "touch ${destroot}${prefix}/var/run/.turd \
-        	        ${destroot}${prefix}/var/log/httpd/.turd"                                           
-	}
-
-
-        if { [variant_isset activate_server]} {
-                file mkdir  ${destroot}${prefix}/etc/rc.d/
-                system "install -bC -o root ${workpath}/apache.sh \
-                                             ${destroot}${prefix}/etc/rc.d/"
-        }
-
-	if { [variant_isset mod_perl]} {
-		cd ${destroot}${prefix}/lib/perl5/site_perl/5.8.3/darwin-2level/auto/mod_perl/
-                system "cat .packlist | sed s#${destroot}/##g >.packlist.new"
-                system "mv .packlist.new .packlist"
-	}
-}   
-
-
 long_description \
   Apache is an HTTP server designed as a plug-in replacement for \
   the NCSA server version 1.3 (or 1.4). It fixes numerous bugs in \
   the NCSA server and includes many frequently requested new \
   features, and has an API which allows it to be extended to meet \
   users' needs more easily.
+homepage            http://httpd.apache.org/
+master_sites        http://archive.apache.org/dist/httpd/ \
+                    apache:httpd
+
+distname            ${name}_${version}
+checksums           md5     f7f00b635243f03a787ca9f4d4c85651 \
+                    sha1    3bbd4c4bc648e6ad5b696bb83420533f4d23daf8 \
+                    rmd160  74786c65c143af123f1d13e9d93dd5ff07e9a201
+
+# Both apache and apache2 want to install dbmmanage.1 and other manpages.
+conflicts           apache2
+
+platform darwin {
+	if { ![variant_isset apache_layout] } {
+		configure.args-append	--with-layout=FreeBSD  --logfiledir=${prefix}/var/log/httpd --runtimedir=${prefix}/var/run
+	}
+}
+
+variant apache_layout {
+	destroot.violate_mtree  yes
+	configure.pre_args	--prefix=${prefix}/apache
+	configure.args-append   --with-layout=Apache --logfiledir=${prefix}/apache/var/log/httpd --runtimedir=${prefix}/apache/var/run
+}
+
+configure.env       LD_SHLIB=${configure.cc}
+
+configure.pre_args  --prefix=${prefix} --datadir=${prefix}/var/www/data --cgidir=${prefix}/var/www/cgi-bin --iconsdir=${prefix}/var/www/icons --mandir=${prefix}/share/man
+
+configure.args      --server-uid=www \
+                    --server-gid=www \
+                    --enable-module=most \
+                    --enable-shared=max \
+                    --disable-rule=expat
+
+configure.universal_args-delete	--disable-dependency-tracking
+
+destroot.args		root=${destroot}
+
+startupitem.create	yes
+if { [variant_isset apache_layout] } {
+	startupitem.init	\
+		"CTL=${prefix}/apache/bin/apachectl\nPID=${prefix}/apache/run/httpd.pid"
+} else {
+	startupitem.init	\
+		"CTL=${prefix}/sbin/apachectl\nPID=${prefix}/var/run/httpd.pid"
+}
+startupitem.start	\
+"\[ -x \${CTL} \] && \${CTL} start >/dev/null"
+startupitem.stop	\
+"\[ -r \${PID} \] && \${CTL} stop >/dev/null"
+startupitem.restart	\
+"\[ -x \${CTL} \] && \${CTL} restart >/dev/null"
+
+post-destroot      {
+	if { [variant_isset apache_layout] } {
+		 xinstall -m 755 -d ${destroot}${prefix}/apache/log \
+			${destroot}${prefix}/apache/run
+		 destroot.keepdirs ${destroot}${prefix}/apache/log \
+			${destroot}${prefix}/apache/run
+	} else {
+        	xinstall -m 755 -d ${destroot}${prefix}/var/log/httpd \
+				${destroot}${prefix}/var/run
+        	destroot.keepdirs ${destroot}${prefix}/var/log/httpd \
+				${destroot}${prefix}/var/run
+	}
+}
+
+notes "
+Apache 1 is obsolete. Please update to Apache 2 (the apache2 port).\
+For information on how to update your web server configuration, please see\
+http://httpd.apache.org/docs/2.0/upgrading.html
+"
+
+livecheck.type  regex
+livecheck.url   ${homepage}
+livecheck.regex {Apache (1\.\d+(?:\.\d+)*) Released}

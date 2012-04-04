@@ -1,0 +1,39 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem          1.0
+PortGroup           python 1.0
+
+name                py-lepl
+version             5.1.0
+revision            0
+categories          python devel
+license             MPL
+platforms           darwin
+supported_archs     noarch
+
+maintainers         stromnov openmaintainer
+
+description         A Parser Library for Python 2.6+.
+
+long_description    \
+        LEPL is a recursive descent parser, written in Python, \
+        which has a a friendly, easy-to-use syntax.
+
+homepage            http://pypi.python.org/pypi/LEPL/
+master_sites        http://pypi.python.org/packages/source/L/LEPL/
+distname            LEPL-${version}
+
+checksums           rmd160  7c96393047fda2500842fe92bce246428c5871cc \
+                    sha256  127abd79c759bbd8d8b52649df4a4678823562da1860b3ec5d67d96840b4b4d1
+
+python.default_version  27
+python.versions     26 27
+
+if {$subport != $name} {
+    depends_build   port:py${python.version}-distribute
+}
+
+livecheck.type      regex
+livecheck.url       ${master_sites}
+livecheck.regex     "LEPL-(\\d+(?:\\.\\d+)*)${extract.suffix}"

@@ -1,10 +1,13 @@
-# $Id: Portfile,v 1.4 2004/02/03 07:02:10 yeled Exp $
+# $Id$
 
 PortSystem      1.0
+
 name            dnetc
-version         2.9007-486
-categories      net 
-maintainers     yeled@opendarwin.org
+version         2.9105.511b
+set branch      [join [lrange [split ${version} .] 0 1] .]
+set minor       [lindex [split ${version} .] end]
+categories      net
+maintainers     mfeiri
 description     distributed.net client
 long_description  distributed.net believes in the capability and potential \
                 of distributed computing. Their mission consists of three \
@@ -19,28 +22,53 @@ long_description  distributed.net believes in the capability and potential \
 
 homepage        http://distributed.net/
 platforms       darwin
-distfiles       dnetc-macosx-ppc.tar.gz
-checksums       md5 a0fde69d94459409f1d8d8a95259955a
-master_sites    ftp://ftp.distributed.net/pub/dcti/current-client/ \
-                http://http.distributed.net/pub/dcti/current-client/
-worksrcdir      dnetc486-macosx-ppc
-depends_run     path:/Library/StartupItems/DarwinPortsStartup:DarwinPortsStartup
 
-configure {}
+master_sites    ftp://ftp.distributed.net/pub/dcti/v${branch}/ \
+                http://http.distributed.net/pub/dcti/v${branch}/
+
+platform i386 {
+    distname        ${name}${minor}-macosx-x86
+    checksums       md5 ff9cd03f6b41dcb4dc1609189b8844f5 \
+                    sha1 63f327ab925c1cda0ccdba66472cec8ec1c279ae \
+                    rmd160 c8bf288464dca88968f39c936aa8ddf3c5a88824
+    worksrcdir      ${name}511-macosx-x86
+}
+
+platform powerpc {
+    distname        ${name}${minor}-macosx-ppc
+    checksums       md5 d0c9f31951c9767ae83cfa2646c5eb98 \
+                    sha1 7c7bf07f415d367428487b24019c1a84498f8a34 \
+                    rmd160 bebfa883f3c136e45714fe8a77e4577527e8b2ab
+    worksrcdir      ${name}511-macosx-ppc
+}
+
+    startupitem.create    yes
+    startupitem.start "${prefix}/share/${name}/dnetc.init start"
+    startupitem.stop "${prefix}/share/${name}/dnetc.init stop"
+
+use_configure   no
 build     {}
-destroot  { 
-  file mkdir ${destroot}${prefix}/bin
-  system "install -m 755 ${worksrcpath}/dnetc ${destroot}${prefix}/bin"
-  system "install -m 644 ${worksrcpath}/dnetc.1 ${destroot}${prefix}/man/man1"
-  system "install -o root -m 755 -d ${destroot}${prefix}/etc/rc.d"
-  system "install -o root -m 755 -c \
-    ${portpath}/files/dnetc.sh ${destroot}${prefix}/etc/rc.d"
-  reinplace "s|__PREFIX|${prefix}|g" \
-    ${destroot}${prefix}/etc/rc.d/dnetc.sh 
+destroot  {
+  xinstall -m 755 -d ${destroot}${prefix}/share/doc/${name}
+  xinstall -m 755 -d ${destroot}${prefix}/share/${name}
+  xinstall -m 755 -d ${destroot}${prefix}/var/db/${name}
+  destroot.keepdirs  ${destroot}${prefix}/var/db/${name}
+  xinstall -m 755 ${worksrcpath}/dnetc ${destroot}${prefix}/bin
+
+  eval xinstall -m 644 [glob ${worksrcpath}/docs/*] ${destroot}${prefix}/share/doc/${name}
+  xinstall -m 755 ${portpath}/files/dnetc.init ${destroot}${prefix}/share/${name}
+
+reinplace "s|__PREFIX__|${prefix}|g" \
+    ${destroot}${prefix}/share/${name}/dnetc.init
 }
 
 post-install {
-ui_msg "===============================================================================\n"
-ui_msg "Please Note! You _will_ need to run this with -config the first time you run it, or exec the rc.d/dnetc.sh.\n"
-ui_msg "===============================================================================\n"
+ui_msg "\n
+=========================================================================
+Please Note! Run dnetc with script ${prefix}/share/${name}/dnetc.init start.
+This script places the dnetc.ini and buffer files in ${prefix}/var/db/${name}.
+The first time the script runs you will be asked to set configuration parameters.
+To change parameters later on, use ${prefix}/share/${name}/dnetc.init config.
+dnetc is also started at system boot via the same startup script.
+==========================================================================\n"
 }

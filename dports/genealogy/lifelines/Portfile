@@ -1,45 +1,41 @@
-# $Id: Portfile,v 1.3 2003/12/15 17:24:36 olegb Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem	1.0
-name		lifelines
-version		3.0.37.2
-categories	genealogy
-maintainers	brent@nordist.net
-description	Genealogy software
-homepage	http://${name}.sourceforge.net/
-platforms	darwin
+PortSystem          1.0
 
-long_description \
-	LifeLines is second generation, open source genealogy software. \
-	It provides GEDCOM interoperability and powerful scripting, with \
-	a curses-based UI.
+name                lifelines
+version             3.0.62
+categories          genealogy
+platforms           darwin
+maintainers         nordist.net:brent
+license             MIT
 
-master_sites			sourceforge
+description         Genealogy software
 
-checksums	md5 63eb0d4f8085c0507b318e7c5ad0a2d8
+long_description    LifeLines is second generation, open source genealogy \
+                    software. It provides GEDCOM interoperability and \
+                    powerful scripting, with a curses-based UI.
 
-depends_lib	lib:libiconv.2:libiconv lib:libintl.1:gettext
+homepage            http://${name}.sourceforge.net/
 
-patchfiles	patch-reports-Makefile.in
+master_sites        sourceforge:project/lifelines/lifelines/${version}
 
-configure.args	--with-libintl-prefix=${prefix} \
-		--with-libiconv-prefix=${prefix} \
-		--without-included-gettext
+checksums           md5     ff617e64205763c239b0805d8bbe19fe \
+                    rmd160  55de24a87380867fae50f458465d748882567bd3 \
+                    sha256  2f00441ac0ed64aab8f76834c055e2b95600ed4c6f5845b9f6e5284ac58a9a52
+
+depends_lib         port:gettext
+
+configure.args      --with-libintl-prefix=${prefix} \
+                    --with-libiconv-prefix=${prefix} \
+                    --without-included-gettext
 
 post-destroot {
-	system "install ${worksrcpath}/docs/btedit.1 ${destroot}${prefix}/share/man/man1/btedit.1"
-	system "rm ${destroot}${prefix}/share/doc/${name}/btedit.1"
-	system "install ${worksrcpath}/docs/dbverify.1 ${destroot}${prefix}/share/man/man1/dbverify.1"
-	system "rm ${destroot}${prefix}/share/doc/${name}/dbverify.1"
-	system "install ${worksrcpath}/docs/llines.1 ${destroot}${prefix}/share/man/man1/llines.1"
-	system "rm ${destroot}${prefix}/share/doc/${name}/llines.1"
-	system "install -d ${destroot}${prefix}/share/${name}/st"
-	system "mv ${destroot}${prefix}/share/${name}/st_*.ll ${destroot}${prefix}/share/${name}/st"
-	system "install ${worksrcpath}/reports/CREDIT ${destroot}${prefix}/share/${name}"
-	system "install ${worksrcpath}/reports/README ${destroot}${prefix}/share/${name}"
-	system "install ${worksrcpath}/reports/tree.tex ${destroot}${prefix}/share/${name}"
-	system "rm ${destroot}${prefix}/share/${name}/ll-*.html"
-	system "rm ${destroot}${prefix}/share/${name}/ll-*.pdf"
-	system "rm ${destroot}${prefix}/share/${name}/ll-*.txt"
-	system "rm ${destroot}${prefix}/share/${name}/listops.jpg"
+    xinstall -d ${destroot}${prefix}/share/${name}/st
+    system "mv ${destroot}${prefix}/share/${name}/st_*.ll \
+        ${destroot}${prefix}/share/${name}/st"
+    xinstall -W ${worksrcpath}/reports -m 644 CREDIT README tree.tex \
+        ${destroot}${prefix}/share/${name}/
+    system "cd ${destroot}${prefix}/share/${name}/ && \
+        rm ll-*.html ll-*.pdf ll-*.txt"
 }

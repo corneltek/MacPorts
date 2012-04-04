@@ -1,7 +1,9 @@
 /*
  * md5cmd.c
+ * $Id$
  *
- * Copyright (c) 2002 - 2003 Apple Computer, Inc.
+ * Copyright (c) 2004 - 2005, 2009, 2011 The MacPorts Project
+ * Copyright (c) 2002 - 2003 Apple Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of Apple Computer, Inc. nor the names of its contributors
+ * 3. Neither the name of Apple Inc. nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  * 
@@ -33,88 +35,45 @@
 #include <config.h>
 #endif
 
-#include <tcl.h>
-
-#if HAVE_STRING_H
-#include <string.h>
-#endif
-
-#if defined(HAVE_LIBCRYPTO) && !defined(HAVE_LIBMD)
-
-/* Minimal wrapper around OpenSSL's libcrypto, as a compatibility
- * layer for FreeBSD's libmd library.
- * Originally written by: Rob Braun (bbraun) 1/18/2002
- */
-
-#include <stdio.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include <errno.h>
 
-#include <openssl/md5.h>
+#include <tcl.h>
 
-/* This is a magic number taken from the FreeBSD libmd Makefile */
-#define LENGTH 16
+#include "md5cmd.h"
 
+#if HAVE_COMMONCRYPTO_COMMONDIGEST_H
+
+#define COMMON_DIGEST_FOR_OPENSSL
+#include <CommonCrypto/CommonDigest.h>
+
+/* md5 functions are named differently */
 #define MD5Init(x) MD5_Init(x)
 #define MD5Update(x,y,z) MD5_Update(x,y,z)
 #define MD5Final(x,y) MD5_Final(x,y)
 
-char *
-MD5End(MD5_CTX *ctx, char *buf)
-{
-    int i;
-    unsigned char digest[LENGTH];
-    static const char hex[]="0123456789abcdef";
+#include "md_wrappers.h"
+CHECKSUMEnd(MD5, MD5_CTX, MD5_DIGEST_LENGTH)
+CHECKSUMFile(MD5, MD5_CTX)
 
-    if (!buf)
-        buf = malloc(2*LENGTH + 1);
-    if (!buf)
-        return 0;
-    MD5Final(digest, ctx);
-    for (i = 0; i < LENGTH; i++) {
-        buf[i+i] = hex[digest[i] >> 4];
-        buf[i+i+1] = hex[digest[i] & 0x0f];
-    }
-    buf[i+i] = '\0';
-    return buf;
-}
-
-char *MD5File(const char *filename, char *buf)
-{
-    unsigned char buffer[BUFSIZ];
-    MD5_CTX ctx;
-    int f,i,j;
-
-    MD5Init(&ctx);
-    f = open(filename,O_RDONLY);
-    if (f < 0) return 0;
-    while ((i = read(f,buffer,sizeof buffer)) > 0) {
-        MD5Update(&ctx,buffer,i);
-    }
-    j = errno;
-    close(f);
-    errno = j;
-    if (i < 0) return 0;
-    return MD5End(&ctx, buf);
-}
-
-char *MD5Data(const unsigned char *data, unsigned int len, char *buf)
-{
-	MD5_CTX ctx;
-	MD5Init(&ctx);
-	MD5Update(&ctx, data, len);
-	return MD5End(&ctx, buf);
-}
-#elif defined(HAVE_LIBMD)
+#elif defined(HAVE_LIBMD) && defined(HAVE_MD5_H)
 #include <sys/types.h>
 #include <md5.h>
+#elif defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_MD5_H)
+#include <openssl/md5.h>
+
+#include "md_wrappers.h"
+CHECKSUMEnd(MD5_, MD5_CTX, MD5_DIGEST_LENGTH)
+CHECKSUMFile(MD5_, MD5_CTX)
+#define MD5File(x,y) MD5_File(x,y)
 #else
-#error libcrypto or libmd are required
+#error CommonCrypto, libmd or libcrypto required
 #endif
 
-int MD5Cmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
+int MD5Cmd(ClientData clientData UNUSED, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 {
 	char *file, *action;
 	char buf[33];

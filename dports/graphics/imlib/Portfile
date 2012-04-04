@@ -1,35 +1,54 @@
-# $Id: Portfile,v 1.13 2004/01/18 04:02:02 toby Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
-name		imlib
-version		1.9.10
-categories	graphics
-maintainers	darwinports@opendarwin.org
-description	Graphics library related to the enlightenment window manager
-homepage	http://www.enlightenment.org/pages/imlib.html
-platforms	darwin
+PortSystem          1.0
 
-long_description Imlib is an advanced graphics library meant to replace \
-		 existing libraries like libXpm, and provides many more \
-		 features with much greater flexibility and speed.
+name                imlib
+version             1.9.15
+revision            6
+set branch          [join [lrange [split ${version} .] 0 1] .]
+categories          graphics devel
+# libs are LGPL, executables and examples are GPL
+license             {LGPL GPL-2+}
+platforms           darwin
+maintainers         nomaintainer
 
-master_sites	gnome:sources/imlib/1.9 \
-		opendarwin::lt
-distfiles-append ltconfig13:lt ltmain13:lt
-extract.only	${distname}${extract.suffix}
+description         Graphics library related to the enlightenment window manager
 
-checksums	imlib-1.9.10.tar.gz md5 47323fff0f9209abd2fc0f738d63424e \
-		ltconfig13 md5 ea53f42a550c9f9e653758a8ed91574e \
-		ltmain13 md5 e094ae92724c4015dbab97de151c2525
+long_description    Imlib is an advanced graphics library meant to replace \
+                    existing libraries like libXpm, and provides many more \
+                    features with much greater flexibility and speed.
 
-depends_lib	lib:libgtk.1:gtk1 lib:libjpeg.62:jpeg lib:libtiff.3:tiff \
-		lib:libungif.4:libungif lib:libpng.3:libpng
+homepage            http://www.enlightenment.org/pages/imlib.html
+master_sites        gnome:sources/imlib/${branch}
+use_bzip2           yes
 
-patchfiles	patch-config.guess patch-config.sub \
-		patch-gdk_imlib-Makefile.am patch-gdk_imlib-Makefile.in
+checksums           md5     7db987e6c52e4daf70d7d0f471238eae
 
-post-extract	{ system "cp ${distpath}/ltconfig13 ${worksrcpath}/ltconfig"
-		  system "cp ${distpath}/ltmain13 ${worksrcpath}/ltmain.sh" }
+depends_lib         port:gtk1 \
+                    port:jpeg \
+                    port:tiff \
+                    path:include/gif_lib.h:giflib \
+                    port:libpng
 
-configure.env	CPPFLAGS="-w" LDFLAGS="-L${prefix}/lib"
-configure.args	--disable-shm
+patchfiles          patch-imlib.m4
+
+# build for correct archs; fix mandir
+use_autoreconf      yes
+
+post-build {
+    reinplace -E {s|-arch [a-z0-9_]+||g} \
+        ${worksrcpath}/imlib-config \
+        ${worksrcpath}/imlib.pc
+}
+
+post-destroot {
+    xinstall -m 755 -d ${destroot}${prefix}/share/doc/${name}
+    eval xinstall -m 644 -W ${worksrcpath}/doc \
+        [glob ${worksrcpath}/doc/*.gif] index.html \
+        ${destroot}${prefix}/share/doc/${name}
+}
+
+livecheck.type      regex
+livecheck.url       http://ftp.gnome.org/pub/gnome/sources/${name}/${branch}/
+livecheck.regex     {LATEST-IS-(\d+(?:\.\d+)*)}

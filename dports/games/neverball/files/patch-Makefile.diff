@@ -1,11 +1,25 @@
---- Makefile	Sat Jan 17 17:51:39 2004
-+++ Makefile.new	Sat Jan 17 17:51:34 2004
-@@ -7,7 +7,7 @@
- #X11_PATH= -L/usr/X11R6/lib
+--- Makefile.orig	2009-09-20 05:06:00.000000000 -0500
++++ Makefile	2011-08-24 18:24:50.000000000 -0500
+@@ -87,11 +87,8 @@
+     ALL_CPPFLAGS += -DENABLE_WII=1
+ endif
  
- OGL_LIBS= -lGLU -lGL -lm
--#OGL_LIBS= -lm                                                # Think Different
-+OGL_LIBS= -lm                                                # Think Different
+-ifdef DARWIN
+-    ALL_CPPFLAGS += -I/opt/local/include
+-endif
+ 
+-ALL_CPPFLAGS += $(CPPFLAGS)
++ALL_CPPFLAGS += $(CPPFLAGS) @CPPFLAGS@
  
  #------------------------------------------------------------------------------
+ # Libraries
+@@ -133,9 +130,6 @@
  
+ BASE_LIBS := -ljpeg $(PNG_LIBS) $(FS_LIBS)
+ 
+-ifdef DARWIN
+-    BASE_LIBS += -L/opt/local/lib
+-endif
+ 
+ ALL_LIBS := $(SDL_LIBS) $(BASE_LIBS) $(TILT_LIBS) $(INTL_LIBS) -lSDL_ttf \
+     -lvorbisfile $(OGL_LIBS)

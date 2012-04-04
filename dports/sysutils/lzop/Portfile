@@ -1,29 +1,34 @@
-# $Id: Portfile,v 1.1 2004/01/08 06:54:42 blb Exp $
+# $Id$
 
-PortSystem		1.0
-name			lzop
-version			1.01
-categories		sysutils compression
-maintainers		blb@pobox.com
-description		File compressor very similar to gzip which favors speed over \
-	 compression ratio.
-long_description	${description}
+PortSystem          1.0
+PortGroup           muniversal 1.0
+name                lzop
+version             1.03
+revision            1
+categories          sysutils compression
+maintainers         nomaintainer
+description         Fast file compressor
+long_description \
+   lzop is a file compressor which is very similar to gzip. lzop uses the \
+   LZO data compression library for compression services, and its main \
+   advantages over gzip are much higher compression and decompression speed \
+   (at the cost of some compression ratio).
 
-homepage		http://www.lzop.org/
-master_sites	${homepage}/download/
+homepage            http://www.lzop.org/
+master_sites        ${homepage}/download/
 
-platforms		darwin
-checksums		md5 de1f90bc21a0e56a27f39322f56a275d
+platforms           darwin
 
-depends_lib		lib:liblzo.1:lzo
+checksums           sha1    4ee0b49b2a6b0a13572ddca5785ee48ef4c8f80f \
+                    rmd160  306c454f52632b14740d6b00c1b315f0221fb45b
 
-configure.env	CPPFLAGS="-I${prefix}/include" LDFLAGS="-L${prefix}/lib"
-configure.args	--mandir=${prefix}/share/man
+depends_lib         port:lzo2
+
+configure.args      --mandir=${prefix}/share/man
 
 post-destroot {
-	file mkdir "${destroot}/${prefix}/share/doc/lzop"
-	xinstall -m 644 ${worksrcpath}/doc/lzop.html ${worksrcpath}/doc/lzop.ps \
-		${worksrcpath}/doc/lzop.tex ${worksrcpath}/doc/lzop.txt \
-		${destroot}/${prefix}/share/doc/lzop
+   xinstall -m 755 -d ${destroot}${prefix}/share/doc/${name}
+   xinstall -m 644 -W ${worksrcpath}/doc lzop.html lzop.ps lzop.tex lzop.txt \
+      ${destroot}${prefix}/share/doc/${name}
 }
 

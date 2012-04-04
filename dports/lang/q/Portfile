@@ -1,11 +1,24 @@
-# $Id: Portfile,v 1.3 2004/03/02 19:32:15 toby Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
-name             q
-version          5.2
-categories       lang
-maintainers      toby@opendarwin.org
-description      extensible scripting language
+PortSystem              1.0
+
+name                    q
+version                 7.11
+revision                3
+categories              lang
+platforms               darwin
+maintainers             ryandesign
+homepage                http://q-lang.sourceforge.net/
+master_sites            sourceforge:project/q-lang/q/${version}
+worksrcdir              ${name}-[lindex [split ${version} -] 0]
+use_parallel_build      yes
+license                 GPL-2+
+supported_archs         i386 ppc
+
+description \
+    extensible scripting language
+
 long_description \
     Q is a powerful and extensible scripting language with advanced \
     symbolic processing and functional programming capabilities. Q \
@@ -15,32 +28,45 @@ long_description \
     a full-featured functional programming language with a modern \
     syntax, curried function applications, dynamic object-oriented \
     typing, exception handling, and POSIX multithreading.
-homepage         http://q-lang.sourceforge.net/
-platforms        darwin
 
-depends_lib      lib:libgmp.3:gmp \
-                 lib:libreadline.4:readline \
-                 lib:libcurl.2:curl
+depends_lib \
+    port:curl \
+    port:gettext \
+    port:gmp \
+    port:libiconv \
+    port:libxml2 \
+    port:libxslt \
+    port:readline \
+    port:zlib
 
-master_sites     sourceforge:q-lang
-checksums        md5 c708670e90fc6103645521c9242c234a
+checksums \
+    md5 18ca956aad555b54efacc0de5b2d79bd \
+    sha1 f255c80cee5b09d62b38e72785d12649901c0933 \
+    rmd160 61a7eba9857ae2c7c553625a423c62fd737836e4
 
-configure.env    CPPFLAGS="-I${prefix}/include" \
-                 LDFLAGS="-L${prefix}/lib"
-configure.args   --mandir=${prefix}/share/man \
-                 --infodir=${prefix}/share/info \
-                 --disable-shared \
-                 --with-gmp --with-rl --with-pthread --with-curl \
-                 --without-gdbm \
-                 --without-x --without-ggi --without-ft2 \
-                 --without-magick \
-                 --without-odbc \
-                 --without-tk \
-                 --without-dxl \
-                 --without-dmalloc
+patchfiles \
+    patch-system.c.diff
 
-test.run         yes
+configure.args \
+    --with-curl \
+    --with-gmp \
+    --with-pthread \
+    --with-rl \
+    --with-xml \
+    --without-dmalloc \
+    --without-dxl \
+    --without-ft2 \
+    --without-gdbm \
+    --without-ggi \
+    --without-magick \
+    --without-odbc \
+    --without-tk \
+    --without-x
 
-platform darwin 6 {
-    depends_lib-append lib:libdl:dlcompat
-}
+test.run                yes
+
+notes "
+The Q programming language has been superseded by Pure\; consider installing the pure port instead.
+"
+
+livecheck.type          none

@@ -1,11 +1,12 @@
-# $Id: Portfile,v 1.2 2004/01/14 21:57:13 toby Exp $
+# $Id$
 
 PortSystem       1.0
 name             sunclock
 version          3.50pre1
+revision         3
 extract.suffix   .tgz
 categories       x11
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      shows Earth's surface illuminated by the Sun
 long_description \
     This program is a clock that shows which portion of the \
@@ -13,11 +14,12 @@ long_description \
     to be usually iconic, but can be opened for a larger \
     display with the time updated every second and both the \
     local time zone and UTC displayed.
-homepage         http://frmas.free.fr/li_1.htm
+homepage         http://www.arvernes.com/wiki/index.php/Sunclock
 platforms        darwin
-master_sites     ftp://ftp.ac-grenoble.fr/ge/geosciences/
+master_sites     ftp://ftp.ac-grenoble.fr/ge/geosciences/sunclock/ \
+                 openbsd:distfiles
 checksums        md5 6e07964a99848018432825c5b3297cc6
-depends_lib      lib:libjpeg.62:jpeg
+depends_lib      port:jpeg port:xpm port:zlib
 
 pre-configure {
     reinplace "s|DESTDIR=/usr|DESTDIR=${prefix}|" "${worksrcpath}/Imakefile"

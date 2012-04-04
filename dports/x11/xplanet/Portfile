@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.1 2004/01/30 09:00:18 blb Exp $
+# $Id$
 
 PortSystem			1.0
 name				xplanet
-version				1.0.3
+version				1.2.2
 categories			x11 graphics
-maintainers			blb@pobox.com
+maintainers			nomaintainer
 description			Render an image of a planet into an X window or file
 long_description \
 	Xplanet is similar to Xearth, where an image of the earth is rendered \
@@ -17,57 +17,61 @@ platforms			darwin
 homepage			http://xplanet.sourceforge.net/
 master_sites		sourceforge
 
-checksums			md5 85256215063485b956f3eec6090b6be3
+checksums			sha1    3c9cc4be7cd87121884162204eff376af2fc03e3 \
+					rmd160  431c9223b2b122599a8c4bdca18c17fea0dcd5ab
 
-depends_lib			lib:libX11:XFree86
+depends_build \
+	port:pkgconfig
+depends_lib \
+	port:xorg-libXScrnSaver \
+	port:fontconfig \
+	port:libpng \
+	port:jpeg \
+	port:tiff
 
-# Eventually x11 will be a variant, along with aqua, but as of 1.0.3,
-# aqua may do bad things to the windowserver...
+patchfiles			objc-flags.diff
+
+use_autoreconf		yes
+
 configure.args		--with-x --with-xscreensaver --without-gif \
-					--without-jpeg --without-png --without-tiff \
-					--without-freetype --without-pango
-configure.env		CPPFLAGS="-I${prefix}/include" LDFLAGS="-L${prefix}/lib"
+					--with-jpeg --with-png --with-tiff \
+					--without-freetype --without-pango --without-pnm \
+					--mandir=${prefix}/share/man
 
 post-destroot {
-	file mkdir ${destroot}/${prefix}/share/doc/${name}
-	cd ${worksrcpath}
-	file copy AUTHORS COPYING NEWS README README.config TODO \
-		${destroot}/${prefix}/share/doc/${name}
+	set docdir ${destroot}${prefix}/share/doc/${name}
+	xinstall -d ${docdir}
+	xinstall -W ${worksrcpath} AUTHORS COPYING ChangeLog NEWS README TODO ${docdir}
 }
 
-variant freetype {
+variant freetype description "Enable Freetype support for TrueType fonts" {
 	configure.args-delete	--without-freetype
 	configure.args-append	--with-freetype
-	depends_lib				lib:libfreetype:freetype
+	depends_lib-append	port:freetype
 }
 
-variant jpeg {
-	configure.args-delete	--without-jpeg
-	configure.args-append	--with-jpeg
-	depends_lib-append		lib:libjpeg:jpeg
-}
-
-variant png {
-	configure.args-delete	--without-png
-	configure.args-append	--with-png
-	depends_lib-append		lib:libpng:libpng
-}
-
-variant tiff {
-	configure.args-delete	--without-tiff
-	configure.args-append	--with-tiff
-	depends_lib-append		lib:libtiff:tiff
-}
-
-variant gif {
+variant gif description "Enable GIF support" {
 	configure.args-delete	--without-gif
 	configure.args-append	--with-gif
-	depends_lib-append		lib:libungif:libungif
+	depends_lib-append		path:include/gif_lib.h:giflib
 }
 
-variant pango {
+variant pango description "Enable Pango" {
 	configure.args-delete	--without-pango
 	configure.args-append	--with-pango
-	depends_lib-append		lib:libpango:pango
+	depends_lib-append		path:lib/pkgconfig/pango.pc:pango
+}
+
+variant aqua description "Use aqua instead of X11" {
+	supported_archs	i386 ppc
+	depends_lib-delete	port:xorg-libXScrnSaver
+	configure.args-delete	--with-x --with-xscreensaver
+	configure.args-append	--without-x --with-aqua
+}
+
+variant pnm description "Enable PNM support" {
+	depends_lib-append		port:netpbm
+	configure.args-delete	--without-pnm
+	configure.args-append	--with-pnm
 }
 

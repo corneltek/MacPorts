@@ -1,11 +1,13 @@
-# $Id: Portfile,v 1.12 2004/01/16 20:22:38 fkr Exp $
+# $Id$
 
 PortSystem 1.0
+
 name		libnet
+conflicts	libnet11
 version		1.0.2a
-revision	1	
+revision	4
 categories	net
-maintainers	darwinports@opendarwin.org
+maintainers	geovedi.com:jim
 description	A C library for creating IP packets
 long_description	\
 	libnet is a high-level API (toolkit) allowing the application \
@@ -25,13 +27,18 @@ homepage	http://www.packetfactory.net/libnet/
 platforms	darwin
 master_sites	http://www.packetfactory.net/libnet/dist/deprecated/
 checksums	md5 ddf53f0f484184390e8c2a1bd0853667
-depends_build	path:/usr/include/netinet/ip_var.h:netinet-headers
-patchfiles	patch-Makefile patch-include-libnet.h
+patchfiles	patch-Makefile patch-include-libnet.h \
+		patch-include__libnet__libnet-headers.h \
+		patch-configure
 worksrcdir	Libnet-${version}
 
-variant darwin {
+platform darwin {
+	depends_lib-append port:libtool
 	pre-configure {
-		file copy -force /usr/share/libtool/config.guess ${worksrcpath}/config.guess
-		file copy -force /usr/share/libtool/config.sub ${worksrcpath}/config.sub
+		if {[file exists ${prefix}/share/libtool/config/config.guess]} {
+			copy -force ${prefix}/share/libtool/config/config.guess ${prefix}/share/libtool/config/config.sub ${worksrcpath}
+		} else {
+			copy -force ${prefix}/share/libtool/config.guess ${prefix}/share/libtool/config.sub ${worksrcpath}
+		}
 	}
 }

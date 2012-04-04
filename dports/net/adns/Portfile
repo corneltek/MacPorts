@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.2 2004/02/27 10:00:44 toby Exp $
+# $Id$
 
 PortSystem 1.0
+
 name             adns
-version          1.1
+version          1.4
 categories       net
-maintainers      toby@opendarwin.org
+maintainers      toby
 description      asynchronous DNS client library
 long_description \
     adns is a resolver library for C (and C++) programs, and a \
@@ -12,19 +13,22 @@ long_description \
 homepage         http://www.chiark.greenend.org.uk/~ian/adns/
 platforms        darwin
 
-master_sites     ftp://ftp.chiark.greenend.org.uk/users/ian/adns/ \
-                 ${homepage}ftp/
-checksums        md5 891956e305acf5fc83b099333bf3ffd9
+license          GPL-2
 
-configure.args   --disable-dynamic
+master_sites     ${homepage}ftp/ \
+                 ftp://ftp.chiark.greenend.org.uk/users/ian/adns/
+checksums        md5    88bc7bbf3f62a8d4fb186b8f72ead853 \
+                 sha1   87283c3bcd09ceb2e605e91abedfb537a18f1884 \
+                 rmd160 ccff2111bfa3eb99e28d355d48e9e17333f34394
+
+patchfiles       patch-configure \
+                 patch-client__Makefile.in \
+                 patch-dynamic__Makefile.in \
+                 patch-src__Makefile.in \
+                 patch-src__internal.h
 
 test.run         yes
 test.target      check
 
-destroot {
-    cd ${worksrcpath}
-    xinstall -m 555 client/adnslogres client/adnshost \
-        client/adnsresfilter ${destroot}${prefix}/bin
-    xinstall -m 444 src/libadns.a ${destroot}${prefix}/lib
-    xinstall -m 444 src/adns.h ${destroot}${prefix}/include
-}
+livecheck.url    [lindex ${master_sites} 0]
+livecheck.regex  HREF=\"adns-(\[0-9\]+\\.\[0-9\]+)\\.tar\\.gz\"

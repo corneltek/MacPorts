@@ -1,43 +1,44 @@
-# $Id: Portfile,v 1.4 2003/11/27 17:02:31 mww Exp $
+# $Id$
 
 PortSystem 1.0
+PortGroup python24 1.0
 
-name		py-ro
-version		3.3
-categories	python devel
-maintainers	mww@opendarwin.org
-platforms	darwin freebsd
-description	advanced Distributed Object Technology for python
+name			py-ro
+version			3.7
+categories		python devel
+maintainers		nomaintainer
+platforms		darwin
+description		advanced Distributed Object Technology for python
 long_description	Pyro is an acronym for PYthon Remote Objects. It is \
-		an advanced and powerful Distributed Object Technology system \
-		written entirely in Python, that is designed to be very easy \
-		to use. It resembles Java's Remote Method Invocation (RMI). It \
-		is less similar to CORBA - which is a system- and language \
-		independent Distributed Object Technology and has much more to \
-		offer than Pyro or RMI. But Pyro is small, simple and free \
-		(MIT software license).
+				an advanced and powerful Distributed Object Technology system \
+				written entirely in Python, that is designed to be very easy \
+				to use. It resembles Java's Remote Method Invocation (RMI). It \
+				is less similar to CORBA - which is a system- and language \
+				independent Distributed Object Technology and has much more to \
+				offer than Pyro or RMI. But Pyro is small, simple and free \
+				(MIT software license).
 
-homepage	http://pyro.sourceforge.net/
+homepage		http://pyro.sourceforge.net/
 master_sites	sourceforge:pyro
-distname	Pyro-${version}
-checksums	md5 09faeec7aa07e88187902f42d74a4514
-patchfiles	patch-setup.cfg.diff
+distname		Pyro-${version}
+checksums		sha1 f5c42e451950b9b6c05f0769ced576ed18cad3c0
+patchfiles		patch-setup.cfg.diff
 
-depends_lib	bin:python:python
-
-configure	{
-	reinplace "s|DESTROOT|${destroot}${prefix}|g" ${worksrcpath}/setup.cfg
+post-patch	{
+	reinplace "s|__BINDIR__|${prefix}/bin|g" ${worksrcpath}/setup.cfg
 }
 
-build.cmd	python setup.py
-build.target	build
-
-destroot.cmd	python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
+post-build	{
+	foreach f [glob -directory ${worksrcpath}/bin *] {
+		reinplace "s|python|${python.bin}|g" ${f}
+	}
+}
 
 post-destroot	{
-	file mkdir ${destroot}${prefix}/share/doc/
-	file copy ${worksrcpath}/docs ${destroot}${prefix}/share/doc/${name}
-	file copy ${worksrcpath}/README.txt ${worksrcpath}/PKG-INFO \
-		${worksrcpath}/TODO ${destroot}${prefix}/share/doc/${name}
+	xinstall -m 644 -W ${worksrcpath}/docs 1-intro.html 10-errors.html \
+		11-implementation.html 12-changes-archive.html 12-changes.html \
+		2-concepts.html 3-install.html 4-usage.html 5-nameserver.html \
+		6-eventserver.html 7-features.html 8-example.html index.html \
+		9-security.html LICENSE PyroManual.html ../README.txt \
+		${destroot}${prefix}/share/doc/${name}
 }

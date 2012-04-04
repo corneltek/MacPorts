@@ -1,0 +1,50 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=portfile:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem              1.0
+PortGroup               crossgcc 1.0
+
+crossgcc.setup          msp430 4.6.2
+
+# Lets keep the value of $name provided by the crossgcc PortGroup.
+set name_package        $name
+name                    ${name_package}-devel
+conflicts               ${name_package}
+
+distname                gcc-${version}
+distfiles               ${distname}${extract.suffix}
+extract.only            ${distfiles}
+
+# Set the correct version
+version                 ${version}-20120330
+
+
+maintainers             g5pw
+
+description             ${description} This is the development version.
+long_description        ${long_description} \
+                        This is the development version.
+
+homepage                http://mspgcc.sourceforge.net/
+
+patch_sites             sourceforge:project/mspgcc/Patches/${distname}/
+
+patchfiles              ${name_package}-${version}.patch
+
+checksums               ${name_package}-${version}.patch \
+                        rmd160  c7895b5868c00b715b852a3ff7039cb0dd3a71df \
+                        sha256  5e3648aee104b7a8fa8d7acff9a2d9090b8c9bcb5273f140346818297b826cd8 \
+                        ${distname}${extract.suffix} \
+                        rmd160  e7041933b39629f9524848dcf81a1a4c02a225c6 \
+                        sha256  60b05463dfe18d40d68fb8a71b25b408a01f86cc6ceaf5e6b22238b6b0f450c2
+
+#we need the devel version of binutils!
+depends_lib-delete      port:msp430-binutils
+depends_lib-append      port:msp430-binutils-devel
+
+depends_run             port:msp430mcu-devel
+
+patch.pre_args          -p1
+
+configure.args-delete --enable-languages="c,objc,c++,obj-c++"
+configure.args-append --enable-languages="c,c++"

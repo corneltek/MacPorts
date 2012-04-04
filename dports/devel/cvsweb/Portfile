@@ -1,11 +1,12 @@
-# $Id: Portfile,v 1.10 2004/01/17 23:05:11 toby Exp $
+# $Id$
 
 PortSystem 1.0
+
 name		cvsweb
-version		2.0.6
-revision	0
+version		3.0.6
+revision    1
 categories	devel www
-maintainers	darwinports@opendarwin.org
+maintainers	nomaintainer
 description	WWW interface for CVS repositories
 long_description	\
 	FreeBSD-CVSweb is a WWW CGI script that allows remote users to \
@@ -14,47 +15,50 @@ long_description	\
 	downloading the whole file.
 homepage	http://www.freebsd.org/projects/cvsweb.html
 platforms	darwin
-master_sites     freebsd:scop \
-                 http://people.FreeBSD.org/~scop/cvsweb/
-checksums	md5 fd15c8521b26be858616a7ba52fc2c22
-configure	{}
+master_sites    http://people.FreeBSD.org/~scop/cvsweb/ \
+		ftp://ftp.FreeBSD.org/pub/FreeBSD/ports/local-distfiles/scop/
+checksums	md5 0e1eec962b1db00e01b295fff84b6e89
+
+depends_build	port:perl5.12 \
+		port:p5.12-ipc-run \
+		port:p5.12-file-temp \
+		port:p5.12-uri \
+		port:p5.12-mime-types \
+		port:p5.12-string-ediff \
+		port:cvsgraph
+
+use_configure	no
 build		{}
 
-set cgi_path ""
-set httpd_conf_path ""
-variant darwin {
 	global cgi_path httpd_conf_path
 	set cgi_path "/Library/WebServer/CGI-Executables/"
 	set httpd_conf_path "/private/etc/httpd/"
+	set icons_path "/Library/WebServer/Documents/icons/"
+	set css_path "/Library/WebServer/Documents/css/"
 
-	# apache darwinport interop
-	if {[ file exists ${prefix}/sbin/httpd]} {
-		set cgi_path "${prefix}/www/cgi-bin/"
-		set httpd_conf_path "${prefix}/etc/apache/"
-	}
-	
-	destroot {
-		file mkdir ${destroot}${cgi_path}
-		file mkdir ${destroot}${httpd_conf_path}
-		system "install -m 755 ${worksrcpath}/cvsweb.cgi ${destroot}${cgi_path}"
-		system "install -m 644 ${worksrcpath}/cvsweb.conf ${destroot}${httpd_conf_path}"
-	}
-}
-variant freebsd {
+variant macports_apache2 description {Install for MacPorts apache2 instead of Apple Apache} {
 	global cgi_path httpd_conf_path
-	set cgi_path "/usr/local/www/cgi-bin/"
-	set httpd_conf_path "/usr/local/etc/apache/"
+        set cgi_path "${prefix}/apache2/cgi-bin/"
+        set httpd_conf_path "${prefix}/apache2/conf/"
+        set icons_path "${prefix}/apache2/htdocs/icons/"
+        set css_path "${prefix}/apache2/htdocs/css/"
 
-	# apache darwinport interop
-	if {[ file exists ${prefix}/sbin/httpd]} {
-		set cgi_path "${prefix}/www/cgi-bin/"
-		set httpd_conf_path "${prefix}/etc/apache/"
-	}
+}
 
-	destroot {
-		file mkdir ${destroot}${cgi_path}
-		file mkdir ${destroot}${httpd_conf_path}
-		system "install -m 755 ${worksrcpath}/cvsweb.cgi ${destroot}${cgi_path}"
-		system "install -m 644 ${worksrcpath}/cvsweb.conf ${destroot}${httpd_conf_path}"
-	}
+destroot {
+	file mkdir ${destroot}${cgi_path}
+	file mkdir ${destroot}${httpd_conf_path}
+	file mkdir ${destroot}${icons_path}
+	file mkdir ${destroot}${css_path}
+	xinstall -m 755 ${worksrcpath}/cvsweb.cgi ${destroot}${cgi_path}
+	xinstall -m 644 ${worksrcpath}/cvsweb.conf ${destroot}${httpd_conf_path}
+	eval xinstall -m 755 [glob ${worksrcpath}/icons/*] ${destroot}${icons_path}
+	eval xinstall -m 755 [glob ${worksrcpath}/css/*] ${destroot}${css_path}
+
+	reinplace "s|#!/usr/bin/perl|#!${prefix}/bin/perl5.12|g" \
+		"${destroot}${cgi_path}/cvsweb.cgi"
+	reinplace "s|/usr/local/etc/cvsweb/cvsweb.conf|${httpd_conf_path}cvsweb.conf|g" \
+		"${destroot}${cgi_path}/cvsweb.cgi"
+	reinplace "s|/bin /usr/bin /usr/local/bin|/bin /usr/bin /usr/local/bin ${prefix}/bin ${prefix}/sbin|g" \
+		"${destroot}${cgi_path}/cvsweb.cgi"
 }

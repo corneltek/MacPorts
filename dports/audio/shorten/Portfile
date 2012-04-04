@@ -1,12 +1,14 @@
-# $Id: Portfile,v 1.8 2004/01/16 20:22:32 fkr Exp $
+# $Id$
 
 PortSystem 1.0
-name		shorten
-version		3.5.1
-categories	audio archivers
-maintainers	darwinports@opendarwin.org
-description	Fast compression for waveform files
-long_description	  \
+
+name             shorten
+version          3.6.1
+categories       audio archivers
+license          Noncommercial
+maintainers      nomaintainer
+description      Fast compression for waveform files
+long_description \
 	Shorten reduces the size of waveform files (such as audio) using \
 	Huffman coding of prediction residuals and optional additional \
 	quantisation.  In lossless mode the amount of compression obtained \
@@ -16,8 +18,14 @@ long_description	  \
 	minimum acceptable segmental signal to noise ratio or a maximum bit \
 	rate. Lossy compression operates by zeroing the lower order bits of \
 	the waveform, so retaining waveform shape.
-homepage	http://www.etree.org/shnutils/shorten/
-platforms	darwin
-master_sites	http://etree.org/shnutils/shorten/source/
-checksums	md5 71332b2b45cf41db2c512190c6aad623
-configure.env	CPPFLAGS="-O3 -funroll-loops -no-cpp-precomp"
+homepage         http://www.etree.org/shnutils/shorten/
+platforms        darwin
+master_sites     ${homepage}dist/src/
+checksums \
+	md5 fb59c16fcedc4f4865d277f6e45866a7 \
+	sha1 bd525ced0b9ba99a7a178c11647a853147977fa5 \
+	rmd160 c25d0cf634ea86de2a3f155bc96f494c0a3167a0
+configure.args   --mandir=${prefix}/share/man
+
+test.run         yes
+test.target      check

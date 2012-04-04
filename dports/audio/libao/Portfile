@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.12 2004/01/18 13:03:21 toby Exp $
+# $Id$
 
 PortSystem 1.0
+
 name             libao
-version          0.8.4
+version          1.1.0
 categories       audio
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      A Cross-platform Audio Library
 long_description \
     libao is a way to easily add cross-platform audio output to your \
@@ -13,26 +14,35 @@ long_description \
     currently supported.
 homepage         http://www.xiph.org/ao/
 platforms        darwin
-master_sites     ${homepage}src/
-checksums        md5 0525549b0bf665f617913c916064cc87
-patchfiles       patch-configure
+license          GPL-2+
+master_sites     http://downloads.xiph.org/releases/ao/
 
-configure.env    CPPFLAGS=-I${prefix}/include LDFLAGS=-L${prefix}/lib
-configure.args   --mandir=${prefix}/share/man \
-                 --disable-arts --disable-esd \
+checksums        sha1    9301bc4886f170c7122ab62677fb71cf001c04fd \
+                 rmd160  374078af926bb0744fb2301e128a1c5276fdf4ee
+
+post-patch {
+	reinplace "s|/etc/libao.conf|${prefix}/etc/libao.conf|" \
+		${worksrcpath}/CHANGES \
+		${worksrcpath}/doc/config.html \
+		${worksrcpath}/libao.conf.5 \
+		${worksrcpath}/include/ao/ao_private.h \
+}
+
+configure.args   --disable-arts --disable-esd \
                  --disable-oss --disable-X
 
-variant darwin {
-    depends_lib-append lib:libdl:dlcompat
-    patchfiles-append  apple-patches patch-ao_macosx.c
-
+platform darwin {
     post-destroot {
         system "echo default_driver=macosx >> ${destroot}${prefix}/etc/libao.conf"
     }
 }
 
-variant esd {
-    depends_lib-append    lib:libesd.0:esound
+variant esd description {Enable Enlightened Sound Daemon support} {
+    depends_lib-append    port:esound
     configure.args-delete --disable-esd
     configure.args-append --enable-esd
 }
+
+livecheck.type   regex
+livecheck.url    ${master_sites}?C=M&O=D
+livecheck.regex  ${name}-(\\d+(?:\\.\\d+)*)

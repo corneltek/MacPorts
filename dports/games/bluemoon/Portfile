@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.1 2004/01/15 23:49:42 toby Exp $
+# $Id$
 
 PortSystem       1.0
 name             bluemoon
 version          2.9
 categories       games
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      52-card solitaire game
 long_description \
     This 52-card solitaire starts with the entire deck shuffled and \
@@ -31,3 +31,6 @@ patch {
 }
 use_configure    no
 build.target     ${name}
+
+livecheck.type   regex
+livecheck.regex  ${name}-(\[0-9.\]+)\\.tar

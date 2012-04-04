@@ -1,16 +1,20 @@
 # et:ts=4
 # porttest.tcl
+# $Id$
 
 package provide porttest 1.0
 package require portutil 1.0
 
-set com.apple.test [target_new com.apple.test test_main]
-target_provides ${com.apple.test} test
-target_requires ${com.apple.test} build
-target_prerun ${com.apple.test} test_start
+set org.macports.test [target_new org.macports.test porttest::test_main]
+target_provides ${org.macports.test} test
+target_requires ${org.macports.test} main fetch checksum extract patch configure build
+target_prerun ${org.macports.test} porttest::test_start
+
+namespace eval porttest {
+}
 
 # define options
-options test.run test.target 
+options test.run test.target
 commands test
 
 # Set defaults
@@ -21,17 +25,17 @@ default test.target test
 
 set_ui_prefix
 
-proc test_start {args} {
-    global UI_PREFIX portname
-    ui_msg "$UI_PREFIX [format [msgcat::mc "Testing %s"] ${portname}]"
+proc porttest::test_start {args} {
+    global UI_PREFIX subport
+    ui_notice "$UI_PREFIX [format [msgcat::mc "Testing %s"] ${subport}]"
 }
 
-proc test_main {args} {
-    global portname test.run
+proc porttest::test_main {args} {
+    global subport test.run
     if {[tbool test.run]} {
-    	system "[command test]"
+        command_exec test
     } else {
-	return -code error [format [msgcat::mc "%s has no tests turned on. see 'test.run' in portfile(7)"] $portname]
+    return -code error [format [msgcat::mc "%s has no tests turned on. see 'test.run' in portfile(7)"] $subport]
     }
     return 0
 }

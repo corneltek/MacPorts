@@ -1,43 +1,41 @@
-# $Id: Portfile,v 1.1 2004/02/08 07:45:20 blb Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem			1.0
-name				plotutils
-version				2.4.1
-categories			graphics
-maintainers			blb@pobox.com
-description			GNU plotting utilities
+PortSystem 1.0
+
+name             plotutils
+epoch            1
+version          2.6
+revision         1
+categories       graphics
+platforms        darwin
+maintainers      snc openmaintainer
+license             GPL-3+
+
+description      GNU plotting utilities
 long_description \
-	GNU plotting utilities package, including GNU libplot: a thread-safe \
-	function library for exporting two-dimensional vector graphics files, \
-	and for displaying animated vector graphics under the X Window System.
+  GNU plotting utilities package, including GNU libplot: a thread-safe \
+  function library for exporting two-dimensional vector graphics files, \
+  and for displaying animated vector graphics under the X Window System.
 
-platforms			darwin
+homepage         http://www.gnu.org/software/plotutils/
+master_sites     gnu
 
-homepage			http://www.gnu.org/software/plotutils/
-master_sites		gnu opendarwin::lt
+depends_lib      port:libpng \
+                 port:zlib
 
-checksums			${name}-${portversion}${extract.suffix} md5 \
-						8da2cc2ed5a837cad0753c7843ef18ee
+checksums           rmd160  2a32244eb20e00b82a0742dde7b690f688e82774 \
+                    sha256  4f4222820f97ca08c7ea707e4c53e5a3556af4d8f1ab51e0da6ff1627ff433ab
 
-depends_lib			lib:libpng:libpng lib:libz:zlib
-
-configure.args		--without-x --enable-libplotter \
-					--mandir=${prefix}/share/man --infodir=${prefix}/share/info
+configure.args   --without-x \
+                 --enable-libplotter \
+                 --mandir=${prefix}/share/man \
+                 --infodir=${prefix}/share/info
 
 variant x11 {
-	depends_lib-append		lib:libX11:XFree86
-	configure.args-delete	--without-x
-	configure.args-append	--with-x
+  depends_lib-append      port:xorg-libXaw
+  configure.args-delete   --without-x
+  configure.args-append   --with-x
 }
 
-variant darwin {
-	distfiles-append	ltconfig13:lt ltmain13:lt
-	checksums-append	ltconfig13 md5 ea53f42a550c9f9e653758a8ed91574e \
-						ltmain13 md5 e094ae92724c4015dbab97de151c2525
-	extract.only		${distname}${extract.suffix}
-	post-patch {
-		xinstall -m 644 ${distpath}/ltconfig13 ${worksrcpath}/ltconfig
-		xinstall -m 644 ${distpath}/ltmain13 ${worksrcpath}/ltmain.sh
-	}
-}
-
+use_parallel_build yes

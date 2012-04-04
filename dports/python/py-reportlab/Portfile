@@ -1,36 +1,31 @@
-# $Id: Portfile,v 1.2 2003/11/27 17:22:37 mww Exp $
+# $Id$
 
-PortSystem 1.0
+PortSystem          1.0
+PortGroup           python24 1.0
 
-name		py-reportlab
-version		1_18
-categories	python
-maintainers	mww@opendarwin.org
-platforms	darwin freebsd
-description	python library for creating pdf files
-long_description	ReportLab is a software library that lets you directly \
-		create documents in Adobe's Portable Document Format (PDF) \
-		using the python programming language. 
+name                py-reportlab
+version             2.3
+revision            1
+license             BSD
+maintainers         nomaintainer
+platforms           darwin freebsd
+description         python library for creating pdf files
+long_description \
+   ReportLab is a software library that lets you directly create documents \
+   in Adobe's Portable Document Format (PDF) using the python programming \
+   language.
 
-homepage	http://www.reportlab.org/
-master_sites	${homepage}/ftp/
-distname	ReportLab_${version}
-checksums	md5 742dcc46702cb547264803303ffae2aa
-extract.suffix	.tgz
-depends_lib	bin:python:python
+homepage            http://www.reportlab.org/rl_toolkit.html
+master_sites        http://www.reportlab.org/ftp/
+distname            ReportLab_2_3
+checksums           md5     057b846bd3b7b2c3498bf14f6a523632 \
+                    sha1    cb5e27fef02eceaab79236d5a074cdfb92bff179 \
+                    rmd160  ebb347765d516e74b965ec89c7909ec7592e3f54
+depends_lib-append  port:py24-pil
 
-use_configure	no
+patchfiles          patch-src_reportlab_lib_testutils.py.diff
 
-build.dir	${workpath}/reportlab
-build.cmd	python setup.py
-build.target	build
-
-destroot.cmd	python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
-
-post-destroot	{
-	file mkdir ${destroot}${prefix}/share/doc/
-	file copy ${build.dir}/docs ${destroot}${prefix}/share/doc/${name}
-	file copy ${build.dir}/README ${build.dir}/changes \
-		${destroot}${prefix}/share/doc/${name}
+post-destroot {
+   xinstall -m 644 -W ${worksrcpath} README.txt CHANGES.txt LICENSE.txt \
+      ${destroot}${prefix}/share/doc/${name}
 }

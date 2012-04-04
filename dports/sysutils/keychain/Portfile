@@ -1,24 +1,44 @@
-# $Id: Portfile,v 1.10 2004/01/13 11:19:10 yeled Exp $
+# $Id$
 
-PortSystem 1.0
-name		keychain
-version		2.0.3
-categories	sysutils security
-maintainers	yeled@opendarwin.org
-description	A user-friendly front-end to ssh-agent(1)
-long_description	\
-	Keychain is a shell script which acts as user-friendly front-end to \
-	ssh-agent(1), allowing you to have one long-running ssh-agent \
-	process per system rather than per login session.
-homepage	http://www.gentoo.org/proj/en/keychain.xml
-platforms	darwin freebsd
-master_sites	http://gentoo.oregonstate.edu/distfiles/
-checksums	md5 1183410bac4a747cd9ae483a1f24b7c5
-use_bzip2	yes
-extract.suffix	.tar.bz2
-configure {}
-build {}
-destroot {
-	file mkdir ${destroot}${prefix}/bin
-	xinstall -m 755 ${worksrcpath}/keychain ${destroot}${prefix}/bin
+PortSystem      1.0
+
+name            keychain
+version         2.7.1
+revision        1
+categories      sysutils security
+platforms       darwin freebsd
+maintainers     nomaintainer
+description     A user-friendly front-end to ssh-agent(1)
+
+long_description \
+    Keychain is a shell script which acts as user-friendly front-end to \
+    ssh-agent(1), allowing you to have one long-running ssh-agent \
+    process per system rather than per login session.
+
+homepage        http://www.funtoo.org/en/security/keychain/intro/
+use_bzip2       yes
+master_sites    http://www.funtoo.org/archive/keychain
+
+checksums       md5 07c622833192189f483cbaec287f9704 \
+                sha1 e7ad7da374ba81e57792bb2695eb6c352f769de7 \
+                sha256 1107fe3f78f6429d4861d64c5666f068f159326d22ab80a8ed0948cb25375191
+
+# Patch keychain's path to pick up any MacPorts binaries, such as
+# ssh-agent.
+post-patch {
+    reinplace \
+        -E "s#PATH=\"/usr/bin:#PATH=\"${prefix}/bin:/usr/bin:#" \
+        ${worksrcpath}/keychain
 }
+
+use_configure   no
+build.cmd       true
+
+destroot {
+    xinstall -m 555 ${worksrcpath}/keychain ${destroot}${prefix}/bin
+    xinstall -m 444 ${worksrcpath}/keychain.1 ${destroot}${prefix}/share/man/man1
+}
+
+livecheck.type  regex
+livecheck.url   ${homepage}
+livecheck.regex keychain-(\\d+(\\.\\d+)*).tar.bz2

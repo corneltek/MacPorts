@@ -1,16 +1,27 @@
-# $Id: Portfile,v 1.2 2004/02/23 13:59:08 olegb Exp $
+# $Id$
 
 PortSystem 1.0
+
 name		mergeant
 version		0.12.1
+set branch      [join [lrange [split ${version} .] 0 1] .]
 description	A GNOME SQL database admin tool.
 long_description 	${description}
-maintainers	gnome-darwinports@opendarwin.org
+maintainers	nomaintainer
 categories	gnome databases
-platforms	darwin 
+platforms	darwin
 homepage	http://www.gnome-db.org/
-master_sites    ftp://ftp.gnome-db.org/pub/gnome-db/sources/v0.12.1/
-checksums	md5 7b1441d52702414ed0fa5e0fd946cd6b
+master_sites    gnome:sources/${name}/${branch}/
+checksums	md5 42a2f6778b81409db6cd1baa49663dca
+use_bzip2	yes
 depends_lib	lib:libgnomedb-2:libgnomedb
-configure.env   CPPFLAGS="-L${prefix}/lib -I${prefix}/include" \
-                CFLAGS="-no-cpp-precomp -flat_namespace -undefined suppress" 
+configure.cppflags-append "-L${prefix}/lib"
+configure.cflags-append "-I${prefix}/include"
+
+platform darwin 8 powerpc {
+	configure.compiler	gcc-3.3
+}
+
+livecheck.type  regex
+livecheck.url   http://ftp.gnome.org/pub/gnome/sources/${name}/${branch}/
+livecheck.regex {LATEST-IS-(\d+(?:\.\d+)*)}

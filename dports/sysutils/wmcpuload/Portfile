@@ -1,20 +1,28 @@
-# $Id: Portfile,v 1.12 2004/02/05 20:32:31 landonf Exp $
+# $Id$
 
 PortSystem 1.0
 name		wmcpuload
 version		1.0.1
-revision	1
+revision	3
 categories	sysutils x11
-maintainers	landonf@opendarwin.org
+maintainers    nomaintainer
 description	An "lcd" dockapp that displays the current cpuload
 homepage	http://www.sh.rim.or.jp/~ssato/dockapp/
+
+use_bzip2 yes
 
 long_description WMCPULoad is a program to monitor CPU usage. It is a \
 dockapp that is supported by X window managers such as Window Maker, \
 AfterStep, BlackBox, and Enlightenment.
 
 platforms	darwin freebsd
-master_sites	http://www.sh.rim.or.jp/~ssato/src/
-checksums	md5 93a28a62d31d4b283edd78fffafb0835
+master_sites	http://distfiles.gentoo.org/distfiles/
+checksums           md5     f15b1a06a9b3467b84f36ba9e97cdf3e \
+                    sha1    6e767dd5acd291cfe3fc4fece5ff32eef78915e4 \
+                    rmd160  1ff01f09464dc8628acd7d375adcd106ea7ce317
 
-depends_build   lib:libX11.6:XFree86
+depends_lib \
+	port:xorg-libXext \
+	port:xpm
+
+configure.args  --x-include=${prefix}/include --x-lib=${prefix}/lib

@@ -1,41 +1,32 @@
-# $Id: Portfile,v 1.2 2004/02/08 17:41:21 mww Exp $
+# $Id$
 
 PortSystem 1.0
+PortGroup python24 1.0
 
-name		py-gmpy
-version		1.0alpha
-categories	python
-platforms	darwin
-maintainers	mww@opendarwin.org
-description	general MultiPrecision arithmetic module for Python
+name			py-gmpy
+version			1.01
+categories		python
+platforms		darwin
+maintainers		nomaintainer
+description		general MultiPrecision arithmetic module for Python
 long_description	gmpy is a general MultiPrecision arithmetic module for \
-			Python wrapping the GNU arbitrary precision arithmetic \
-			library 'gmp'.
+				Python wrapping the GNU arbitrary precision arithmetic \
+				library 'gmp'.
 
-homepage	http://gmpy.sourceforge.net/
-master_sites	sourceforge:gmpy
-distname	gmpy-sources-10
-checksums	md5 a34de2f217f89d82e8d9dd1abe4f1122
-use_zip		yes
+homepage		http://gmpy.sourceforge.net/
+master_sites		sourceforge:gmpy
+distname		gmpy-sources-101
+checksums		md5 7b2e951912d4bee9613c35244ca32673
+use_zip			yes
 
-depends_lib	bin:python:python \
-		lib:libgmp:gmp
+depends_lib-append	port:gmp
 
-set worksrcpath	${workpath}/gmpy
+worksrcdir		gmpy
 
-use_configure	no
-
-build.env	CFLAGS="-I${prefix}/include" \
-		LDFLAGS="-L${prefix}/lib"
-build.dir	${worksrcpath}
-build.cmd	python setup.py
-build.target	build
-
-destroot.cmd	python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
+build.env		CFLAGS="-I${prefix}/include" \
+				LDFLAGS="-L${prefix}/lib"
 
 post-destroot	{
-	xinstall -d -m 755 ${destroot}${prefix}/share/doc/${name}
 	xinstall -m 644 -W ${worksrcpath} doc/gmpydoc.txt doc/index.html \
 		README ${destroot}${prefix}/share/doc/${name}
 }

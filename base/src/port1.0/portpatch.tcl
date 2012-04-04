@@ -1,7 +1,9 @@
 # et:ts=4
 # portpatch.tcl
+# $Id$
 #
-# Copyright (c) 2002 - 2003 Apple Computer, Inc.
+# Copyright (c) 2004, 2006-2007, 2009-2011 The MacPorts Project
+# Copyright (c) 2002 - 2003 Apple Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -12,10 +14,10 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of Apple Computer, Inc. nor the names of its contributors
+# 3. Neither the name of Apple Inc. nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,51 +34,76 @@
 package provide portpatch 1.0
 package require portutil 1.0
 
-set com.apple.patch [target_new com.apple.patch patch_main]
-target_provides ${com.apple.patch} patch
-target_requires ${com.apple.patch} main fetch checksum extract 
+set org.macports.patch [target_new org.macports.patch portpatch::patch_main]
+target_provides ${org.macports.patch} patch
+target_requires ${org.macports.patch} main fetch checksum extract
+
+namespace eval portpatch {
+}
 
 set_ui_prefix
 
 # Add command patch
 commands patch
+
+options patch.asroot
 # Set up defaults
+default patch.asroot no
 default patch.dir {${worksrcpath}}
-default patch.cmd patch
+default patch.cmd {[portpatch::build_getpatchtype]}
 default patch.pre_args -p0
 
-proc patch_main {args} {
-    global UI_PREFIX
-    
-    # First make sure that patchfiles exists and isn't stubbed out.
-    if {![exists patchfiles]} {
-	return 0
+proc portpatch::build_getpatchtype {args} {
+    if {![exists patch.type]} {
+        return [findBinary patch $portutil::autoconf::patch_path]
     }
-    
+    switch -exact -- [option patch.type] {
+        gnu {
+            return [findBinary gpatch $portutil::autoconf::gnupatch_path]
+        }
+        default {
+            ui_warn "[format [msgcat::mc "Unknown patch.type %s, using 'patch'"] [option patch.type]]"
+            return [findBinary patch $portutil::autoconf::patch_path]
+        }
+    }
+}
+
+proc portpatch::patch_main {args} {
+    global UI_PREFIX usealtworkpath altprefix
+
+    # First make sure that patchfiles exists and isn't stubbed out.
+    if {![exists patchfiles] || [option patchfiles] == ""} {
+        return 0
+    }
+
+    ui_notice "$UI_PREFIX [format [msgcat::mc "Applying patches to %s"] [option subport]]"
+
     foreach patch [option patchfiles] {
-	if {[file exists [option filespath]/$patch]} {
-	    lappend patchlist [option filespath]/$patch
-	} elseif {[file exists [option distpath]/$patch]} {
-	    lappend patchlist [option distpath]/$patch
-	}
+        set patch_file [getdistname $patch]
+        if {[file exists [option filespath]/$patch_file]} {
+            lappend patchlist [option filespath]/$patch_file
+        } elseif {[file exists [option distpath]/$patch_file]} {
+            lappend patchlist [option distpath]/$patch_file
+        } elseif {!$usealtworkpath && [file exists "${altprefix}[option distpath]/$patch_file"]} {
+            lappend patchlist "${altprefix}[option distpath]/$patch_file"
+        } else {
+            return -code error [format [msgcat::mc "Patch file %s is missing"] $patch]
+        }
     }
     if {![info exists patchlist]} {
-	return -code error [msgcat::mc "Patch files missing"]
+        return -code error [msgcat::mc "Patch files missing"]
     }
-    cd [option worksrcpath]
+
+    set gzcat "[findBinary gzip $portutil::autoconf::gzip_path] -dc"
+    set bzcat "[findBinary bzip2 $portutil::autoconf::bzip2_path] -dc"
     foreach patch $patchlist {
-	ui_info "$UI_PREFIX [format [msgcat::mc "Applying %s"] $patch]"
-	if {[option os.platform] == "linux"} {
-	    set gzcat "zcat"
-	} else {
-	    set gzcat "gzcat"
-	}
-	switch -glob -- [file tail $patch] {
-	    *.Z -
-	    *.gz {system "$gzcat \"$patch\" | ([command patch])"}
-	    *.bz2 {system "bzcat \"$patch\" | ([command patch])"}
-	    default {system "[command patch] < \"$patch\""}
-	}
+        ui_info "$UI_PREFIX [format [msgcat::mc "Applying %s"] [file tail $patch]]"
+        switch -- [file extension $patch] {
+            .Z -
+            .gz {command_exec patch "$gzcat \"$patch\" | (" ")"}
+            .bz2 {command_exec patch "$bzcat \"$patch\" | (" ")"}
+            default {command_exec patch "" "< '$patch'"}
+        }
     }
     return 0
 }

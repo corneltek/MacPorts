@@ -1,54 +1,61 @@
-# $Id: Portfile,v 1.1 2004/02/09 23:00:47 mww Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
+PortSystem      1.0
+PortGroup       python 1.0
 
-name		py-game
-version		1.6
-categories	python devel multimedia graphics
-maintainers	mww@opendarwin.org
-description	set of Python modules designed for writing games
-long_description	Pygame is a set of Python modules designed for writing \
-			games. It is written on top of the excellent SDL \
-			library. This allows you to create fully featured \
-			games and multimedia programs in the python language. \
-			Pygame is highly portable and runs on nearly every \
-			platform and operating system.
+name            py-game
+version         1.9.1
+revision        4
+categories      python devel multimedia graphics
+platforms       darwin
+license         LGPL-2.1
+maintainers     jmr openmaintainer
+description     pygame, python modules for writing games
+long_description    Pygame is a set of Python modules designed for \
+            writing games. It is written on top of the excellent \
+            SDL library. This allows you to create fully featured \
+            games and multimedia programs in the python language. \
+            Pygame is highly portable and runs on nearly every \
+            platform and operating system.
+homepage        http://www.pygame.org/
 
-homepage	http://www.pygame.org
-master_sites	${homepage}/ftp/
-distname	pygame-${version}
-patchfiles	patch-config_darwin.py.diff \
-		patch-__init__.py.diff
-checksums	md5 ea5db930c0031873a7f5ad1f2f7926db
+master_sites    ${homepage}ftp/
+distname        pygame-${version}release
+checksums       rmd160 352d74d6cb025e7489e1123a7a25d1695beabafb \
+                sha256 a26095472ae4be9631e0d5bfb9a52ac57a3a091e45757913128e4a473807d433
 
-depends_lib	bin:python:python \
-		bin:sdl-config:libsdl \
-		lib:libSDL_mixer:libsdl_mixer \
-		lib:libSDL_image:libsdl_image \
-		lib:libSDL_ttf:libsdl_ttf \
-		bin:smpeg-config:smpeg \
-		lib:XXX:py-numeric
+python.versions 24 25 26 27
 
-post-patch	{
-	reinplace "s|PREFIX|${prefix}|g" ${worksrcpath}/config_darwin.py
-}
-
-configure.env	CFLAGS="-I${prefix}/include}" \
-		LDFLAGS="-L${prefix}/lib" \
-		SDL_VIDEODRIVER=quartz
-configure.cmd	${prefix}/bin/python config.py
-
-build.env	${configure.env}
-build.cmd	${prefix}/bin/python setup.py
-build.target	build
-
-destroot.cmd	${prefix}/bin/python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
-
-post-destroot	{
-	xinstall -d -m 755 ${destroot}${prefix}/share/doc
-	file copy ${worksrcpath}/docs ${destroot}${prefix}/share/doc/${name}
-	file copy ${worksrcpath}/examples ${destroot}${prefix}/share/doc/${name}
-	xinstall -m 644 -W ${worksrcpath} install.html install.txt WHATSNEW \
-		readme.html readme.txt ${destroot}${prefix}/share/doc/${name}
+if {$subport != $name} {
+    patchfiles  patch-config_darwin.py.diff \
+                patch-src_scale_mmx64.c.diff \
+                patch-disable_portmidi.diff
+    
+    depends_lib port:py${python.version}-numpy \
+                port:libsdl_mixer \
+                port:libsdl_image \
+                port:libsdl_ttf
+    
+    use_configure   yes
+    configure.env-append LOCALBASE=${prefix}
+    configure.cmd   ${python.bin} config.py
+    
+    post-destroot   {
+        delete ${destroot}${prefix}/share/doc/${subport}/examples
+        eval copy [glob ${worksrcpath}/docs/*] ${destroot}${prefix}/share/doc/${subport}
+        copy ${worksrcpath}/examples ${destroot}${prefix}/share/doc/${subport}
+        xinstall -m 644 -W ${worksrcpath} install.html WHATSNEW \
+            README.txt ${destroot}${prefix}/share/doc/${subport}
+    }
+    
+    variant portmidi description {Enable MIDI support using portmidi (experimental)} {
+        depends_lib-append port:portmidi
+        patchfiles-delete patch-disable_portmidi.diff
+    }
+    livecheck.type  none
+} else {
+    livecheck.type  regex
+    livecheck.url   ${homepage}download.shtml
+    livecheck.regex {<a href=".*/ftp/pygame\-([0-9\.]+)release\.tar\.gz">}
 }

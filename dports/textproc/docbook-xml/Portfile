@@ -1,28 +1,43 @@
-# $Id: Portfile,v 1.14 2004/01/10 10:45:10 jkh Exp $
+# $Id$
 
-PortSystem 1.0
+PortSystem      1.0
 
-name		docbook-xml
-version		4.2
-description	the docbook xml dtds
-categories	textproc
-platforms	darwin
-maintainers	michaelm@opendarwin.org
-depends_build	bin:unzip:unzip
+name            docbook-xml
+# the version should always be the version of the highest
+# versioned docbook-xml-* port.
+version         5.0
+categories      textproc
+platforms       darwin
+license         BSD
+maintainers     nomaintainer
+supported_archs noarch
+description     Install all of the versioned docbook-xml-* ports
 
-master_sites	http://www.oasis-open.org/docbook/xml/4.2/
-checksums	md5 73fe50dfe74ca631c1602f558ed8961f
+long_description \
+    This port is an uninstallable metaport that simply ensures \
+    that a number of other ports are installed.
 
-use_zip		yes
-extract.suffix	.zip
-extract.cmd	unzip
+homepage        http://www.docbook.org/
+distfiles
 
-configure 	{}
-build		{}
+# add every docbook-xml-* port as it is created
+depends_run \
+    port:docbook-xml-4.1.2 \
+    port:docbook-xml-4.2 \
+    port:docbook-xml-4.3 \
+    port:docbook-xml-4.4 \
+    port:docbook-xml-4.5 \
+    port:docbook-xml-5.0
 
-destroot	{ file mkdir ${destroot}/${prefix}/share/xml/${name}/${version}
- 		  file mkdir ${destroot}/${prefix}/share/xml/${name}/${version}/ent
-		  system "for file in \
-		  `unzip -l ${distpath}/${distname} | awk '/:\[0-9\].*\[^\\/\]\$/\{print \$4\}'`; do \
-                  	install -cv ${workpath}/\$file ${destroot}/${prefix}/share/xml/${name}/${version}/\$file; \
-        	  done" }
+use_configure   no
+build {}
+
+destroot { 
+    set docdir ${prefix}/share/doc/${name}
+    xinstall -d ${destroot}${docdir}
+    xinstall -m 0644 ${filespath}/README ${destroot}${docdir}
+}
+
+livecheck.type  regex
+livecheck.url   ${homepage}schemas/
+livecheck.regex {DocBook V(\d+(?:\.\w+)*)<}

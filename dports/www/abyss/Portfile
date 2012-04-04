@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.2 2004/01/07 13:06:04 pguyot Exp $
+# $Id$
 
 PortSystem 1.0
 name			abyss
 version			0.3
 categories		www
-maintainers		pguyot@kallisys.net
+maintainers		nomaintainer
 description		Light HTTP/1.1 compliant web server.
 long_description	\
 				ABYSS aims to be a fully HTTP/1.1 compliant web server. \
@@ -13,17 +13,15 @@ long_description	\
 				on Win32 systems (Win95/98/2000/NT).
 homepage		http://abyss.sourceforge.net/
 platforms		darwin
-master_sites	sourceforge:abyss
+master_sites	sourceforge:project/abyss/abyss/${version}
 checksums		md5 ca2dc7618e17dae8eea23c02dd3bbf9d
 patchfiles		patch-src-data.c patch-src-server.c patch-conf-abyss.conf patch-src-conn.c
-worksrcdir		${name}
+	worksrcdir		${name}
 post-patch {
 	reinplace "s|__PREFIX|${prefix}|g" ${worksrcpath}/conf/abyss.conf
 }
-configure {}
+use_configure	no
 build { system "cd ${worksrcpath}/src/ && make" }
-
-depends_run	path:/Library/StartupItems/DarwinPortsStartup:DarwinPortsStartup
 
 destroot {
 	xinstall -o root -m 0755 -p "${worksrcpath}/bin/abyss" "${destroot}${prefix}/sbin/"
@@ -44,3 +42,9 @@ destroot {
 	reinplace "s|__PREFIX|${prefix}|g" \
 		"${destroot}${prefix}/etc/rc.d/abyss.sh"
 }
+
+startupitem.create	yes
+startupitem.name	abyss
+startupitem.pidfile	"clean ${prefix}/share/abyss/abyss.pid"
+startupitem.start	"${prefix}/etc/rc.d/abyss.sh start"
+startupitem.stop	"${prefix}/etc/rc.d/abyss.sh start"

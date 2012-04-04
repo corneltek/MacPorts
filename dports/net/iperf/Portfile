@@ -1,25 +1,21 @@
-# $Id: Portfile,v 1.4 2004/01/16 20:22:37 fkr Exp $
+# $Id$
 
 PortSystem 1.0
-name		iperf
-version		1.7.0
-revision	0
-categories	net
-maintainers	darwinports@opendarwin.org
-description	A tool to measure maximum TCP and UDP bandwidth 
-long_description	\
-	Iperf is a tool for measuring maximum TCP and UDP bandwidth, \
-	reminiscent of ttcp and nettest. It has been written to overcome the \
-	shortcomings of those aging tools. Iperf can also test UDP \
-	bandwidth, loss, and jitter.
-homepage	http://dast.nlanr.net/Projects/Iperf/
-platforms	darwin
-master_sites	http://dast.nlanr.net/Projects/Iperf/
-checksums	md5 3e4aea85822bcf10ed14040f4b26bd26
-distname	${name}-${version}-source
-worksrcdir		${name}-${version}
-patchfiles	Makefile.diff
-post-patch {
-	reinplace "s|@install_prefix@|${destroot}${prefix}/bin|g" "${worksrcpath}/Makefile"	
-}
-configure.dir	${worksrcpath}/cfg
+
+name		  iperf
+version		  2.0.5
+categories	  net
+platforms	  darwin
+maintainers	  pmq
+
+description	  A tool to measure maximum TCP and UDP bandwidth
+long_description  Iperf is a tool for measuring maximum TCP and UDP \
+		  bandwidth, reminiscent of ttcp and nettest. It has \
+		  been written to overcome the shortcomings of those \
+		  aging tools. Iperf can also test UDP bandwidth, \
+		  loss, and jitter.
+
+homepage	  http://iperf.sourceforge.net
+master_sites	  sourceforge
+checksums           rmd160  975d971974437136ae72bb17c0f776ea92eaf878 \
+                    sha256  636b4eff0431cea80667ea85a67ce4c68698760a9837e1e9d13096d20362265b

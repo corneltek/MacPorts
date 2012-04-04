@@ -1,42 +1,41 @@
-# $Id: Portfile,v 1.2 2004/02/08 20:34:57 mww Exp $
+# $Id$
 
 PortSystem 1.0
+PortGroup python24 1.0
 
-name		py-numarray
-version		0.8
-categories	python devel math
-platforms	darwin
-maintainers	mww@opendarwin.org
-description	array manipulation and computational library for python
+name			py-numarray
+version			1.5.2
+categories		python devel math
+platforms		darwin
+maintainers		nomaintainer
+description		array manipulation and computational library for python
 long_description	Numarray provides array manipulation and computational \
-			capabilities similar to those found in IDL, Matlab, or \
-			Octave. Using numarray, it is possible to write many \
-			efficient numerical data processing applications \
-			directly in Python without using any C, C++ or Fortran \
-			code.
+				capabilities similar to those found in IDL, Matlab, or \
+				Octave. Using numarray, it is possible to write many \
+				efficient numerical data processing applications \
+				directly in Python without using any C, C++ or Fortran \
+				code.
 
-homepage	http://www.stsci.edu/resources/software_hardware/numarray
+homepage		http://www.stsci.edu/resources/software_hardware/numarray
 master_sites	sourceforge:numpy
-distname	numarray-${version}
-checksums	md5 48bcd37af1e4367b8e6a5d5e56fd0ffc
+distname		numarray-${version}
+checksums		sha1 17f6c4bb5f0d97e93923b8ca4f55fccc1ee985e9
 
-depends_lib	bin:python:python
+build.args		--gencode
 
-use_configure	no
+variant smp description {Specify this to try to exploit multiple processors. A work in progress ...} {
+	build.args		--smp
+	destroot.args	--smp
+}
 
-build.cmd	python setup.py
-build.args	--gencode
-build.target	build
-
-destroot.cmd	python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
-
-post-destroot	{
-	xinstall -d -m 755 ${destroot}${prefix}/share/doc/${name}
-	xinstall -m 644 -W ${worksrcpath} Doc/Announce.txt Doc/Changelog \
-		Doc/CHANGES Doc/Repackaging.txt Doc/INSTALL.txt Doc/Design.txt \
+post-destroot {
+	xinstall -m 644 -W ${worksrcpath} Doc/Announce.txt \
+		Doc/Repackaging.txt Doc/INSTALL.txt Doc/Design.txt \
 		Doc/UsersGuide.txt LICENSE.txt README.txt \
 		${destroot}${prefix}/share/doc/${name}
+	file delete ${destroot}${prefix}/share/doc/${name}/examples
 	file copy ${worksrcpath}/Examples \
 		${destroot}${prefix}/share/doc/${name}/examples
 }
+
+livecheck.regex "<title>Old Numarray (.*) released.*</title>"

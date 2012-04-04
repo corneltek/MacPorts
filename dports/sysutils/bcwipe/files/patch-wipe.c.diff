@@ -1,49 +1,9 @@
---- wipe.c.orig	Sun Jan  4 18:33:06 2004
-+++ wipe.c	Sun Jan  4 18:34:00 2004
-@@ -28,7 +28,6 @@
- #include <utime.h>
- #include <stdlib.h>
- #include <sys/ioctl.h>
--#include <sys/statvfs.h>
- #include <time.h>
- #include <ctype.h>
- #include <sys/mount.h>
-@@ -650,17 +649,17 @@
- 
- off_t get_free_space(char *path)
- {
--    struct statvfs sfs;
-+    struct statfs sfs;
-     int res;
- 
--    res = statvfs(path,&sfs);
-+    res = statfs(path,&sfs);
-     if (res != 0)
-     {
--        fprintf(stderr,"statvfs(%s): %s\n",path,strerror(errno));
-+        fprintf(stderr,"statfs(%s): %s\n",path,strerror(errno));
-         return 0;
-     }
- 
--    return sfs.f_bfree * sfs.f_frsize;
-+    return sfs.f_bfree * sfs.f_bsize;
- 
- }
- 
-@@ -839,13 +838,13 @@
- 
- int can_wipe_all_free_space(char *path)
- {
--    struct statvfs sfs;
-+    struct statfs sfs;
-     int res;
- 
--    res = statvfs(path,&sfs);
-+    res = statfs(path,&sfs);
-     if (res != 0)
-     {
--        fprintf(stderr,"statvfs(%s): %s\n",path,strerror(errno));
-+        fprintf(stderr,"statfs(%s): %s\n",path,strerror(errno));
-         return 0;
-     }
- 
+--- wipe.c	2008-08-28 09:09:58.000000000 +0200
++++ wipe.c.new	2008-04-22 12:45:40.000000000 +0200
+@@ -34,7 +34,7 @@
+ #if (OS_AIX)
+ #define NAME_MAX FILENAME_MAX
+ #else
+-/*#include <sys/mount.h>*/
++#include <sys/mount.h>
+ #endif

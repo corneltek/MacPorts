@@ -1,12 +1,12 @@
-# $Id: Portfile,v 1.2 2004/01/08 06:26:19 pguyot Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
 PortSystem        1.0
 name              unison
-version           2.9.1
-revision          1
-distname          src
+version           2.40.63
 categories        net
-maintainers       julien.touche@touche.fr.st
+maintainers       nomaintainer
+license           GPL-3
 description       Unison File Synchronizer
 long_description  Unison is a file-synchronization tool for Unix and \
                   Windows. It allows two replicas of a collection of \
@@ -15,24 +15,43 @@ long_description  Unison is a file-synchronization tool for Unix and \
                   separately, and then brought up to date by propagating \
                   the changes in each replica to the other.
 homepage          http://www.cis.upenn.edu/~bcpierce/unison/
-master_sites      ${homepage}download/stable/latest/
+master_sites      ${homepage}/download/releases/stable/
 platforms         darwin openbsd
-checksums         md5 d8084fa87c13671de21ec1b701a4606c
-patchfiles        patch-Makefile
+checksums           md5     3281207850cf6f0a17fe73f371893bd3 \
+                    sha1    645e70bc37a5d4e8e9ccb7bad065fc579b18cf75 \
+                    rmd160  5dede9ea2f1213d4a22ed1914da7bfb1921f9993
 
-set worksrcdir    ${name}-${version}
+patchfiles          patch-Makefile \
+                    patch-uimacnew-uimacnew.xcodeproj-project.pbxproj.diff
 
-configure {}
+use_configure	no
 
-destroot.env      PREFIX=${prefix}
+build.args		UISTYLE=text NATIVE=true THREADS=true
+depends_build	bin:camlp4:ocaml
 
-build.env         UISTYLE=text
-depends_lib       bin:camlp4:ocaml bin:lablgtk:lablgtk
+destroot.args	PREFIX=${prefix} UISTYLE=text NATIVE=true THREADS=true
 
-# This variant follows the INSTALL file. However, it doesn't make much sense
-# you'll get the x11 GUI if DISPLAY is set even if you didn't select this
-# variant.
 variant x11 {
-	build.env-delete UISTYLE=text
-	build.env-append UISTYLE=gtk
+	depends_lib-append		port:lablgtk2
+
+	build.args-delete		UISTYLE=text
+	build.args-append		UISTYLE=gtk2
+
+	destroot.args-delete	UISTYLE=text
+	destroot.args-append	UISTYLE=gtk2
 }
+
+variant aqua description {Build Aqua front-end} {
+	build.args-delete		UISTYLE=text
+	build.args-append		UISTYLE=macnew
+	destroot {
+		xinstall -d -m 0755 ${destroot}${applications_dir}
+		system "cd ${worksrcpath}/uimacnew/build && mv Default/* . || true"
+		file copy ${worksrcpath}/uimacnew/build/Unison.app \
+			${destroot}${applications_dir}
+	}
+}
+
+livecheck.type      regex
+livecheck.url       ${master_sites}
+livecheck.regex     {unison-(\d+(?:\.\d+)*)}

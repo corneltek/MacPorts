@@ -1,16 +1,21 @@
-# $Id: Portfile,v 1.4 2004/01/16 20:22:36 fkr Exp $
+# $Id$
 
 PortSystem 1.0
 name		arpd
 version		0.2
-revision	1
+revision	3
 categories	net security
-maintainers	darwinports@opendarwin.org
+maintainers	nomaintainer
 description	user space ARP (Address Resolution Protocol) daemon
+long_description	${description}
 homepage	http://www.citi.umich.edu/u/provos/honeyd/
 platforms	darwin
 master_sites	http://niels.xtdnet.nl/honeyd/
 checksums	md5 e2911fa9de1b92ef50deda1489ae944d
-depends_lib	\
-	lib:libevent:libevent lib:libdnet:libdnet lib:libpcap:libpcap
+patchfiles      patch-arpd.c
+
+depends_lib         port:libevent \
+                    port:libdnet \
+                    port:libpcap
+
 worksrcdir	${name}

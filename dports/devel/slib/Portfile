@@ -1,10 +1,15 @@
-# $Id: Portfile,v 1.3 2003/08/05 21:02:14 jkh Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
 PortSystem 1.0
+
 name                slib
-version             2d6
-categories          devel lang
-maintainers         kogule@opendarwin.org
+version             3b2
+categories          devel lang scheme
+platforms           darwin
+supported_archs     noarch
+license             Permissive
+maintainers         nomaintainer
 description         A portable scheme library
 long_description    SLIB is a portable library for the programming \
                     language Scheme.  It provides a platform \
@@ -15,12 +20,15 @@ long_description    SLIB is a portable library for the programming \
                     extended to accomodate packages specific to a site, \
                     implementation, user, or directory.
 homepage            http://www.swiss.ai.mit.edu/~jaffer/SLIB.html
-master_sites        http://swissnet.ai.mit.edu/ftpdir/scm/
-distfiles           ${name}${version}.zip
-distname	    ${name}
-use_zip             yes
-checksums           md5 317ad1db777981afa6ece517bdd3a7ca
+master_sites        http://groups.csail.mit.edu/mac/ftpdir/scm/ \
+                    http://groups.csail.mit.edu/mac/ftpdir/scm/OLD/
+checksums           sha1 fced3cc9ca30bba21da303bfa520b615386852bb \
+                    rmd160 a053dcad6e7a1bea1c0079107f4664df1434270d
+worksrcdir          ${name}
 patchfiles          patch-Makefile
 use_configure       no
-build.target        srcdir.mk
-destroot.destdir    prefix=${destroot}${prefix}
+build.target
+destroot.target     install installinfoz
+destroot.destdir    prefix=${destroot}${prefix}/ realprefix=${prefix}/ \
+                    mandir=${destroot}${prefix}/share/man/ \
+                    infodir=${destroot}${prefix}/share/info/

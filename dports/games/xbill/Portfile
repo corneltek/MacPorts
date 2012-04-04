@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.1 2004/01/15 10:45:27 toby Exp $
+# $Id$
 
 PortSystem       1.0
 name             xbill
 version          2.1
+revision         2
 categories       games
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      Save your computers from the evil clutches of Bill
 long_description \
     Ever get the feeling that nothing is going right? You're a \
@@ -18,11 +19,17 @@ long_description \
     when it reaches there.
 homepage         http://www.xbill.org/
 platforms        darwin
+
 master_sites     ${homepage}download/
 checksums        md5 585e4866b15255a24203db9959407b2f
-depends_lib      lib:libXaw:XFree86
+
+depends_lib      port:xorg-libXaw
+
 patch {
-    reinplace "s|LIBS =|LIBS = -L${prefix}/lib|" ${worksrcpath}/Makefile.in
-    reinplace "s|@localstate|@data|" ${worksrcpath}/Makefile.in
-    reinplace "s|install:|install: all|" ${worksrcpath}/Makefile.in
+	reinplace "s|install:|install: all|" ${worksrcpath}/Makefile.in
 }
+
+configure.env    X_PRE_LIBS=-lXpm
+configure.args   --mandir=${prefix}/share/man \
+                 --localstatedir=${prefix}/share \
+                 --disable-motif --disable-gtk

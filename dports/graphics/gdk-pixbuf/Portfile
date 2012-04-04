@@ -1,10 +1,14 @@
-# $Id: Portfile,v 1.9 2004/01/18 04:02:01 toby Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
 PortSystem 1.0
+
 name		gdk-pixbuf
 version		0.22.0
+set branch      [join [lrange [split ${version} .] 0 1] .]
+revision	5
 categories	graphics
-maintainers	mij@opendarwin.org
+maintainers	nomaintainer
 description	generic image handling library for Gtk+ programs
 homepage	http://www.gnome.org/
 platforms	darwin
@@ -13,17 +17,27 @@ long_description The GdkPixBuf library provides a number of features, \
 		 such as image loading facilities, a cache interface, \
 		 and rendering of a GdkPixBuf into various formats.
 
-master_sites	gnome:sources/gdk-pixbuf/0.22
+master_sites	gnome:sources/${name}/${branch}
 
 use_bzip2	yes
 checksums	md5 05fcb68ceaa338614ab650c775efc2f2
 
-depends_build	lib:libtiff.3:tiff lib:libjpeg.62:jpeg lib:libpng.3:libpng \
-		lib:libglib.1:glib1 lib:libgtk.2:gtk2 lib:libdl:dlcompat
+depends_build	port:tiff port:jpeg port:libpng \
+		port:glib1 port:gtk1
 
-patchfiles	patch-Makefile.in patch-configure \
-		patch-ltmain.sh patch-gdk-pixbuf-Makefile.in
+universal_variant no
 
-configure.env	CPPFLAGS="-I${prefix}/include -no-cpp-precomp" \
-		CFLAGS="-L${prefix}/lib" LIBS="-L${prefix}/lib"
-configure.args	--with-html-dir=${prefix}/doc --disable-gtk-doc
+patchfiles	patch-Makefile.in.diff patch-configure.diff \
+		patch-ltmain.sh.diff patch-gdk-pixbuf-Makefile.in.diff \
+		patch-underquoting.diff
+
+configure.cflags-append "-L${prefix}/lib"
+configure.env		LIBS="-L${prefix}/lib"
+configure.args	--with-html-dir=${prefix}/share/doc/$name --disable-gtk-doc
+
+# ccache: invalid option -- d
+configure.ccache no
+
+livecheck.type  regex
+livecheck.url   http://ftp.gnome.org/pub/gnome/sources/${name}/${branch}/
+livecheck.regex {LATEST-IS-(\d+(?:\.\d+)*)}

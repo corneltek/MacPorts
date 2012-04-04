@@ -1,15 +1,27 @@
---- generate_config.old	Sun Feb  1 22:27:25 2004
-+++ generate_config	Sun Feb  1 22:28:02 2004
-@@ -15,7 +15,6 @@
- 	echo "The default is $syshostname, your system's host name."
- 	echo
- 	echo -n "Mail name [$syshostname]: "
--	read mailname
- 	echo
+--- generate_config.orig	2004-07-23 15:58:48.000000000 +1000
++++ generate_config	2011-05-27 02:09:50.000000000 +1000
+@@ -4,7 +4,14 @@
+ # Figure out the system's mailname
+ #
  
- 	if test -z "$mailname"
-@@ -27,7 +26,6 @@
- fi
+-syshostname=`hostname --fqdn`
++UNAME_S=`uname -s`
++if test $UNAME_S = 'Darwin' -o $UNAME_S = 'SunOS'
++then
++	syshostname=`uname -n`
++else
++	syshostname=`hostname --fqdn`
++fi
++
+ if test -f /etc/mailname
+ then
+ 	mailname="`head -1 /etc/mailname`"
+@@ -21,11 +28,9 @@
+ echo "The default is $syshostname, your system's host name."
+ echo
+ echo -n "Mail name [$syshostname]: "
+-read mailname
+ echo
  
  echo -n "Please enter the SMTP port number [25]: "
 -read smtpport

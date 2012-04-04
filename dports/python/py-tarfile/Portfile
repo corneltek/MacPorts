@@ -1,41 +1,31 @@
-# $Id: Portfile,v 1.2 2004/02/05 23:00:57 mww Exp $
+# $Id$
 
 PortSystem 1.0
+PortGroup python24 1.0
 
-name		py-tarfile
-version		0.7.1
-categories	python
-platforms	darwin
-maintainers	mww@opendarwin.org
-description	implementation of the tar format as modules for Python
+name			py-tarfile
+version			0.7.5
+categories		python
+platforms		darwin freebsd
+maintainers		nomaintainer
+description		implementation of the tar format as modules for Python
 long_description	tarfile is a comprehensive implementation of the tar \
-			archive format as a module for the Python Language. It \
-			enables read/write access to common tar archives \
-			including support for gzip/bzip2 compressed archives. \
-			Python 2.3 includes tarfile as part of the Standard \
-			Library.
+				archive format as a module for the Python Language. It \
+				enables read/write access to common tar archives \
+				including support for gzip/bzip2 compressed archives. \
+				Python 2.4 includes tarfile as part of the Standard \
+				Library.
 
-homepage	http://www.gustaebel.de/lars/tarfile/
+homepage		http://www.gustaebel.de/lars/tarfile/
 master_sites	${homepage}
-distname	tarfile-${version}
-checksums	md5 f501f682d90ab0b1d2e5034b9e5a6879
+distname		tarfile-${version}
+checksums		md5 56b67b2706e27898b2e7434356139701
 
-depends_lib	bin:python:python
-
-use_configure	no
-
-build.cmd	python setup.py
-build.target	build
-
-test.run	yes
-test.cmd	python test_tarfile.py
+test.run		yes
+test.cmd		${python.bin} test_tarfile.py
 test.target
 
-destroot.cmd	python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
-
 post-destroot	{
-	xinstall -m 755 -d ${destroot}${prefix}/share/doc/${name}
 	xinstall -m 644 -W ${worksrcpath}/doc lib.css module-tarfile.html \
 		tar-examples.html tarfile-objects.html tarinfo-objects.html \
 		${destroot}${prefix}/share/doc/${name}

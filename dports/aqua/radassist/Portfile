@@ -1,58 +1,101 @@
-# $Id: Portfile,v 1.2 2004/03/01 03:09:01 rshaw Exp $
-PortSystem 1.0
+# $Id$
 
-name			radassist
-version			0.9.5-beta
-categories		aqua
-maintainers		rshaw@opendarwin.org
-description		An Aqua wrapper for the radmind command-line clients
-long_description	The Radmind Assistant provides a point-and-click \
-					interface to create radmind loadsets and update \
-					radmind clients.
+PortSystem      1.0
+
+name            radassist
+version         1.0.0
+categories      aqua
 platforms		darwin
-homepage		http://rsug.itd.umich.edu/software/radmind/
-fetch.type		cvs
-cvs.root		:pserver:anonymous@rsug.itd.umich.edu:/usr/local/src/cvsroot
-cvs.password	RSUG
-cvs.module		${name}
-cvs.tag			${name}-[strsed $version {g/[.]/-/}]
-distname		${name}
+maintainers     nomaintainer
+description     An Aqua wrapper for the radmind command-line clients
 
-depends_run		path:${prefix}/sbin/radmind:radmind
+long_description \
+    The Radmind Assistant provides a point-and-click interface to create radmind \
+    loadsets and update radmind clients.
 
-post-patch		{ cd ${worksrcpath}
-				  reinplace "s|:/usr/local/bin|:${prefix}/bin&|" \
-					  600.radmind \
-					  Build.hook \
-					  LI00CheckUsername.hook \
-					  LI10SetupUserEnvironment.hook \
-					  LO10CreateTemplateHomeCopy.hook \
-					  LO20UserAccounting.hook \
-					  login.hook \
-					  logout.hook \
-					  masterlogin.hook \
-					  masterlogout.hook \
-					  radmind.defaults \
-					  radmind.hook
-				  reinplace "s|:/usr/local/sbin|:${prefix}/sbin&|" \
-					  masterlogin.hook \
-					  masterlogout.hook
-				  reinplace "s|/usr/local|${prefix}|g" \
-					  authtools.c \
-					  RadmindServer \
-					  RCMStepController.m \
-					  rmauthexec.c \
-					  rsm/authtools.c \
-					  rsm/rsmauthtool.c \
-					  rte/RXTranscript.m }
+homepage        http://rsug.itd.umich.edu/software/radmind
+master_sites    sourceforge:radmind
+distname        radmind-assistant-${version}-src
+worksrcdir      radmind-assistant-${version}
+extract.suffix  .tgz
 
-use_configure	no
+checksums       md5 8b021199974e3e96239496511ce2efb7
 
-build.target	install
+depends_lib     port:radmind \
+                port:ihook
 
-destroot		{ cd ${worksrcpath}
-				  set path ${destroot}/Applications/DarwinPorts
-				  xinstall -d -m 0755 ${path}
-				  system "ditto -v -rsrcFork 'tmp/Radmind Assistant.app' \
-					  '${path}/Radmind Assistant.app'" }
+patch {
+    set filestopatch {
+        10.2-desktop-negative.T \
+        10.2-lab-negative.T \
+        10.3-desktop-negative.T \
+        10.3-lab-negative-from-dot.T \
+        10.3-lab-negative.T \
+        10.4-desktop-negative.T \
+        10.4-lab-negative.T \
+        10.4-negative.T \
+        600.radmind \
+        AppDelegate.m \
+        Build.hook \
+        RACertificateManager.m \
+        RAScriptManager.m \
+        RAServerCreator.m \
+        RAVersionCompare.m \
+        RCMPreferences.m \
+        RCMStepController.m \
+        RadmindClient \
+        RadmindServer \
+        RadmindUpdateMonitor \
+        authtools.c \
+        edu.umich.rumd.plist \
+        hooks/LI00CheckUsername.hook \
+        hooks/LI10SetupUserEnvironment.hook \
+        hooks/LO10CreateTemplateHomeCopy.hook \
+        hooks/LO20UserAccounting.hook \
+        hooks/login.hook \
+        hooks/logout.hook \
+        hooks/masterlogin.sh \
+        hooks/masterlogout.sh \
+        hooks/radmind.hook \
+        kvalid.c \
+        radmind.defaults \
+        rmauthexec.c \
+        rsm/authtools.c \
+        rsm/English.lproj/Preferences.nib/keyedobjects.nib \
+        rsm/RAServerController.h \
+        rsm/RAServerController.m \
+        rsm/rsmauthtool.c \
+        rsm/RSMLoadsetEditor.h \
+        rsm/RSMLoadsetEditor.m \
+        rsm/RSMLoadsetManager.m \
+        rsm/RSMPreferences.m \
+        rte/RXTranscript.m \
+        rumd.c \
+        rummgmt.c
+    }
+    foreach i ${filestopatch} {
+        reinplace "s|/usr/local|${prefix}|g" ${worksrcpath}/${i}
+        reinplace "s|/var/radmind|${prefix}/var/radmind|g" ${worksrcpath}/${i}
+        reinplace "s|/etc/radmind|${prefix}/etc/radmind|g" ${worksrcpath}/${i}
+    }
+}
+
+use_configure   no
+
+build.target    install
+
+destroot {
+    set appPath ${destroot}${applications_dir}
+    xinstall -d -m 0755 ${appPath}
+    set appNames {"Radmind Assistant" "Radmind Server Manager" \
+        "Radmind Transcript Editor"}
+    foreach appName ${appNames} {
+        file copy ${worksrcpath}/tmp/Radmind/${appName}.app ${appPath}/${appName}.app
+    }
+    destroot.keepdirs ${destroot}${prefix}/var/radmind/server_file_backup
+}
+
+livecheck.type  regex
+livecheck.url   ${homepage}
+livecheck.regex "Radmind (\\d+(?:\\.\\d+)*)"
 

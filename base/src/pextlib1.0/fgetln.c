@@ -1,6 +1,7 @@
 /*	$NetBSD: fgetln.c,v 1.3 2002/01/31 19:23:14 tv Exp $	*/
 
 /*
+ * $Id$
  * Copyright 1999 Luke Mewburn <lukem@netbsd.org>.
  * All rights reserved.
  *
@@ -29,13 +30,12 @@
 
 #include <config.h>
 
+extern int xxx_so_this_isnt_empty;
+
 #if !HAVE_FGETLN
 #include <stdio.h>
 #include <stdlib.h>
-
-#if HAVE_STRING_H
 #include <string.h>
-#endif
 
 #define BUFCHUNKS	BUFSIZ
 

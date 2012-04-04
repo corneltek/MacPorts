@@ -1,11 +1,11 @@
-# $Id: Portfile,v 1.9 2004/01/16 20:22:37 fkr Exp $
+# $Id$
 
 PortSystem 1.0
 name		fragroute
 version		1.2
-revision	0
+revision	3
 categories	net security
-maintainers	darwinports@opendarwin.org
+maintainers	nomaintainer
 description	intercept, modify, and rewrite egress traffic
 long_description	\
 	fragroute intercepts, modifies, and rewrites egress traffic destined \
@@ -16,5 +16,13 @@ homepage	http://monkey.org/~dugsong/fragroute/
 platforms	darwin
 master_sites	http://monkey.org/~dugsong/fragroute/
 checksums	md5 7e4de763fae35a50e871bdcd1ac8e23a
-depends_lib	\
-	lib:libpcap:libpcap lib:libdnet:libdnet lib:libevent:libevent
+
+depends_lib     port:libpcap \
+                port:libdnet \
+                port:libevent
+
+patchfiles      configure.patch \
+                fragroute.c.patch \
+                pcaputil.c.patch
+
+configure.args  --mandir=${prefix}/share/man

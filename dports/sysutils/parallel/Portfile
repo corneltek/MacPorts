@@ -1,0 +1,44 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem          1.0
+
+name                parallel
+version             20120322
+categories          sysutils
+platforms           darwin
+license             GPL-3+
+maintainers         ciserlohn
+supported_archs     noarch
+
+description         GNU parallel: Shell command parallelization utility
+
+long_description    Build and execute shell command lines from standard input in parallel
+
+homepage            http://savannah.gnu.org/projects/parallel
+master_sites        gnu
+use_bzip2           yes
+
+conflicts           moreutils
+
+depends_lib         port:perl5
+
+checksums           rmd160  12bf540fba07a585d03bff886da688bfa18bbdc3 \
+                    sha256  b267b684d20a674eeada9e8498964a601efdc3c8895fee9a7859c0ae9ea4a3da
+
+post-patch {
+    set perl_bin ${prefix}/bin/perl
+    set src_dir ${worksrcpath}/src/
+    foreach f [list ${src_dir}niceload ${src_dir}sql ${src_dir}sem \
+                   ${src_dir}parallel.pod ${src_dir}niceload.pod \
+                   ${src_dir}parallel ${src_dir}sem.pod ] {
+        reinplace "s|/usr/bin/perl|${perl_bin}|" ${f}
+    }
+    foreach f [list ${src_dir}parallel ${src_dir}parallel.1 \
+                   ${src_dir}parallel.pod ${src_dir}parallel.html \
+                   ${src_dir}sql ${src_dir}sem ${worksrcpath}/NEWS] {
+        reinplace "s|/usr/bin/parallel|${prefix}/bin/parallel|" ${f}
+    }
+}
+
+build.env-append    HOME=${workpath} SHELL=sh

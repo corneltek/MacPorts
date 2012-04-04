@@ -1,43 +1,163 @@
-# $Id: Portfile,v 1.3 2004/02/06 15:45:06 gwright Exp $
+# $Id$
 
-PortSystem 1.0
-name		fftw-3
-version		3.0.1-fma
-categories	math
-platforms	darwin
-maintainers	gwright@comcast.net
+PortSystem      1.0
+PortGroup       muniversal 1.0
 
-description	Fast C routines to compute the Discrete Fourier Transform
-long_description	\
-		FFTW is a C subroutine library for computing the	\
-		Discrete Fourier Transform (DFT) in one or more		\
-		dimensions, of both real and complex data, and of	\
-		arbitrary input size. We believe that FFTW, which is	\
-		free software, should become the FFT library of choice	\
-		for most applications. Our benchmarks, performed on a	\
-		variety of platforms, show that FFTW's performance is	\
-		typically superior to that of other publicly available	\
-		FFT software. Moreover, FFTW's performance is portable:	\
-		the program will perform well on most architectures	\
-		without modification.					\
-									\
-		This port is of fftw version 3.x. It has many		\
-		improvements relative to 2.x, but is not backwardly	\
-		compatible.
+name            fftw-3
+version         3.3.1
+categories      math
+license         GPL-2+
+platforms       darwin
+maintainers     ram openmaintainer
+homepage        http://www.fftw.org/
+distname        fftw-${version}
 
-homepage	http://www.fftw.org/
-master_sites	${homepage} \
-		ftp://ftp.fftw.org/pub/fftw/ \
-		ftp://ftp.kusastro.kyoto-u.ac.jp/pub/src/GNU/fftw/
+master_sites \
+    ${homepage} \
+    ftp://ftp.fftw.org/pub/fftw/ \
+    ftp://ftp.kusastro.kyoto-u.ac.jp/pub/src/GNU/fftw/
 
-distname	fftw-${portversion}
+description \
+    Fast C routines to compute the Discrete Fourier Transform
 
-checksums	md5 fe6d96580eaeda1035ecab54507b4092
+long_description \
+    FFTW is a C subroutine library for computing the \
+    Discrete Fourier Transform (DFT) in one or more \
+    dimensions, of both real and complex data, and of \
+    arbitrary input size. We believe that FFTW, which is \
+    free software, should become the FFT library of choice \
+    for most applications. Our benchmarks, performed on a \
+    variety of platforms, show that FFTW's performance is \
+    typically superior to that of other publicly available \
+    FFT software. Moreover, FFTW's performance is portable: \
+    the program will perform well on most architectures \
+    without modification. \
+    This port is of fftw version 3.x. It has many \
+    improvements relative to 2.x, but is not backwardly \
+    compatible.
 
-configure.args	--enable-float --enable-threads --mandir=${prefix}/share/man
+checksums \
+    md5 76f5f3c7577613d0fbedaae77450ac91 \
+    sha1 3fecc492f576503a6a509d2073bd82b3fe0aef13 \
+    rmd160 86ef73f8f934d5f0e5d21f07fc05683f7b3c1d82
 
-post-build	{ cd ${worksrcpath}
-		  system "make check"
-		}
+configure.args \
+    --enable-threads \
+    --disable-fortran \
+    --enable-shared
 
+configure.cflags-append \
+    -fno-common \
+    -O3 \
+    -fomit-frame-pointer \
+    -fstrict-aliasing
 
+array set merger_configure_args {
+    ppc    "--enable-fma"
+    ppc64  "--enable-fma"
+    i386   "--enable-sse2"
+    x86_64 "--enable-sse2"
+}
+
+test.run     yes
+test.target  check
+
+use_parallel_build yes
+
+platform i386 {
+  if {![variant_isset universal]} {
+    configure.args-append --enable-sse2
+  }
+}
+
+platform powerpc {
+  if {![variant_isset universal]} {
+    configure.args-append --enable-fma
+  }
+}
+
+variant gcc42 description {create Fortran wrappers using gcc42} conflicts gcc43 gcc44 gcc45 gcc46 g95 {
+    depends_lib-append    port:gcc42
+    depends_skip_archcheck gcc42
+    configure.f77         gfortran-mp-4.2
+    configure.args-delete --disable-fortran
+    if { ${os.arch} == "i386" } {
+        lappend merger_configure_args(ppc)     "--disable-fortran"
+        lappend merger_configure_args(ppc64)   "--disable-fortran"
+    } else {
+        lappend merger_configure_args(i386)    "--disable-fortran"
+        lappend merger_configure_args(x86_64)  "--disable-fortran"
+    }
+}
+
+variant gcc43 description {create Fortran wrappers using gcc43} conflicts gcc42 gcc44 gcc45 gcc46 g95 {
+    depends_lib-append    port:gcc43
+    configure.f77         gfortran-mp-4.3
+    configure.args-delete --disable-fortran
+    if { ${os.arch} == "i386" } {
+        lappend merger_configure_args(ppc)     "--disable-fortran"
+        lappend merger_configure_args(ppc64)   "--disable-fortran"
+    } else {
+        lappend merger_configure_args(i386)    "--disable-fortran"
+        lappend merger_configure_args(x86_64)  "--disable-fortran"
+    }
+}
+
+variant gcc44 description {create Fortran wrappers using gcc44} conflicts gcc42 gcc43 gcc45 gcc46 g95 {
+    depends_lib-append    port:gcc44
+    configure.f77         gfortran-mp-4.4
+    configure.args-delete --disable-fortran
+    if { ${os.arch} == "i386" } {
+        lappend merger_configure_args(ppc)     "--disable-fortran"
+        lappend merger_configure_args(ppc64)   "--disable-fortran"
+    } else {
+        lappend merger_configure_args(i386)    "--disable-fortran"
+        lappend merger_configure_args(x86_64)  "--disable-fortran"
+    }
+}
+
+variant gcc45 description {create Fortran wrappers using gcc45} conflicts gcc42 gcc43 gcc44 gcc46 g95 {
+    depends_lib-append    port:gcc45
+    configure.f77         gfortran-mp-4.5
+    configure.args-delete --disable-fortran
+    if { ${os.arch} == "i386" } {
+        lappend merger_configure_args(ppc)     "--disable-fortran"
+        lappend merger_configure_args(ppc64)   "--disable-fortran"
+    } else {
+        lappend merger_configure_args(i386)    "--disable-fortran"
+        lappend merger_configure_args(x86_64)  "--disable-fortran"
+    }
+}
+
+variant gcc46 description {create Fortran wrappers using gcc46} conflicts gcc42 gcc43 gcc44 gcc45 g95 {
+    depends_lib-append    port:gcc46
+    configure.f77         gfortran-mp-4.6
+    configure.args-delete --disable-fortran
+    if { ${os.arch} == "i386" } {
+        lappend merger_configure_args(ppc)     "--disable-fortran"
+        lappend merger_configure_args(ppc64)   "--disable-fortran"
+    } else {
+        lappend merger_configure_args(i386)    "--disable-fortran"
+        lappend merger_configure_args(x86_64)  "--disable-fortran"
+    }
+}
+
+variant g95 description {create Fortran wrappers using f95} conflicts gcc42 gcc43 gcc44 gcc45 gcc46 {
+    depends_lib-append    port:g95
+    depends_skip_archcheck g95
+    configure.f77         g95
+    configure.args-delete --disable-fortran
+    if { ${os.arch} == "i386" } {
+        lappend merger_configure_args(ppc)     "--disable-fortran"
+        lappend merger_configure_args(ppc64)   "--disable-fortran"
+        lappend merger_configure_args(x86_64)  "--disable-fortran"
+    } else {
+        lappend merger_configure_args(i386)    "--disable-fortran"
+        lappend merger_configure_args(ppc64)   "--disable-fortran"
+        lappend merger_configure_args(x86_64)  "--disable-fortran"
+    }
+}
+
+livecheck.type  regex
+livecheck.url   ${homepage}
+livecheck.regex {FFTW (\d+(?:\.\d+)*) is the latest}

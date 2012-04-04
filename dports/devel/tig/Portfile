@@ -1,0 +1,34 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem          1.0
+
+name                tig
+version             0.18
+categories          devel
+maintainers         cal openmaintainer
+description         A text interface to git repositories
+long_description    ${description}
+
+homepage            http://jonas.nitro.dk/tig/
+platforms           darwin
+
+master_sites        ${homepage}releases/
+
+checksums           sha1    0dda234cb6d340cff0e751131b10b321a122ad1a \
+                    rmd160  a59c04d373ab14db0db0e3b7e35d74b46bfb3bee
+
+depends_lib         port:git-core \
+                    port:libiconv \
+                    port:ncurses
+
+# doesn't do anything in current version
+build.target-append doc-man
+destroot.target-append \
+                    install-doc-man
+
+variant html_doc description {Build HTML documentation with asciidoc} {
+    depends_build-append    port:asciidoc
+    build.target-append     doc-html
+    destroot.target-append  install-doc-html
+}

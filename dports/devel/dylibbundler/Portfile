@@ -1,0 +1,49 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem          1.0
+
+name                dylibbundler
+version             0.4
+categories          devel
+platforms           darwin
+maintainers         strasweb.fr:rudloff openmaintainer
+license             GPL-2+
+
+description         terminal utility for Mac OS X that eases bundling dynamic \
+                    libraries (.dylib) inside app bundles
+
+long_description    ${name} is a small command-line programs that aims to \
+                    make bundling .dylibs as easy as possible. It \
+                    automatically determines which dylibs are needed by your \
+                    program, copies these libraries inside the app bundle, \
+                    and fixes both them and the executable to be ready for \
+                    distribution, all this with a single command. It will \
+                    also work if your program uses plug-ins that have \
+                    dependencies too.
+
+homepage            http://macdylibbundler.sourceforge.net/
+master_sites        sourceforge:macdylibbundler
+
+checksums           rmd160  8564c92b9f448615d43add757d44b46e5a728488 \
+                    sha256  a07a4f3227333faa613692e79d3e59c417f7d2fdf9dc780354d8ae97407d28a0
+
+distname            ${name}${version}
+use_zip             yes
+worksrcdir          ${name}
+
+patchfiles          patch-makefile.diff
+
+use_configure       no
+
+variant universal {}
+
+build.args          CXX="${configure.cxx} [get_canonical_archflags]"
+
+destroot.args       PREFIX=${prefix}
+
+post-destroot {
+    set docdir ${destroot}${prefix}/share/doc/${name}
+    xinstall -d ${docdir}
+    xinstall -m 644 ${worksrcpath}/index.html ${docdir}
+}

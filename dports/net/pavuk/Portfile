@@ -1,24 +1,35 @@
-# $Id: Portfile,v 1.1 2004/02/11 02:41:42 toby Exp $
+# $Id$
 
 PortSystem 1.0
+
 name             pavuk
-version          0.9pl28
+version          0.9.35
 categories       net
-maintainers      toby@opendarwin.org
+maintainers      nomaintainer
 description      HTTP, FTP and Gopher mirroring tool
 long_description \
     Pavuk is UNIX program used to mirror contents of WWW documents or files. \
     It transfers documents from HTTP, FTP, Gopher and optionaly from HTTPS \
     (HTTP over SSL) servers. Pavuk have optional GUI based on GTK+ widget set.
-homepage         http://www.idata.sk/~ondrej/pavuk/
+homepage         http://pavuk.sourceforge.net/
 platforms        darwin
-master_sites     sunsite:apps/www/mirroring
-extract.suffix   .tgz
-checksums        md5 d0f7b77bd11322add1f7d52d62afbf78
-patchfiles       patch-Makefile.in
+master_sites     sourceforge
+use_bzip2        yes
+checksums        md5 6204c7a1339433ab32456ccd62126ea9 \
+                 sha1 c7ad9bfd9af60daee606c870d12d3a58dcff1e80 \
+                 rmd160 d15715b792585cf69916f6a8af8b6c6b06dffde8
+depends_lib      port:zlib port:gettext
 configure.args   --mandir=${prefix}/share/man \
-                 --disable-gtk --disable-gnome
+                 --enable-threads \
+                 --disable-debug \
+                 --disable-gnome \
+                 --disable-gtk \
+                 --disable-socks \
+                 --disable-ssl
+livecheck.type   sourceforge
 
-post-destroot {
-    file delete -force ${destroot}${prefix}/share/icons
+variant ssl description {Add SSL support (enables connections over HTTPS)} {
+    depends_lib-append  port:openssl
+    configure.args-delete   --disable-ssl
+    configure.args-append   --with-ssl=openssl
 }

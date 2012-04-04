@@ -1,38 +1,105 @@
-# $Id: Portfile,v 1.4 2003/09/21 08:15:43 mij Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
-name		whois
-version		4.6.7
-categories	net
-maintainers	mij@opendarwin.org
-description	A replacement whois client
-homepage	http://www.linux.it/~md/software/
-platforms	darwin
+################################################################
+# The developer of whois is hostile toward bug reports. Do     #
+# not waste his time and yours by speaking with him about his  #
+# software. If you encounter problems updating this port to a  #
+# newer version, find a workaround and write a patch. Do not   #
+# report upstream. See http://trac.macports.org/ticket/16037   #
+################################################################
 
-long_description whois is an improved whois client that follow the \
-		 delegations from the Verisign whois server.
+PortSystem                  1.0
+PortGroup                   archcheck 1.0
 
-master_sites	http://www.linux.it/~md/software/
+name                        whois
+conflicts                   bahamut expect ripe-whois
+version                     5.0.15
+categories                  net
+maintainers                 ryandesign
+homepage                    http://www.linux.it/~md/software/
+platforms                   darwin
+use_parallel_build          yes
 
-checksums	md5 36929e69816f0d9a938057c700fdfbc6
+description                 A replacement whois client
 
-distname	${portname}_${portversion}
+long_description            whois is an improved whois client that follows the \
+                            delegations from the Verisign whois server.
 
-worksrcdir	${portname}-${portversion}
+master_sites                http://ftp.debian.org/debian/pool/main/w/${name}/
+use_xz                      yes
 
-depends_lib	lib:gettext.1:gettext
+checksums                   rmd160  2e7c68507c9df574935952e3b1e1af243419ac77 \
+                            sha256  e50aaef420a7233929cbaa862e78a7c5e363e661746490adc4b71f2fe44a19d9
 
-configure	{}
+distfiles                   [suffix ${name}_${version}]
 
-post-configure	{ reinplace "s|/usr/local|${prefix}|g" ${worksrcpath}/Makefile
-		  reinplace "s|/share/man|/man|g" ${worksrcpath}/Makefile
-		  reinplace "s|/etc|${prefix}/etc|g" ${worksrcpath}/config.h
-		  reinplace "s|\$(BASEDIR)/usr|${destroot}${prefix}|g" \
-		    ${worksrcpath}/po/Makefile
-		  reinplace "s|/etc/whois.conf|${prefix}/etc/whois.conf|g" \
-		    ${worksrcpath}/whois.1 }
+depends_lib                 port:gettext \
+                            port:libidn \
+                            port:libiconv
 
-build.env	CFLAGS="-DENABLE_NLS -I${prefix}/include" \
-		LDFLAGS="-L${prefix}/lib -lintl"
+archcheck.files             lib/libintl.dylib \
+                            lib/libidn.dylib \
+                            lib/libiconv.dylib
 
-destroot.args	prefix=${destroot}${prefix}
+# Bugs should be reported to MacPorts, not upstream.
+patchfiles-append           patch-bugreport.diff
+
+# Add libidn and libiconv support.
+patchfiles-append           patch-idn-iconv.diff
+
+platform darwin {
+    # -lcrypt cannot be used (and is unnecessary) on Mac OS X
+    patchfiles-append       patch-lcrypt.diff
+}
+
+use_configure               no
+
+if {${configure.compiler} == "clang"} {
+    configure.compiler llvm-gcc-4.2
+}
+
+configure.cflags-append     -DENABLE_NLS
+configure.ldflags-append    -lintl
+
+post-configure {
+    system -W ${worksrcpath} "CC='${configure.cc}' make depend servers_charset.h"
+    reinplace "s|/etc/whois.conf|${prefix}/etc/whois.conf|g" \
+        ${worksrcpath}/whois.1
+}
+
+variant universal {}
+
+build.target-append         pos
+build.env                   CC="${configure.cc} [get_canonical_archflags]" \
+                            CONFIG_FILE=${prefix}/etc/whois.conf \
+                            HAVE_LIBIDN=1 \
+                            HAVE_ICONV=1 \
+                            LOCALEDIR=${prefix}/share/locale
+build.args                  prefix=${prefix} \
+                            INCLUDES="${configure.cflags} ${configure.cppflags}" \
+                            LIBS="${configure.ldflags}"
+
+destroot.target-append      install-pos
+destroot.args               prefix=${destroot}${prefix}
+
+post-destroot {
+    xinstall -m 644 -W ${worksrcpath} whois.conf ${destroot}${prefix}/etc/whois.conf.sample
+}
+
+notes "
+To customize which whois servers get used, copy\
+${prefix}/etc/whois.conf.sample to\
+${prefix}/etc/whois.conf and then make changes.
+"
+
+pre-activate {
+    # Clear the notes if the user has already done what they say to do.
+    if {[file exists ${prefix}/etc/whois.conf]} {
+        notes
+    }
+}
+
+livecheck.type              regex
+livecheck.url               [lindex ${master_sites} 0]?C=M&O=D
+livecheck.regex             "${name}_(.+?)${extract.suffix}"

@@ -1,0 +1,36 @@
+# $Id$
+
+PortSystem 1.0
+
+name                aria2
+version             1.14.2
+categories          net
+platforms           darwin
+maintainers         mww
+license             GPL-2
+description         download utility with resuming and segmented downloading
+long_description    aria2 is a download utility with resuming and segmented \
+                    downloading. Supported protocols are HTTP/HTTPS/FTP/BitTorrent.
+
+homepage            http://aria2.sourceforge.net/
+master_sites        sourceforge
+checksums           md5     19b1a9f83a09c6ef5c7ab87e4e0f7974 \
+                    sha1    67166ccb7c07a25424055ba45d84b2820f1d592a \
+                    rmd160  649edd7a4767318ad1029f752b53a3d6885767f5
+use_bzip2           yes
+
+depends_build       port:pkgconfig
+depends_lib         port:gettext port:libiconv port:gnutls port:libxml2
+
+if {${configure.compiler} == "clang"} { 
+    configure.compiler llvm-gcc-4.2 
+} 
+
+configure.cxxflags-append "-I${prefix}/include/libxml2"
+configure.args      --with-gnutls --with-libgnutls-prefix=${prefix} \
+                    --with-libiconv-prefix=${prefix} \
+                    --with-libintl-prefix=${prefix} \
+                    --with-xml-prefix=${prefix} \
+                    --without-sqlite3
+
+livecheck.type      freecode

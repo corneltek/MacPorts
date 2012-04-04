@@ -1,10 +1,11 @@
-# $Id: Portfile,v 1.11 2004/02/03 16:02:51 mij Exp $
+# $Id$
 
 PortSystem 1.0
 name		spamprobe
-version		0.9h
+version		1.2a
+revision	1
 categories	mail
-maintainers	mij@opendarwin.org
+maintainers	nomaintainer
 description	Spam detector that uses Bayesian analysis
 homepage	http://sourceforge.net/projects/spamprobe/
 platforms	darwin
@@ -17,9 +18,10 @@ long_description Spamprobe is a fast, intelligent, automatic spam \
 
 master_sites	sourceforge
 
-checksums	md5 3d36cd1811c860a64f371d318736e808
+checksums	md5 f42b36d8056841bb132bb5c8857896c1
 
-depends_lib	lib:libdb:db4
+depends_lib	port:db44
 
-configure.args	--with-db=${prefix}/lib
-configure.env	CPPFLAGS="-I${prefix}/include/db4"
+configure.args	--with-db=${prefix}/lib/db44 --mandir=${prefix}/share/man
+configure.cppflags	"-I${prefix}/include/db44"
+configure.ldflags	"-L${prefix}/lib/db44"

@@ -1,0 +1,114 @@
+# $Id$
+
+PortSystem              1.0
+PortGroup               xcode 1.0
+PortGroup               xcodeversion 1.0
+minimum_xcodeversions   {10 3.2.3}
+
+# cctools uses a static library from this port when it builds, please
+# revbump cctools whenever this port updates
+
+name                    ld64
+version                 128.2
+revision                3
+set llvm_version        3.0
+categories              devel
+maintainers             mfeiri jeremyhu
+homepage                http://opensource.apple.com/source/${name}/
+master_sites            http://opensource.apple.com/tarballs/${name}/
+license                 APSL-2.0
+depends_build           port:llvm-${llvm_version} port:libunwind-headers \
+                        path:include/mach-o/dyld_priv.h:dyld-headers \
+                        path:include/mach-o/arm/reloc.h:cctools-headers
+description             ld64 is the new mach-o linker
+long_description        ld64 combines several object files and libraries, \
+                        resolves references, and produces an ouput file.
+
+checksums               ${distname}${extract.suffix} \
+                        rmd160  0da68b89669233d7b6cc6ebdb92482e191bc9051 \
+                        sha256  96a912464e2d4d3d7cdaab0744003b0fa93d139f203c82867f659ee94b4ae9f7
+
+if {${os.major} < 8} {
+    pre-fetch {
+        ui_error "${name} requires Mac OS X 10.4 or later."
+        return -code error "incompatible Mac OS X version"
+    }
+} elseif {${os.major} < 9} {
+    version             62.1
+    revision            3
+    checksums           rmd160 5b53ecb7b7a7e40e7420192fdf609e43151a736a \
+                        sha256 82ccb66eb5a452b8bb47771ebbdb73bed7e8824e3cbd58fa2d6d6fc91ca26b87     
+    supported_archs     i386 ppc
+    depends_build
+
+    patchfiles          ld64-62.1-dylib_version_args.patch
+} elseif {${os.major} == 9} {
+    version             85.2.1
+    revision            4
+    checksums           rmd160 42c80bd4ad6e9f96a757245e6a2b95084c009ff1 \
+                        sha256 4bcbcbdfd62efdc46c51700b8f5dae2cbd1638e9e50f649d5c7f242d32fca804
+    supported_archs     i386 ppc
+    depends_build       port:llvm-${llvm_version}
+    patchfiles          patch-MATH85-ld.cpp.diff
+} elseif {${os.major} == 10} {
+    version             127.2
+    revision            4
+    checksums           rmd160  8ee709341549a1944732daef6ebab7ef1acfcc6e \
+                        sha256  97b75547b2bd761306ab3e15ae297f01e7ab9760b922bc657f4ef72e4e052142
+}
+
+xcode.target            all ObjectDump machocheck
+xcode.destroot.path     ${prefix}/bin
+
+post-extract {
+    if {${os.major} >= 9} {
+        reinplace "s|/Developer/usr/lib|${prefix}/libexec/llvm-${llvm_version}/lib|g" \
+            ${worksrcpath}/ld64.xcodeproj/project.pbxproj
+    }
+    reinplace "s|/usr/share/man/man1|${prefix}/share/man/man1|g" \
+        ${worksrcpath}/ld64.xcodeproj/project.pbxproj
+    reinplace "s|usr/share/man/man1|${prefix}/share/man/man1|g" \
+        ${worksrcpath}/ld64.xcodeproj/project.pbxproj
+    reinplace "s|/usr/local|${prefix}|g" \
+        ${worksrcpath}/ld64.xcodeproj/project.pbxproj
+    reinplace "s|/Developer/usr/local|${prefix}|g" \
+        ${worksrcpath}/ld64.xcodeproj/project.pbxproj
+    reinplace "s|\$(RC_ProjectSourceVersion)|${version}|g" \
+        ${worksrcpath}/ld64.xcodeproj/project.pbxproj
+}
+
+if {${os.major} >= 9} {
+    pre-build {
+        build.env       OTHER_CFLAGS='[exec ${prefix}/bin/llvm-config-mp-${llvm_version} --cflags] -I${prefix}/include'
+    }
+    pre-destroot {
+        destroot.env    OTHER_CFLAGS='[exec ${prefix}/bin/llvm-config-mp-${llvm_version} --cflags] -I${prefix}/include'
+    }
+} else {
+    build.env       OTHER_CFLAGS='-I${prefix}/include'
+    destroot.env    OTHER_CFLAGS='-I${prefix}/include'
+}
+
+post-destroot {
+    if {${os.major} == 8} {
+        move ${destroot}${prefix}/bin/ld64 ${destroot}${prefix}/bin/ld
+        move ${destroot}${prefix}/share/man/man1/ld64.1 ${destroot}${prefix}/share/man/man1/ld.1
+    }
+
+    # ${prefix}/bin/ld will always use the llvm we built against
+    # ${prefix}/libexec/ld64/ld uses relative linking for use with the llvm ports
+    file mkdir ${destroot}${prefix}/libexec/ld64
+    file copy ${destroot}${prefix}/bin/ld ${destroot}${prefix}/libexec/ld64/ld
+
+    if {${os.major} >= 9} {
+        system "install_name_tool -change ${prefix}/libexec/llvm-${llvm_version}/lib/libLTO.dylib \
+                @executable_path/../lib/libLTO.dylib ${destroot}${prefix}/libexec/ld64/ld"
+    }
+
+    if {${os.major} >= 10} {
+        file rename ${destroot}${prefix}/bin/libprunetrie.a ${destroot}${prefix}/lib/libprunetrie.a
+    }
+}
+
+livecheck.type          regex
+livecheck.regex         "${name}-(\[\\d.\]+)"

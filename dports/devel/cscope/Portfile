@@ -1,29 +1,41 @@
-# $Id: Portfile,v 1.2 2003/12/20 15:34:44 mww Exp $
+# $Id$
 
 PortSystem 1.0
 
-name		cscope
-version		15.5
-categories	devel
-platforms	darwin freebsd
-maintainers	mww@opendarwin.org
-description	development tool for browsing source code
-long_description	Cscope is a developer's tool for browsing source code. \
-			It has an impeccable Unix pedigree, having been \
-			originally developed at Bell Labs back in the days of \
-			the PDP-11. Cscope was part of the official AT&T Unix \
-			distribution for many years, and has been used to \
-			manage projects involving 20 million lines of code.
+name                cscope
+version             15.7a
+revision            1
+categories          devel
+platforms           darwin freebsd
+maintainers         mww
+license             BSD
+description         development tool for browsing source code
+long_description    Cscope is a developer's tool for browsing source code. \
+                    It has an impeccable Unix pedigree, having been \
+                    originally developed at Bell Labs back in the days of \
+                    the PDP-11. Cscope was part of the official AT&T Unix \
+                    distribution for many years, and has been used to \
+                    manage projects involving 20 million lines of code.
 
-homepage	http://cscope.sourceforge.net/
-master_sites	sourceforge
-checksums	md5 beb6032a301bb11524aec74bfb5e4840
+homepage            http://cscope.sourceforge.net/
+master_sites        sourceforge
+checksums           md5     da43987622ace8c36bbf14c15a350ec1 \
+                    sha1    f6348694e5443769add851f97fd39365e93dc474 \
+                    rmd160  8bc904f636e8e6ea4542738095183475911858f9
 
-variant darwin {
-	patchfiles	patch-constants.h.diff
-	configure.args	--with-flex
-}
+use_bzip2           yes
 
-post-destroot	{
-	system "strip ${destroot}${prefix}/bin/cscope"
+patchfiles          patch-constants.h
+
+depends_lib         port:ncurses
+
+configure.args      --mandir=${prefix}/share/man --with-flex --with-ncurses=${prefix}
+
+post-destroot    {
+    system "strip ${destroot}${prefix}/bin/cscope"
+
+    # Install Emacs xcscope package
+    xinstall -d ${destroot}${prefix}/share/emacs/site-lisp
+    xinstall -m 644 ${worksrcpath}/contrib/xcscope/xcscope.el \
+        ${destroot}${prefix}/share/emacs/site-lisp/
 }

@@ -1,33 +1,26 @@
-# $Id: Portfile,v 1.6 2003/11/27 17:04:36 mww Exp $
+# $Id$
 
 PortSystem 1.0
+PortGroup python24 1.0
 
-name		py-snmp
-version		3.3.6
-categories	python net
-maintainers	mww@opendarwin.org
-platforms	darwin freebsd
-description	SNMP v.1 engine for python
+name			py-snmp
+version			3.4.3
+categories		python net
+maintainers		nomaintainer
+platforms		darwin freebsd
+description		SNMP v.1 engine for python
 long_description	PySNMP is fully functional SNMP v.1 engine (BER \
-		encoders/decoders for a subset of ASN.1 data types, sockets \
-		based networking etc.) written entirely in python.
+				encoders/decoders for a subset of ASN.1 data types, sockets \
+				based networking etc.) written entirely in python.
 
-homepage	http://pysnmp.sourceforge.net/
-master_sites	sourceforge:pysnmp
-distname	pysnmp-${version}
-checksums	md5 f5b9bc60a55bb6461ffcb951e883fd87
+homepage		http://pysnmp.sourceforge.net/
+master_sites	ftp://ftp.glas.net/users/ilya/tools/pysnmp/ \
+				sourceforge:pysnmp
+distname		pysnmp-${version}
+checksums		md5 2814bd645ae78e7dfef26e7426acad0d
 
-depends_lib	bin:python:python
-
-use_configure	no
-
-build.cmd	python setup.py
-build.target	build
-
-destroot.cmd	python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
 post-destroot	{
-	file mkdir ${destroot}${prefix}/share/doc/
+	file delete -force ${destroot}${prefix}/share/doc/${name}
 	file copy ${worksrcpath}/docs ${destroot}${prefix}/share/doc/${name}
 	file copy ${worksrcpath}/examples ${destroot}${prefix}/share/doc/${name}
 }

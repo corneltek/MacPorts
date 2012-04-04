@@ -1,38 +1,49 @@
-# $Id: Portfile,v 1.2 2003/05/19 23:01:47 fkr Exp $
+# $Id$
 
-PortSystem 1.0
-name		gftp
-version		2.0.14
-revision	1
+PortSystem      1.0
+
+name            gftp
+version         2.0.18
+revision        3
 categories      net
-maintainers	tomfowler@mac.com
-description	GTK+ FTP client
-long_description        Distributed under the terms of the GNU Public License Agreement \
-			Written in C and has a text interface and a GTK+ 1.2/2.0 interface \
-			Supports the FTP, HTTP and SSH protocols \
-			Supports FXP file transfers (xfering files between 2 servers via FTP) \
-			Multithreaded to allow for simultaneous downloads \
-			File transfer queues to allow for downloading multiple files \
-			Supports downloading entire directories and subdirectories \
-			Bookmarks menu to allow you to quickly connect to remote sites \
-			Supports resuming interrupted file transfers \
-			Supports caching of remote directory listings \
-			Drag-N-Drop support \
-			FTP and HTTP proxy server support \
-			Allows for passive and non-passive file transfers \
-			Supports UNIX, EPLF, Novell, MacOS, and NT (DOS) style dir listings \
-			Full graphical configuration.
+platforms       darwin
+maintainers     nomaintainer
+description     GTK+ FTP client
 
-homepage 	http://gftp.seul.org/
-master_sites    ftp://www.gftp.org/pub/gftp/
-checksums       md5 61e1271af88de20b50a90242a648ab2b
-platforms	darwin
-configure.args  --disable-nls
-configure.env   LDFLAGS=-bind_at_load
-configure.env   CFLAGS=-traditional-cpp
+long_description \
+    gFTP is a free multithreaded file transfer client for *NIX based machines.
 
-depends_lib     lib:libgtk.2:gtk2
-                
+homepage        http://www.gftp.org/
+master_sites    ${homepage} \
+                ftp://www.gftp.org/pub/gftp/
+
+use_bzip2       yes
+
+checksums       md5 44b19442d06f6dc68c7211d66029d826 \
+                sha1 c2468f1ff1fe978a5fab3a198e513558f3b48f5a \
+                rmd160 0e0daea8543ae822b25635647360193362a2648d
+
+depends_build   port:pkgconfig
+depends_lib     port:gtk2 \
+                port:gettext \
+                port:openssl \
+                port:readline \
+                port:ncurses
+
 post-configure {
-    			reinplace "s|#include <sys/sysmacros.h>| |g" \
-				"${workpath}/${worksrcdir}/lib/gftp.h" }
+    reinplace "s/#undef HAVE_OPENPTY/#define HAVE_OPENPTY 1/" ${worksrcpath}/config.h
+    reinplace "s/#define HAVE_GRANTPT 1/#undef HAVE_GRANTPT/" ${worksrcpath}/config.h
+}
+
+configure.ldflags-append    -bind_at_load
+configure.args              --mandir=${prefix}/share/man \
+                            --disable-glibtest \
+                            --disable-gtktest
+
+post-destroot {
+    set docdir ${prefix}/share/doc/${name}-${version}
+    xinstall -d ${destroot}${docdir}/html
+    xinstall -m 0644 -W ${worksrcpath} AUTHORS COPYING ChangeLog NEWS README \
+        THANKS TODO ${destroot}${docdir}
+    xinstall -m 0644 ${worksrcpath}/README.html ${destroot}${docdir}/html
+}

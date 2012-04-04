@@ -1,11 +1,11 @@
-# $Id: Portfile,v 1.4 2004/03/07 21:59:12 rshaw Exp $
-PortSystem 1.0
+# $Id$
 
-name			rb-cocoa
-version			0.4.0
-revision		1
-categories		ruby
-maintainers		rshaw@opendarwin.org
+PortSystem		1.0
+PortGroup		ruby 1.0
+
+ruby.setup		{cocoa rubycocoa} 1.0.2 install.rb {ChangeLog ReadMe.html ReadMe.ja.html}
+revision		0
+maintainers		kimuraw
 description		Ruby bindings for writing cocoa programs
 long_description	RubyCocoa is a Ruby library for using Cocoa Objects \
 					on Mac OS X in Ruby scripts. You can use RubyCocoa \
@@ -13,33 +13,44 @@ long_description	RubyCocoa is a Ruby library for using Cocoa Objects \
 					Cocoa applications with Ruby and Interface Builder, \
 					develop small scale simple Cocoa applications and \
 					such.
-homepage		http://www.imasy.or.jp/~hisa/mac/rubycocoa/
-master_sites	http://www.imasy.or.jp/~hisa/mac/rubyosx/files/
-dist_subdir		ruby
-distname		rubycocoa-${version}
-extract.suffix	.tgz
-checksums		md5 0582ec18473d9903fa0092a11f5d283a
+categories-append	devel
+homepage		http://${ruby.project}.sourceforge.net/
+license			{LGPL Ruby}
+master_sites	sourceforge:${ruby.project}
+distname		RubyCocoa-${version}
+checksums		md5 eb6127054b808c2700c6253c8a4793c3 \
+				rmd160 0b1ef1921ea547d13ba0e10e2fac23ee2b6620d0 \
+				sha1 7ec91b80acee7406b24c606dec80c956681b1838
 platforms		darwin
 
-patchfiles		patch-rubycocoa.darwin
+# fix #16928: allow non Mac OS X's make, like gmake
+patchfiles-append	patch-ext-rubycocoa-extconf.rb.in.diff
 
-set ruby		${prefix}/bin/ruby
-depends_build	path:${ruby}:ruby
+configure.args		--install-prefix=${destroot}${prefix} \
+					--install-root=${destroot} \
+					--documentation=${prefix}/share/doc/${name} \
+					--examples=${prefix}/share/examples/${name}
+destroot.violate_mtree	yes
 
-post-patch		{
-	if {[catch {set xcodebuild [binaryInPath xcodebuild]}] == 0} {
-		reinplace "s%pbxbuild%${xcodebuild}%" ${worksrcpath}/install.rb
+# apply universal_archs or build_arch
+if {[variant_isset universal]} {
+	if {[info exists universal_archs] && $universal_archs != ""} {
+		configure.args-append --target-archs="${universal_archs}"
+	}
+} else {
+	if {[info exists build_arch] && $build_arch != ""} {
+		configure.args-append --target-archs="${build_arch}"
 	}
 }
 
-configure.cmd		${ruby} install.rb
-configure.pre_args	config
-configure.args		--install-prefix=${destroot}${prefix} \
-					--install-root=${destroot}
+# by default, do not install Xcode templates. #18708
+variant xcode description {install project templates for Xcode} { }
+if {![variant_isset xcode]} {
+	configure.args-append \
+		--xcode-extras="${prefix}/share/doc/${name}/project-templates"
+}
 
-build.cmd			${ruby} install.rb
-build.target		setup
-
-destroot.cmd		${ruby} install.rb 
-destroot.destdir
+#test.run yes
+test.cmd ${ruby.bin}
+test.target install.rb test
 

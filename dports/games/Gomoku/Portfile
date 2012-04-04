@@ -1,16 +1,16 @@
-# $Id: Portfile,v 1.2 2004/01/29 01:42:33 mww Exp $
+# $Id$
 
 PortSystem 1.0
+PortGroup xcode 1.0
 
 name		Gomoku
 version		1.2.6
-categories	games aqua
-platforms	darwin
-maintainers	mww@opendarwin.org
+categories	games aqua gnustep
+maintainers	nomaintainer
 description	extended TicTacToe game
 long_description	Gomoku.app is an extended TicTacToe game for GNUstep. \
 			You win the game if you are able to put 5 of your \
-			pieces in a row, column or diagonal. You loose if the \
+			pieces in a row, column or diagonal. You lose if the \
 			computer does it before you. You can play the game on \
 			boards of different size\; the default size is 8 but \
 			10 is also nice to play. The game has 6 different \
@@ -18,7 +18,7 @@ long_description	Gomoku.app is an extended TicTacToe game for GNUstep. \
 
 homepage	http://www.gnustep.it/nicola/Applications/Gomoku/
 master_sites	${homepage}:s \
-		http://www.opendarwin.org/~mww/files/:p
+		http://distfiles.master.finkmirrors.net/:p
 distfiles	${distname}${extract.suffix}:s \
 		${distname}_aqua${extract.suffix}:p
 checksums	${distname}${extract.suffix} \
@@ -30,8 +30,6 @@ patchfiles	patch-Board.m.diff \
 		patch-Controller.m.diff \
 		patch-GomokuInfo.plist.diff \
 		patch-main.m.diff
-
-use_configure	no
 
 post-extract	{
 	file copy ${workpath}/English.lproj/MainMenu.nib \
@@ -48,13 +46,4 @@ post-extract	{
 		${worksrcpath}/Swedish.lproj
 	file copy ${workpath}/GNUstep.h ${workpath}/about.png \
 		${workpath}/Gomoku.pbproj ${worksrcpath}
-}
-
-build.type	pbx
-build.target
-
-destroot	{
-	file mkdir ${destroot}/Applications/DarwinPorts
-	file copy ${worksrcpath}/build/Gomoku.app \
-		${destroot}/Applications/DarwinPorts
 }

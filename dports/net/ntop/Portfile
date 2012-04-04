@@ -1,34 +1,77 @@
-# Id: $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
 PortSystem 1.0
-name		ntop
-version		2.2
-revision	0
-categories	net
-maintainers	mww@opendarwin.org
-description	network traffic probe
-platforms	darwin
+
+name			ntop
+version			3.3.10
+revision		5
+categories		net
+maintainers		markd openmaintainer
+description		network traffic probe
+platforms		darwin
 long_description	ntop is a network traffic probe that shows the network \
-		usage, similar to what the popular top Unix command does.
+				usage, similar to what the popular top Unix command does.
 
-homepage	http://www.ntop.org/
-master_sites	sourceforge
-extract.suffix	.tgz
-checksums	md5 4586e4173fcab64d2394502603fc73aa
+homepage		http://www.ntop.org/
+master_sites		sourceforge
+checksums		md5 6e2ffa90d5f935c8f03d88a5dd19a866
 
-depends_lib	lib:libiconv.2:libiconv \
-		lib:libpng3:libpng \
-		lib:readline:readline \
-		lib:libgdbm:gdbm
+patchfiles		patch-external-geoip.diff \
+			patch-Makefile.am.diff
 
-set worksrcpath	${worksrcpath}/ntop
+depends_build		port:gawk \
+			port:wget \
+			port:rrdtool \
+			port:libevent
+depends_lib		port:libpcap \
+			port:gd2 \
+			port:libpng \
+			port:gdbm \
+			port:libgeoip
 
-configure.args	--with-localedir=${prefix}/share/locale \
-		--with-gdbm-lib=${prefix}/lib \
-		--with-gdbm-include=${prefix}/include \
-		--without-curses \
-		--without-gdchart \
-		--mandir=${prefix}/share/man
+configure.cflags-append	-I${prefix}/include
+configure.args		--mandir=${prefix}/share/man \
+			--with-localedir=${prefix}/share/locale \
+			--with-rrd-home=${prefix} \
+			--without-ssl
 
-build.dir	${configure.dir}
-post-destroot	{ system "install -m 755 -d ${destroot}/${prefix}/var/ntop" }
+use_autoconf		yes
+build.type		gnu
+
+# Create a startupitem to start/stop the server
+	startupitem.create    yes
+	startupitem.start    "${prefix}/share/${name}/ntop.sh"
+	startupitem.stop     "${prefix}/share/${name}/ntop.sh"
+
+pre-configure {
+	system "cd ${worksrcpath} && ./autogen.sh --noconfig"
+}
+
+post-destroot	{
+	xinstall -m 755 -o nobody -d ${destroot}${prefix}/var/ntop \
+		${destroot}${prefix}/var/ntop/rrd
+	system "cd ${destroot}${prefix}/var/ntop && \
+		touch addressQueue.db dnsCache.db macPrefix.db \
+		ntop_pw.db prefsCache.db rrd/.turd"
+	system "chown -R nobody ${destroot}${prefix}/var/ntop"
+
+	xinstall -m 755 -d ${destroot}${prefix}/etc/ntop
+	xinstall -m 755 \
+		${worksrcpath}/packages/FreeBSD-ports/net/ntop/files/ntop.conf.sample \
+		${destroot}${prefix}/etc/ntop/ntop.conf
+	reinplace "s|%%DBDIR%%/ntop|${prefix}/var/ntop|g" \
+		${destroot}${prefix}/etc/ntop/ntop.conf            
+	reinplace "s|#--interface sis0|--interface en0|g" \
+		${destroot}${prefix}/etc/ntop/ntop.conf
+
+    xinstall -m 755 ${filespath}/ntop.sh \
+        ${destroot}${prefix}/share/ntop/ntop.sh
+    reinplace "s|__PREFIX__|${prefix}|g" \
+        ${destroot}${prefix}/share/ntop/ntop.sh
+}
+
+# ticket #27472; check if this is still a problem when updating to 4.1.x
+universal_variant		no
+
+livecheck.regex		/${name}-(\[0-9.\]+)${extract.suffix}

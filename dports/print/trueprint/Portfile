@@ -1,20 +1,21 @@
-# $Id: Portfile,v 1.2 2004/01/18 04:54:47 toby Exp $
+# $Id$
 PortSystem 1.0
 name            trueprint
 version         5.3
+revision	1
 categories      print
-maintainers     norume@aps.anl.gov
+platforms       darwin
+maintainers     nomaintainer
 description     Prettyprinter
 long_description    GNU Trueprint takes C source files and other text files \
-                    and prints them on postscript printers. It is intended to \
+                    and prints them on PostScript printers. It is intended to \
                     be used by programmers and includes a wealth of features, \
                     including diff-marking, an indentation count, function \
                     and file indices, and many others that are useful when \
                     printing source code.
 homepage        http://www.gnu.org/software/trueprint/
 master_sites    gnu
-depends_lib     lib:libintl.1:gettext
+depends_lib     port:gettext
 checksums       md5 0615d55e45ca5131001b8e49bc330995
-configure.env   LDFLAGS='-L${prefix}/lib'
 build.args      'LIBS+=-lintl'
 

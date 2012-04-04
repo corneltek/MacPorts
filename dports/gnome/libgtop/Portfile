@@ -1,20 +1,43 @@
-# $Id: Portfile,v 1.2 2004/02/23 13:59:07 olegb Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
 PortSystem 1.0
+
 name		libgtop
-version		2.0.7
-description	A library for gtop2
-long_description        This is library for the gtop2, the GNOME 2.0 \
-			version of top command. The top command is a tool \
-			to display and update information about the top \
-			cpu processes.
-maintainers	gnome-darwinports@opendarwin.org
+version		2.28.4
+license         GPL-2
+set branch      [join [lrange [split ${version} .] 0 1] .]
+
+description	A library for portably obtaining information about processes
+
+long_description \
+                libgtop is a library for portably obtaining information about processes, \
+                such as their PID, memory usage, etc.
+
+maintainers	devans openmaintainer
 categories	gnome
-platforms	darwin 
+platforms	darwin
 homepage	http://www.gnome.org/
-master_sites    gnome:sources/libgtop/2.0/
-checksums	md5 b07e6ed75e0d45423b47db8ac370c571
-depends_lib     lib:gnome-session:gnome-session
-#patchfiles	patch_configure patch_mountlist.c patch_ltmain.sh
+master_sites    gnome:sources/${name}/${branch}/
+
+checksums       sha1    b6f002cc80a61dc0908dd96e0b543113a46bc4b7 \
+                rmd160  96ac76aa409bbd202bedacd94df14cd549e10d6b
+
+depends_build   port:pkgconfig \
+                port:intltool \
+                port:gtk-doc
+
+depends_lib     path:lib/pkgconfig/glib-2.0.pc:glib2
+
 use_bzip2 	yes
-configure.args	--mandir=${prefix}/share/man --infodir=${prefix}/share/info
-configure.env   CPPFLAGS="-L${prefix}/lib -I${prefix}/include" 
+
+patchfiles      patch-sysdeps__darwin__proclist.c.diff \
+                patch-configure.diff
+
+configure.args	--x-includes=${prefix}/include \
+                --x-libraries=${prefix}/lib \
+                --enable-introspection=no
+
+livecheck.type  regex
+livecheck.url   http://ftp.gnome.org/pub/gnome/sources/${name}/${branch}/
+livecheck.regex {LATEST-IS-(\d+(?:\.\d+)*)}

@@ -1,0 +1,75 @@
+# $Id$
+
+PortSystem 1.0
+
+name            xorg-libXi
+version         1.6.0
+revision        1
+categories      x11 devel
+license         X11
+maintainers     jeremyhu openmaintainer
+description     X.org libXi
+homepage        http://www.x.org
+platforms       darwin macosx
+long_description X11 Input Extension
+master_sites     xorg:individual/lib/
+
+distname    libXi-${version}
+checksums           sha1    b7edf48f93e8abd13ca688fa7f597452c4b74346 \
+                    rmd160  a47e51cf70621ec4b8a6573f93670ec0cc5ef91c \
+                    sha256  b2fc65a24a269405c5bbe27152e97ed4c5987ca728b9d7e7576e4c9543c4a7af
+
+use_bzip2   yes
+use_parallel_build      yes
+
+depends_build   port:pkgconfig
+
+depends_lib     port:xorg-libXext \
+		port:xorg-inputproto
+
+patchfiles \
+	0001-Fix-wrong-button-label-and-mask-copy-on-OS-X.patch
+patch.pre_args -p1
+
+configure.args \
+	--without-asciidoc \
+	--without-xmlto \
+	--without-fop \
+	--disable-specs
+
+build.args V=1
+
+# Depending on ghostscript for the PDF documentation creates a dependency
+# loop, so you may want to install first without the docs variant
+variant docs description "Install extra documentation" {
+	depends_build-append \
+		port:asciidoc \
+		port:fop \
+		port:xmlto \
+		port:xorg-sgml-doctools
+
+	depends_skip_archcheck-append \
+		asciidoc \
+		xmlto
+
+	configure.args-delete \
+		--without-asciidoc \
+		--without-xmlto \
+		--without-fop \
+		--disable-specs
+
+	configure.args-append \
+		--with-asciidoc \
+		--with-xmlto \
+		--with-fop \
+		--enable-specs
+
+	configure.env-append \
+		ASCIIDOC="${prefix}/bin/asciidoc" \
+		XMLTO="${prefix}/bin/xmlto" \
+		FOP="${prefix}/bin/fop"
+}
+
+livecheck.type  regex
+livecheck.url   http://xorg.freedesktop.org/archive/individual/lib/?C=M&O=D
+livecheck.regex libXi-(\\d+(?:\\.\\d+)*)

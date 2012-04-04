@@ -1,9 +1,9 @@
-# $Id: Portfile,v 1.2 2003/08/05 09:29:01 jkh Exp $
+# $Id$
 PortSystem 1.0
 name			cvsdiff2patch
 version			1.0.1
 categories		devel
-maintainers		landonf@opendarwin.org
+maintainers		nomaintainer
 description		Turn cvs diff output into patch input.
 long_description	This is a text filter for turning "cvs diff" output \
 			into something that patch(1) understands. This is \
@@ -20,5 +20,5 @@ build.type		bsd
 
 # Override Makefile destroot target
 destroot {
-	system "install -c -s -m 555  ${worksrcpath}/cvsdiff2patch ${destroot}/${prefix}/bin"
+	system "install -c -s -m 555  ${worksrcpath}/cvsdiff2patch ${destroot}${prefix}/bin"
 }

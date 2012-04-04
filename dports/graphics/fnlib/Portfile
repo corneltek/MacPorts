@@ -1,17 +1,37 @@
-# $Id: Portfile,v 1.1 2003/12/08 09:02:39 olegb Exp $
+# $Id$
 
 PortSystem 1.0
 name		fnlib
 version		0.5
+revision	7
 description	Fonts and font libraries necessary for Enlightenment
 long_description        This is a set of fonts and font libraries necessary \
 			for the latest release of Enlightenment.
-maintainers	olegb@opendarwin.org
+maintainers	nomaintainer
 categories	graphics
 platforms	darwin 
 homepage	http://www.enlightenment.org/
-master_sites 	sourceforge:enlightenment/
+master_sites 	sourceforge:project/enlightenment/OldFiles/
 checksums	md5 99e9558739b97c82b728e408d9cb1f01
-depends_lib	lib:libX11.6:XFree86 lib:libjpeg.62:jpeg lib:libpng.3:libpng \
-		lib:libtiff.3:tiff lib:libImlib:imlib
-configure.args	 --host=mac --prefix=${prefix}
+
+depends_lib \
+	port:xorg-libsm \
+	port:xorg-libXext \
+	port:libpng \
+	port:jpeg \
+	port:tiff \
+	port:imlib
+
+# this might break shinymetal on caseinsensitives fs'es
+post-destroot	{
+		foreach i {a b c d e f g h i j k l m n o p q r s t u v w x y z} {
+			file delete -force ${destroot}${prefix}/share/fnlib_fonts/shinymetal/45/$i.tif
+		}
+}
+
+use_autoreconf yes
+autoreconf.args -fvi
+
+# port:imlib is not universal
+universal_variant no
+

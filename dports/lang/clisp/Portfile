@@ -1,56 +1,67 @@
-# $Id: Portfile,v 1.7 2004/01/30 23:15:27 fenner Exp $
+# $Id$
 
 PortSystem 1.0
-name		clisp
-version		2.29
-categories	lang
-maintainers	gwright@comcast.net
-platforms	darwin
-description	The Clisp Common Lisp Implementation
-long_description	\
-		CLISP is a Common Lisp implementation by Bruno Haible, \
-		formerly of Karlsruhe University, and Michael Stoll, \
-		formerly of Munich University, both in Germany. \
-		It mostly supports the Lisp described in the \
-		ANSI Common Lisp standard. \
-			CLISP includes an interpreter, a compiler, almost all \
-		of CLOS, a foreign language interface and a socket interface. \
-		An X11 interface is available through CLX and Garnet. \
-		Command line editing is provided by readline.
 
-#bugs		Version 2.29 is compatible with maxima 5.9.0. Version \
-#		2.30 introduced floating point bugs that maxima trips \
-#		over.
+name            clisp
+version         2.49
+revision        1
+categories      lang
+maintainers     waqar easieste
+platforms       darwin
+license         GPL-2
+description     The Clisp Common Lisp Implementation
+long_description        \
+                CLISP is a Common Lisp implementation by Bruno Haible, \
+                formerly of Karlsruhe University, and Michael Stoll, \
+                formerly of Munich University, both in Germany. \
+                It mostly supports the Lisp described in the \
+                ANSI Common Lisp standard. \
+                CLISP includes an interpreter, a compiler, almost all \
+                of CLOS, a foreign language interface and a socket interface. \
+                An X11 interface is available through CLX and Garnet. \
+                Command line editing is provided by readline.
 
-dist_subdir	${name}
-homepage	http://clisp.cons.org/
-master_sites	http://cvs2.cons.org/ftp-area/clisp/source/2.29/ \
-		gnu:clisp/release \
-		sourceforge
+homepage        http://clisp.cons.org/
+master_sites    gnu:clisp/release/${version}    \
+                sourceforge
 
-checksums	md5 53f7cfba5c5f3f7d536541e1df210b74
+checksums           md5     1962b99d5e530390ec3829236d168649 \
+                    sha1    7e8d585ef8d0d6349ffe581d1ac08681e6e670d4 \
+                    rmd160  bfb81abf942b07bbb8d83505f287d546b1bbdacc
 
-pre-patch	{ cd ${workpath}
-		  file rename  ${name} ${name}-${version}
-		}
+depends_lib     port:readline   \
+                port:gettext    \
+                port:libsigsegv
 
-patchfiles	patch-makemake.in patch-_clisp.c patch-stream.d
+universal_variant no
+use_bzip2       yes
+patchfiles      patch-src_lispbibl_d.diff
+post-extract {
+    file mkdir ${workpath}/home
+}
 
-build.dir	${workpath}/${worksrcdir}/src
+# Force 32-bit, inline-asm
+supported_archs ppc i386
 
-post-configure	{ cd ${build.dir}
-		  system "./makemake --without-dynamic-ffi \
-			  --with-readline --with-gettext \
-			  --prefix=${prefix} > Makefile && \
-			  make config.lisp"
-		}
+configure.cflags
+platform darwin 11 {
+    configure.cflags-append -Wl,-no_pie
+}
+configure.cc-append  ${configure.cc_archflags}
+configure.args      --with-libreadline-prefix=${prefix} \
+                    --with-libsigsegv-prefix=${prefix} \
+                    --with-libiconv-prefix=${prefix}
 
-build		{ system "ulimit -s 8192 && \
-			  cd ${build.dir} && \
-			  make && \
-			  make check"
-		}
+use_parallel_build  no
+build.dir           ${worksrcpath}/src
+build.env-append    HOME=${workpath}/home
+build.env-delete    LD_PREBIND LD_PREBIND_ALLOW_OVERLAP
+build.cmd           "ulimit -s 16384 && make"
+build.target 
 
-pre-destroot	{ cd ${build.dir} }
+test.run            yes
+test.target         check
 
-
+livecheck.type  regex
+livecheck.url   http://ftp.gnu.org/gnu/${name}/release/?C=M&O=D
+livecheck.regex >(\[0-9.\]+)/<

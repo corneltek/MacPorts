@@ -1,10 +1,10 @@
-# $Id: Portfile,v 1.2 2004/03/01 03:07:48 rshaw Exp $
-PortSystem 1.0
+# $Id$
+PortSystem		1.0
+PortGroup		ruby 1.0
 
-name			rb-algorithm-diff
-version			0.4
-categories		ruby
-maintainers		rshaw@opendarwin.org
+ruby.setup		{algorithm-diff diff} 0.4 install.rb {README doc samples}
+revision		2
+maintainers		nomaintainer
 description		diff algorithm for arrays in Ruby
 long_description	The diff algorithm computes the differences between \
 					two arrays of elements, like the unix program \
@@ -13,34 +13,12 @@ long_description	The diff algorithm computes the differences between \
 					implement the interface. The algorithm is complete, \
 					stable (TestUnit test available), but the interface \
 					may change before a 1.0 release.
-homepage		http://rubynet.org/mirrors/diff/
-platforms		darwin
-master_sites	http://rubynet.org/mirrors/diff/
-dist_subdir		ruby
-distname		diff-0.4
+master_sites            ftp://ftp9.freebsd.org/pub/FreeBSD/ports/distfiles/ruby/
 checksums		md5 3e832de40dc1866dddc64978fe67e4c8
-
-set ruby ${prefix}/bin/ruby
-depends_build	path:${ruby}:ruby
-
-post-extract	{
-	reinplace "s|\\(siteruby.*=\\).*|\\1 stdruby|" ${worksrcpath}/install.rb
-	reinplace "s|\\(versite.*=\\).*|\\1 stdruby|" ${worksrcpath}/install.rb
-	reinplace "s|\\(sodir.*=\\).*|\\1 \"stdruby/\#{c\['arch'\]}\"|" ${worksrcpath}/install.rb
-}
-
-configure.cmd		${ruby} install.rb
-configure.pre_args	config
-configure.args		--prefix=${destroot}${prefix}
-
-build.cmd			${ruby} install.rb
-build.target		setup
+platforms		darwin
 
 test.run			yes
 test.dir			${worksrcpath}/test
-test.cmd			${ruby} -I../lib test_diff.rb
+test.cmd			${ruby.bin} -I../lib test_diff.rb
 test.target
-
-destroot.cmd		${ruby} install.rb
-destroot.destdir
 

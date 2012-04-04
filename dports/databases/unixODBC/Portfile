@@ -1,123 +1,90 @@
-# $Id: Portfile,v 1.4 2004/01/06 07:17:58 jkh Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
-PortSystem 1.0
-name			unixODBC
-version			2.2.7
-categories		databases
-platforms		darwin
+PortSystem          1.0
 
-maintainers		simon@cotsworth.com
+name                unixODBC
+conflicts           libiodbc virtuoso
+version             2.3.1
+categories          databases
+platforms           darwin
+maintainers         cotsworth.com:simon
+license             LGPL-2+
+description         Provides ODBC 3 connectivity for Unix
 
-description		Provides ODBC 3 connectivity for Unix
+long_description    The unixODBC project provides UNIX applications with the \
+                    same ODBC 3.51 API and facilities available under Windows. \
+                    It provides a Driver Manager that supports the full ODBC \
+                    API and performs the ODBC 3 to ODBC 2 translations with \
+                    UNICODE to ANSI conversion. It also includes a set of \
+                    graphical utilities that allow users to specify \
+                    connections to DBMSes to be used by applications, a \
+                    collection of ODBC drivers including a simple text based \
+                    driver, an NNTP driver, a Postgres driver and others, and \
+                    a selection of templates and libraries that to aid in the \
+                    construction of ODBC drivers. It works with MySQL, \
+                    Postgres, StarOffice, Applixware, iHTML, PHP, Perl \
+                    DBD::ODBC, Paradox 9, and many other applications and \
+                    drivers. Connection pooling is also provided to increase \
+                    performance with applications such as PHP.
 
-long_description	The unixODBC project provides UNIX applications with the same ODBC 3.51 API \
-				and facilities available under Windows. It provides a Driver Manager that \
-				supports the full ODBC API and performs the ODBC 3 to ODBC 2 translations \
-				with UNICODE to ANSI conversion. It also includes a set of graphical utilities \
-				that allow users to specify connections to DBMSes to be used by applications, \
-				a collection of ODBC drivers including a simple text based driver, an NNTP \
-				driver, a Postgres driver and others, and a selection of templates and \
-				libraries that to aid in the construction of ODBC drivers. It works with \
-				MySQL, Postgres, StarOffice, Applixware, iHTML, PHP, Perl DBD::ODBC, \
-				Paradox 9, and many other applications and drivers. Connection pooling is \
-				also provided to increase performance with applications such as PHP.
+homepage            http://www.unixodbc.org/
+master_sites        ${homepage} \
+                    ftp://ftp.unixodbc.org/pub/unixODBC/
 
-homepage		http://www.unixodbc.org/
-master_sites	${homepage} \
-				ftp://ftp.easysoft.com/pub/beta/unixODBC/
+checksums           rmd160  231120ed384d799db37a165cadeead8283c376c4 \
+                    sha256  1f5be3edecff9e31072ef738ea1d8019594c4f0c2e3ab427e6eef153491db6a2
 
-checksums		md5 5006259f2044666c733651263722bbdd
+depends_lib         port:libiconv port:libtool port:readline
 
-depends_lib		lib:libiconv.2:libiconv \
-				  lib:readline:readline
+configure.args      --enable-static --enable-shared \
+                    --with-libiconv-prefix=${prefix}
 
-platform darwin 6	{ depends_lib-append	lib:libdl:dlcompat }
+use_parallel_build  yes
 
-patchfiles		patch-configure \
-				  patch-ltmain.sh \
-				  patch-SQLManageDataSources.c
-
-set share_path	"${prefix}/share/${name}"
-set doc_dest	"${destroot}${prefix}/share/doc/${name}"
-
-configure.env	LDFLAGS='-L${prefix}/lib' \
-				  CPPFLAGS='-I${prefix}/include'
-
-configure.args	--with-libiconv-prefix='${prefix}' \
-				  --disable-stats \
-				  --enable-gui=no
-
-variant gui {
-		depends_lib-append lib:libqt-mt.3:qt3 \
-		  lib:libX11.6:XFree86
-		configure.env-append QTDIR='${prefix}'
-		configure.args-delete --enable-gui=no
-		configure.args-append --enable-gui \
-		  --with-qt-dir='${prefix}' \
-		  --with-qt-includes='${prefix}/include/qt3' \
-		  --with-qt-libraries='${prefix}/lib' \
-		  --with-extra-includes='/usr/X11R6/include' \
-		  --with-extra-libs='/usr/X11R6/lib'
+post-destroot {
+    # DOCS
+    xinstall -d -m 0755 ${destroot}${prefix}/share/doc/${name}
+    
+    foreach doc [glob ${worksrcpath}/\[A-Z\]*\[A-Z\]\[A-Z\]\[A-Z\] ${worksrcpath}/doc/*.\[a-z\]\[a-z\]\[a-z\]*] {
+        if {[string match "*.html" $doc]} {
+            reinplace "s|${homepage}doc/||g" $doc
+        }
+        
+        xinstall -m 0644 $doc ${destroot}${prefix}/share/doc/${name}
+    }
+    
+    foreach dir {AdministratorManual lst ProgrammerManual ProgrammerManual/Tutorial UserManual} {
+        xinstall -d -m 0755 ${destroot}${prefix}/share/doc/${name}/$dir
+        
+        foreach file [glob ${worksrcpath}/doc/$dir/*.\[a-z\]\[a-z\]\[a-z\]*] {
+            if {[string match "*.html" $file]} {
+                reinplace "s|${homepage}doc/||g" $file
+            }
+            
+            xinstall -m 0644 $file ${destroot}${prefix}/share/doc/${name}/$dir
+        }
+    }
+    
+    # TEMPLATES
+    xinstall -d -m 0755 ${destroot}${prefix}/share/${name}
+    
+    foreach template [glob ${portpath}/${filesdir}/*.template] {
+        xinstall -m 0644 $template ${destroot}${prefix}/share/${name}
+    }
+    
+    foreach driver [glob ${destroot}${prefix}/share/${name}/*.driver.*] {
+        reinplace "s|__PREFIX__|${prefix}|g" $driver
+    }
+    
+    # CONFIG
+    foreach ini [glob ${destroot}${prefix}/etc/*.ini] {
+        system "mv $ini $ini.dist"
+    }
+    
+    destroot.keepdirs ${destroot}${prefix}/etc/ODBCDataSources
 }
 
-post-destroot	{ 
-	file mkdir ${destroot}${share_path}
-	system "install -m 644 ${portpath}/${filesdir}/*.template \
-	  ${destroot}${share_path}"
-	reinplace "s|DarwinPortsDirectory|${prefix}|g" \
-	  "${destroot}${share_path}/postgresql.driver.template"
-
-	# ODBCDataSources Directory & empty directory hack
-	file mkdir ${destroot}${prefix}/etc/ODBCDataSources
-	system "touch ${destroot}${prefix}/etc/ODBCDataSources/.turd"
-
-	# Install Documentation
-	file mkdir ${doc_dest}
-	system "cd ${worksrcpath}/doc && \
-	  tar -cf - * | tar -xf - -C ${doc_dest}"
-	system "find ${doc_dest} -name 'Makefile*' | xargs rm"
-	system "chown -R `id -u`:`id -g` ${doc_dest}"
-
-	# Create Mach-O bundles
-	#
-	# Cursor Lib - The cursor lib needs a manual stage build to create it as a OSX bundle
-	# it needs to be like that so the DM can load it at run time.
-	system "cd ${worksrcpath}/cur && \
-	  /usr/bin/cc -bundle -flat_namespace -undefined suppress -o libodbccr.1.0.0.so *.lo && \
-	  rm ${destroot}${prefix}/lib/libodbccr.1.0.0.so && \
-	  install -m 755 libodbccr.1.0.0.so ${destroot}${prefix}/lib"
-	#
-	# ODBC Lib
-	system "cd ${worksrcpath}/DriverManager && \
-	  /usr/bin/cc -bundle -flat_namespace -undefined suppress -o libodbc.1.0.0.so \
-	  .libs/libodbc.1.0.0.dylib && \
-	  install -m 755 libodbc.1.0.0.so ${destroot}${prefix}/lib && \
-	  cd ${destroot}${prefix}/lib && \
-	  ln -s libodbc.1.0.0.so libodbc.1.so && \
-	  ln -s libodbc.1.0.0.so libodbc.so"
-	#
-	# Postgre7.1 Lib
-	system "cd ${worksrcpath}/Drivers/Postgre7.1 && \
-	  /usr/bin/cc -bundle -flat_namespace -undefined suppress -o libodbcpsql.2.0.0.so *.lo && \
-	  rm ${destroot}${prefix}/lib/libodbcpsql.2.0.0.so && \
-	  install -m 755 libodbcpsql.2.0.0.so ${destroot}${prefix}/lib"
-	#
-	# PostgreSQL Lib
-	system "cd ${worksrcpath}/Drivers/PostgreSQL && \
-	  /usr/bin/cc -bundle -flat_namespace -undefined suppress -o libodbcpsql.1.0.0.so *.lo && \
-	  rm ${destroot}${prefix}/lib/libodbcpsql.1.0.0.so && \
-	  install -m 755 libodbcpsql.1.0.0.so ${destroot}${prefix}/lib"
-	#
-	# NNTP Lib
-	system "cd ${worksrcpath}/Drivers/nn && \
-	  /usr/bin/cc -bundle -flat_namespace -undefined suppress -o libnn.1.0.0.so *.lo && \
-	  rm ${destroot}${prefix}/lib/libnn.1.0.0.so && \
-	  install -m 755 libnn.1.0.0.so ${destroot}${prefix}/lib"
-}
-
-post-install	{ 
-	system "${prefix}/bin/odbcinst -i -d -f \
-	  ${share_path}/postgresql.driver.template"
-	system "${prefix}/bin/odbcinst -i -s -f \
-	  ${share_path}/postgresql.data.template"
-}
+livecheck.type  regex
+livecheck.url   ${homepage}download.html
+livecheck.regex ${name}-(\\d+(\\.\\d+)*).tar.gz

@@ -1,0 +1,26 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem          1.0
+PortGroup           kde4   1.1
+
+name                svgpart
+version             4.8.1
+categories          kde kde4
+license             GPL-2+
+maintainers         nicos openmaintainer
+description         Svg wrap up for KDE.
+long_description    ${description}
+platforms           darwin
+homepage            http://www.kde.org/applications/graphics/ksnapshot/
+master_sites        kde:stable/${version}/src/
+use_bzip2           yes
+distname            svgpart-${version}
+
+checksums           rmd160  985bfda6c5f227533e555831a86dab08c9659495 \
+                    sha256  8059a1e11d2a99a117323747b241d374f0dee1d6dda4b416d3cb68bc8faf00b6
+
+depends_lib-append  port:kdelibs4
+
+livecheck.url       http://kde.mirrors.hoobly.com/stable/latest/src/
+livecheck.regex     svgpart-(\\d+\\.\\d+\\.\\d+)${extract.suffix}

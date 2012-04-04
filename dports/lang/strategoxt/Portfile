@@ -1,53 +1,29 @@
-# $Id: Portfile,v 1.2 2004/02/28 07:06:14 pguyot Exp $
+# $Id$
 
 PortSystem			1.0
 name				strategoxt
-version				0.9.4
-revision			1
-
+epoch				1
+version				0.17
 description			Stratego language with the XT bundle.
 long_description	StrategoXT is the combination of the Stratego language for \
 					strategic programming with the XT bundle of transformation \
 					tools.
 platforms			darwin
 categories			lang
-maintainers			pguyot@kallisys.net
-homepage			http://www.stratego-language.org/Stratego/StrategoXT
-master_sites		ftp://ftp.stratego-language.org/pub/stratego/StrategoXT/
-checksums			md5 b61aee784cebac6cce0d96383bdb1b37
+maintainers			nomaintainer
+homepage			http://strategoxt.org/Stratego/StrategoXT
+master_sites		ftp://ftp.stratego-language.org/pub/stratego/StrategoXT/strategoxt-${version}/
+
+checksums			md5     6a1523ec105c5091a8174b276aceea1b \
+					sha1    65fbd0a394917747366ce5c7c83ba6e3883cbb5c \
+					rmd160  e25aa86c007c20ac5667e0f41c6954d618c3aee1
+
 build.type			gnu
-depends_lib			lib:libATerm:libaterm \
-					lib:libSDF2PT:sdf2-bundle
+depends_lib			port:libaterm \
+					port:sdf2-bundle
 configure.args		--mandir=${prefix}/share/man
+use_parallel_build	no
 
-# We don't have the -gcc version of ATerm library installed.
-# We patch Makefile.{in,xt,ext} files.
-post-patch {
-	# Function to recursively walk the tree and fix every Makefile.in.
-	#
-	# param: a full or relative path to the directory to walk.
-	proc fixATerm { directory } {
-		set pwd [pwd]
-		cd $directory
-		
-		# Iterate on elements in this directory.
-		foreach name [readdir .] {
-			# Skip . and .. to avoid looping forever
-			if {$name == "." || $name == ".."} {
-				continue
-			}
-			if {[file isdirectory $name]} {
-				fixATerm $name
-			} else {
-				if {[string match "Makefile.*" $name]} {
-					# Replace -lATerm-gcc with -lATerm
-					reinplace "s|-lATerm-gcc|-lATerm|g" $name
-				}
-			}
-		}
-		cd $pwd
-	}
-
-	# Fix all Makefile.{in,xt,ext} in the archive.
-	fixATerm ${worksrcpath}
-}
+livecheck.type		regex
+livecheck.url		http://strategoxt.org/Stratego/StrategoDownload
+livecheck.regex		${name}-(\[0-9.\]+)\\.tar

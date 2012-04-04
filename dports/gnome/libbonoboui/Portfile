@@ -1,24 +1,55 @@
-# $Id: Portfile,v 1.9 2004/02/23 13:59:04 olegb Exp $
-PortSystem 1.0
-name		libbonoboui
-version		2.4.1
-description	GUI frontend to the libbonobo component of GNOME 2
-long_description        Bonobo is a set of language and system \
-			independant CORBA interfaces for creating \
-			reusable components and creating compound \
-			documents. libbonoboui includes a Gtk+ based \
-			implementation of the Bonobo interfaces, \
-			enabling developers to create reusable components \
-			and applications that can be used to form \
-			more complex documents.
-maintainers	gnome-darwinports@opendarwin.org
-categories	gnome
-platforms	darwin 
-homepage	http://www.gnome.org/
-master_sites    gnome:sources/libbonoboui/2.4/
-checksums	md5 943a2d0e9fc7b9f0e97ba869de0c5f2a
-depends_lib	lib:libgnomecanvas:libgnomecanvas
-use_bzip2 	yes
-configure.args  --mandir=${prefix}/share/man
-configure.env	CPPFLAGS="-I${prefix}/include -L${prefix}/lib" \
-		CFLAGS="-no-cpp-precomp -flat_namespace -undefined suppress"
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
+# $Id$
+
+PortSystem      1.0
+
+name            libbonoboui
+version         2.24.5
+revision        2
+set branch      [join [lrange [split ${version} .] 0 1] .]
+maintainers     nomaintainer
+categories      gnome
+# libs are LGPL, binaries and examples are GPL
+license         {LGPL GPL-2+}
+platforms       darwin
+description     GUI frontend to the libbonobo component of GNOME 2
+
+long_description \
+    Bonobo is a set of language and system independant CORBA \
+    interfaces for creating reusable components and creating compound \
+    documents. libbonoboui includes a Gtk+ based implementation of the \
+    Bonobo interfaces, enabling developers to create reusable \
+    components and applications that can be used to form more complex \
+    documents.
+
+homepage        http://www.gnome.org/
+master_sites    gnome:sources/${name}/${branch}/
+use_bzip2       yes
+
+checksums       md5     853be8e28aaa4ce48ba60be7d9046bf4 \
+                sha1    9657e7194ef3f5782f183e021fdb4014531b6cd8 \
+                rmd160  0ebf5618e1564317561b098d6774f0c75ea082f0
+
+depends_build   port:coreutils \
+                port:pkgconfig \
+                port:intltool \
+                port:gtk-doc
+
+depends_lib     port:audiofile \
+                port:gconf \
+                port:libbonobo \
+                port:libgnomecanvas \
+                port:libgnome
+
+configure.args  --x-includes=${prefix}/include \
+                --x-libraries=${prefix}/lib
+
+variant no_x11 {
+    configure.args-delete --x-includes=${prefix}/include \
+                          --x-libraries=${prefix}/lib
+    configure.args-append --without-x
+}
+
+livecheck.type  regex
+livecheck.url   http://ftp.gnome.org/pub/gnome/sources/${name}/${branch}/
+livecheck.regex {LATEST-IS-(\d+(?:\.\d+)*)}

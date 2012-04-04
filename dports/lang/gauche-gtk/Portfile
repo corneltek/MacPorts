@@ -1,17 +1,20 @@
-# $Id: Portfile,v 1.3 2003/10/10 02:06:28 fkr Exp $
+# $Id$
 
 PortSystem 1.0
 name		gauche-gtk
-version		0.3.1
-categories	lang
-maintainers	kogule@opendarwin.org
+version		0.4.1
+categories	lang scheme
+maintainers	nomaintainer
 description	Gauche extension module to use GTK
+long_description	${description}
+platforms	darwin
 homepage	http://www.shiro.dreamhost.com/scheme/gauche/
 master_sites	sourceforge:gauche
 distname	Gauche-gtk-$version
 distfiles	$distname.tgz
-checksums	md5 56242c3eacab8d175ca7df7e15eff64d
-patchfiles	patch-gtkgl-Makefile.in patch-lib-Makefile.in patch-src-Makefile.in
-depends_lib	lib:libgtk.2:gtk2
-depends_build	bin:gosh:gauche
-configure.env   LDFLAGS=-L/usr/X11R6/lib
+checksums	md5 18356efab446b9524be8371a3b852a6a
+depends_lib	port:gtk2 port:gauche
+
+pre-fetch {
+    return -code error "Sorry, this port is currently broken."
+}

@@ -1,31 +1,47 @@
-# $Id: Portfile,v 1.3 2004/01/08 05:51:32 toby Exp $
+# $Id$
 
 PortSystem      1.0
+
 name            bash-completion
-version         20040101
-revision        1
+epoch           1
+version         1.3
+revision        4
 categories      sysutils
-maintainers     yeled@opendarwin.org
-description	Programmable bash2 completions.
-long_description	\
-	Brings programmable completion to bash like those pesky \
-        zsh users have had for years.
-homepage	http://www.caliban.org/bash/index.shtml
-platforms	darwin
-master_sites    http://www.caliban.org/files/bash/
-checksums       md5 9694e44dc750e1cece97c81831b921ec
-use_configure   no
-build           {}
-destroot {
-    reinplace "s|\/etc\/bash_completion|${prefix}\/etc\/bash_completion|g" \
-        ${workpath}/bash_completion/bash_completion
-	system "install -m 755 -c ${workpath}/bash_completion/bash_completion ${destroot}${prefix}/etc/"
+platforms       darwin
+supported_archs noarch
+license         GPL-2+
+maintainers     raimue
+description     Programmable bash completions
+long_description \
+    Programmable completion library for bash.
+
+homepage        http://bash-completion.alioth.debian.org/
+master_sites    http://bash-completion.alioth.debian.org/files/
+checksums       md5     a1262659b4bbf44dc9e59d034de505ec \
+                sha1    6a46b93f44c56cc336632ab28d90c0595fbcc98f \
+                rmd160  222be4aee5a9542e5b27133d8bfd697c2c95262d
+use_bzip2 yes
+
+patchfiles      patch-man.diff
+
+post-patch {
+    reinplace "s:/etc/bash_completion:${prefix}/etc/bash_completion:g" \
+        ${worksrcpath}/bash_completion
+    reinplace "s:readlink -f:readlink:g" \
+        ${worksrcpath}/bash_completion
 }
-post-install {
-    ui_msg  "Set this in your .bash_profile:"
-    ui_msg  ""
-    ui_msg  "    if \[ -f ${prefix}/etc/bash_completion ]; then"
-    ui_msg  "        . ${prefix}/etc/bash_completion"
-    ui_msg  "    fi"
-    ui_msg  ""
+
+post-destroot {
+    xinstall -m 644 -W ${filespath} port launchctl ${destroot}${prefix}/etc/bash_completion.d/
 }
+
+notes "
+To use bash_completion, add the following lines at the end of your .bash_profile:
+  if \[ -f ${prefix}/etc/bash_completion ]; then
+      . ${prefix}/etc/bash_completion
+  fi
+"
+
+livecheck.type      regex
+livecheck.url       ${homepage}
+livecheck.regex     "${name}-(\\d+(?:\\.\\d+)*)${extract.suffix}"

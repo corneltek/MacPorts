@@ -1,54 +1,45 @@
-# $Id: Portfile,v 1.2 2004/02/08 13:24:56 mww Exp $
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id$
 
 PortSystem 1.0
+PortGroup python24 1.0
 
-name		py-sqlobject
-version		0.5.1
-categories	python databases
-platforms	darwin
-maintainers	mww@opendarwin.org
-description	object-relational mapper for python
-long_description	SQLObject is an object-relational mapper. It allows \
-			you to translate RDBMS table rows into Python objects, \
-			and manipulate those objects to transparently \
-			manipulate the database. In using SQLObject, you will \
-			create a class definition that will describe how the \
-			object connects to the database (in addition to any \
-			other methods you may wish to add to the class). \
-			SQLObject will produce the code to access the \
-			database, and update the database with your changes. \
-			The interface to the database is meant to be \
-			indistinguishable from other interfaces you may add to \
-			the object. SQLObject also includes a novel feature to \
-			generate WHERE clauses using Python syntax and objects \
-			(instead of generating SQL using string substitution, \
-			as is traditional).
+name                py-sqlobject
+version             0.10.2
+categories          python databases
+platforms           darwin
+maintainers         openmaintainer akitada
+description         object-relational mapper for python
+long_description    SQLObject is an object-relational mapper. It allows \
+                    you to translate RDBMS table rows into Python objects, \
+                    and manipulate those objects to transparently \
+                    manipulate the database. In using SQLObject, you will \
+                    create a class definition that will describe how the \
+                    object connects to the database (in addition to any \
+                    other methods you may wish to add to the class). \
+                    SQLObject will produce the code to access the \
+                    database, and update the database with your changes. \
+                    The interface to the database is meant to be \
+                    indistinguishable from other interfaces you may add to \
+                    the object. SQLObject also includes a novel feature to \
+                    generate WHERE clauses using Python syntax and objects \
+                    (instead of generating SQL using string substitution, \
+                    as is traditional).
 
-homepage	http://www.sqlobject.org/
-master_sites	sourceforge:sqlobject
-distname	SQLObject-${version}
-checksums	md5 00c25102035ae0efe04e0b97be1ff785
+homepage            http://www.sqlobject.org/
+master_sites        http://cheeseshop.python.org/packages/source/S/SQLObject/
+checksums           md5 6ef1eb9464c08743fd25d8c10dae62af \
+                    sha1 fe3588dc438a8789346014adc8ce84867276150e \
+                    rmd160 2cbe649415b717d64249b4a548416cd1c08c48bf
+distname            SQLObject-${version}
 
-depends_lib	bin:python:python
+depends_lib-append  port:py-formencode
 
-use_configure	no
-
-build.cmd	python setup.py
-build.target	build
-
-destroot.cmd	python setup.py
-destroot.destdir	--prefix=${destroot}${prefix}
-
-post-destroot	{
-	xinstall -d -m 755 ${destroot}${prefix}/share/doc/${name}/examples
-	xinstall -m 644 -W ${worksrcpath}/docs Authors.html Authors.txt \
-		FAQ.html FAQ.txt News.html News.txt SQLBuilder.html \
-		SQLBuilder.txt SQLObject.html SQLObject.txt default.css \
-		${destroot}${prefix}/share/doc/${name}
-	xinstall -m 644 ${worksrcpath}/README.txt \
-		${destroot}${prefix}/share/doc/${name}
-	xinstall -m 644 -W ${worksrcpath}/examples class_dbi.py codebits.py \
-		config.py examplestripper.py leftjoin.py people.py \
-		personaddress.py prueba.py setup.py simpleperson.py styles.py \
-		userrole.py ${destroot}${prefix}/share/doc/${name}/examples
+post-destroot {
+    xinstall -m 644 -W ${worksrcpath}/docs Authors.txt FAQ.txt News.txt \
+        SQLBuilder.txt SQLObject.txt ${destroot}${prefix}/share/doc/${name}
+    xinstall -m 644 ${worksrcpath}/README.txt \
+        ${destroot}${prefix}/share/doc/${name}
+    move ${destroot}${prefix}/bin/sqlobject-admin \
+        ${destroot}${prefix}/bin/sqlobject-admin2.4
 }
